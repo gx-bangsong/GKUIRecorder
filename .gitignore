@@ -7,3 +7,5 @@
 /captures
 .externalNativeBuild
 /app/build
+/engine/build
+/engine/app/build

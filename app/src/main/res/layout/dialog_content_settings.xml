@@ -68,6 +68,15 @@
         android:gravity="start|center_vertical"
         android:text="@string/settings_engine" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/engineInstallButton"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/engine_install"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/engineStatusText"
         android:layout_width="match_parent"
