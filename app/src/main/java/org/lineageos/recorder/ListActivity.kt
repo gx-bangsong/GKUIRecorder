@@ -6,6 +6,7 @@
 package org.lineageos.recorder
 
 import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.DialogInterface
@@ -258,7 +259,11 @@ class ListActivity : AppCompatActivity() {
     }
 
     fun onPlay(recording: Recording) {
-        startActivity(RecordIntentHelper.getOpenIntent(recording.uri, TYPE_AUDIO))
+        startActivity(
+            Intent(this, PlaybackActivity::class.java)
+                .putExtra(PlaybackActivity.EXTRA_URI, recording.uri.toString())
+                .putExtra(PlaybackActivity.EXTRA_TITLE, recording.title)
+        )
     }
 
     fun onShare(recording: Recording) {

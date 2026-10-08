@@ -69,6 +69,10 @@
             android:parentActivityName=".RecorderActivity" />
 
         <activity
+            android:name=".PlaybackActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".DialogActivity"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.DialogActivity" />

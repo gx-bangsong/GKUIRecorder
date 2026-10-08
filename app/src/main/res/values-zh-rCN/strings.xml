@@ -114,4 +114,19 @@
     <string name="quick_share_system">系统分享</string>
     <string name="export_done">已导出到 下载/录音导出</string>
     <string name="export_failed">导出失败</string>
+
+    <!-- Playback screen -->
+    <string name="playback_add_important">+ 重点</string>
+    <string name="playback_add_segment">+ 分段</string>
+    <string name="playback_skip_back">-10秒</string>
+    <string name="playback_skip_forward">+10秒</string>
+    <string name="playback_time">%1$s / %2$s</string>
+    <string name="playback_chapter_title">章节 %1$d</string>
+    <string name="playback_chapter_range">%1$s - %2$s · 重点 %3$d</string>
+    <string name="playback_no_markers">还没有标记。用上方的按钮标记重点或分段。</string>
+    <string name="playback_delete_marker_title">删除标记</string>
+    <string name="playback_delete_marker_message">确定删除这个标记吗？</string>
+    <string name="playback_delete_segment_message">删除分段标记会把这一章合并到上一章。</string>
+    <string name="playback_load_failed">无法打开这段录音</string>
+    <string name="playback_waveform">波形，点击或拖动可跳转</string>
 </resources>

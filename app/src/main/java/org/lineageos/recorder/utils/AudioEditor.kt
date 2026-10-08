@@ -11,6 +11,7 @@ import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
@@ -177,6 +178,44 @@ object AudioEditor {
                 val value = (scratch[i] * totalGain).coerceIn(-32768f, 32767f)
                 buffer.putShort(i * BYTES_PER_SAMPLE, value.roundToInt().toShort())
             }
+        }
+    }
+
+    /**
+     * Computes a peak envelope with [bins] values in 0..1 for drawing a waveform.
+     * Throws IllegalArgumentException for unsupported formats.
+     */
+    fun computePeaks(openInput: () -> InputStream, bins: Int): FloatArray {
+        openInput().use { input ->
+            val header = readHeader(input)
+            val peaks = FloatArray(bins)
+            val total = header.totalFrames
+            if (total <= 0L || bins <= 0) {
+                return peaks
+            }
+
+            val buffer = ByteArray(BLOCK_FRAMES * header.frameBytes)
+            val byteBuffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN)
+            var frame = 0L
+            var remaining = total
+            while (remaining > 0) {
+                val n = min(BLOCK_FRAMES.toLong(), remaining).toInt()
+                readFully(input, buffer, n * header.frameBytes)
+                for (f in 0 until n) {
+                    var peak = 0
+                    for (c in 0 until header.channels) {
+                        peak = max(peak, abs(byteBuffer.getShort((f * header.channels + c) * BYTES_PER_SAMPLE).toInt()))
+                    }
+                    val bin = ((frame + f) * bins / total).toInt().coerceIn(0, bins - 1)
+                    val value = peak / 32768f
+                    if (value > peaks[bin]) {
+                        peaks[bin] = value
+                    }
+                }
+                frame += n
+                remaining -= n
+            }
+            return peaks
         }
     }
 

@@ -35,6 +35,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.lineageos.recorder.ListActivity
 import org.lineageos.recorder.R
+import org.lineageos.recorder.PlaybackActivity
 import org.lineageos.recorder.RecorderActivity
 import org.lineageos.recorder.models.Marker
 import org.lineageos.recorder.models.MarkerType
@@ -559,7 +560,8 @@ class SoundRecorderService : LifecycleService() {
 
         val playPIntent = PendingIntent.getActivity(
             this, 0,
-            RecordIntentHelper.getOpenIntent(fileUri, mimeType),
+            Intent(this, PlaybackActivity::class.java)
+                .putExtra(PlaybackActivity.EXTRA_URI, uri),
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 

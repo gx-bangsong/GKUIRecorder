@@ -179,4 +179,19 @@
     <string name="quick_share_system">System share</string>
     <string name="export_done">Exported to Download/Recorder exports</string>
     <string name="export_failed">Export failed</string>
+
+    <!-- Playback screen -->
+    <string name="playback_add_important">+ Important</string>
+    <string name="playback_add_segment">+ Segment</string>
+    <string name="playback_skip_back">-10s</string>
+    <string name="playback_skip_forward">+10s</string>
+    <string name="playback_time">%1$s / %2$s</string>
+    <string name="playback_chapter_title">Chapter %1$d</string>
+    <string name="playback_chapter_range">%1$s - %2$s · Important %3$d</string>
+    <string name="playback_no_markers">No markers yet. Use the buttons above to mark important moments or split chapters.</string>
+    <string name="playback_delete_marker_title">Delete marker</string>
+    <string name="playback_delete_marker_message">Delete this marker?</string>
+    <string name="playback_delete_segment_message">Deleting a segment marker merges this chapter into the previous one.</string>
+    <string name="playback_load_failed">Cannot open this recording</string>
+    <string name="playback_waveform">Waveform. Tap or drag to seek</string>
 </resources>
