@@ -9,13 +9,16 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import org.lineageos.recorder.ui.FieldDialog
+import org.lineageos.recorder.utils.EngineClient
 import org.lineageos.recorder.utils.EngineDownloader
+import org.lineageos.recorder.utils.EngineInstaller
 import org.lineageos.recorder.utils.FileNameTemplate
 import org.lineageos.recorder.utils.PermissionManager
 import org.lineageos.recorder.utils.PreferencesManager
@@ -87,10 +90,17 @@ class DialogActivity : AppCompatActivity() {
 
     private fun refreshEngineStatus(dialog: android.app.Dialog) {
         val text = dialog.findViewById<TextView>(R.id.engineStatusText) ?: return
+        val installed = EngineClient.isInstalled(this)
+        val pending = EngineDownloader.isDownloaded(this) && !installed
+        dialog.findViewById<View>(R.id.engineInstallButton)?.apply {
+            visibility = if (pending) View.VISIBLE else View.GONE
+            setOnClickListener { installEngine() }
+        }
         text.setText(
             when {
+                installed -> R.string.engine_status_installed
+                pending -> R.string.engine_status_downloaded
                 preferences.engineUrl.isBlank() -> R.string.engine_status_unset
-                EngineDownloader.isInstalled(this) -> R.string.engine_status_installed
                 else -> R.string.engine_status_missing
             }
         )
@@ -101,7 +111,9 @@ class DialogActivity : AppCompatActivity() {
 
     private fun startEngineDownloadIfNeeded(dialog: android.app.Dialog) {
         val url = preferences.engineUrl
-        if (url.isBlank() || engineDownloading || EngineDownloader.isInstalled(this)) {
+        if (url.isBlank() || engineDownloading || EngineClient.isInstalled(this) ||
+            EngineDownloader.isDownloaded(this)
+        ) {
             return
         }
         engineDownloading = true
@@ -118,10 +130,20 @@ class DialogActivity : AppCompatActivity() {
             }
             engineDownloading = false
             result.onSuccess {
-                text?.setText(R.string.engine_status_installed)
+                settingsDialog?.let { refreshEngineStatus(it) }
             }.onFailure {
                 text?.setText(R.string.engine_status_failed)
             }
+        }
+    }
+
+    private fun installEngine() {
+        EngineInstaller.install(this, EngineDownloader.installedFile(this))?.let { error ->
+            Toast.makeText(
+                this,
+                getString(R.string.engine_install_failed, error),
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
 
@@ -133,11 +155,21 @@ class DialogActivity : AppCompatActivity() {
                 FieldDialog.Field(
                     label = getString(R.string.engine_url),
                     value = preferences.engineUrl,
-                    hint = "https://example.com/engine.pkg",
+                    hint = "https://example.com/recorder-engine.apk",
                 ),
                 FieldDialog.Field(
                     label = getString(R.string.engine_sha256),
                     value = preferences.engineSha256,
+                    hint = getString(R.string.engine_sha256_hint),
+                ),
+                FieldDialog.Field(
+                    label = getString(R.string.engine_model_url),
+                    value = preferences.engineModelUrl,
+                    hint = "https://example.com/sensevoice-zh.zip",
+                ),
+                FieldDialog.Field(
+                    label = getString(R.string.engine_model_sha256),
+                    value = preferences.engineModelSha256,
                     hint = getString(R.string.engine_sha256_hint),
                 ),
             ),
@@ -145,143 +177,13 @@ class DialogActivity : AppCompatActivity() {
         ) { values ->
             preferences.engineUrl = values[0]
             preferences.engineSha256 = values[1]
+            preferences.engineModelUrl = values[2]
+            preferences.engineModelSha256 = values[3]
             // Show the new status and start the download right away
             settingsDialog?.let {
                 refreshEngineStatus(it)
                 startEngineDownloadIfNeeded(it)
             }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PermissionManager.REQUEST_CODE) {
-            if (permissionManager.hasLocationPermission()) {
-                toggleAfterPermissionRequest()
-            } else {
-                permissionManager.onLocationPermissionDenied()
-                locationSwitch.isChecked = false
-            }
-        }
-    }
-
-    private fun setupLocationSwitch(
-        locationSwitch: MaterialSwitch,
-        isRecording: Boolean
-    ) {
-        val tagWithLocation = if (preferences.tagWithLocation) {
-            if (permissionManager.hasLocationPermission()) {
-                true
-            } else {
-                // Permission revoked -> disabled feature
-                preferences.tagWithLocation = false
-                false
-            }
-        } else {
-            false
-        }
-        locationSwitch.isChecked = tagWithLocation
-        if (isRecording) {
-            locationSwitch.isEnabled = false
-        } else {
-            locationSwitch.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                if (isChecked) {
-                    if (permissionManager.hasLocationPermission()) {
-                        preferences.tagWithLocation = true
-                    } else {
-                        permissionManager.requestLocationPermission()
-                    }
-                } else {
-                    preferences.tagWithLocation = false
-                }
-            }
-        }
-    }
-
-    private fun setupHighQualitySwitch(
-        highQualitySwitch: MaterialSwitch,
-        isRecording: Boolean
-    ) {
-        val highQuality = preferences.recordInHighQuality
-        highQualitySwitch.isChecked = highQuality
-        if (isRecording) {
-            highQualitySwitch.isEnabled = false
-        } else {
-            highQualitySwitch.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                preferences.recordInHighQuality = isChecked
-            }
-        }
-    }
-
-    private fun toggleAfterPermissionRequest() {
-        locationSwitch.isChecked = true
-        preferences.tagWithLocation = true
-    }
-
-    private fun showFilenameTemplateSettings() {
-        FieldDialog.show(
-            this,
-            getString(R.string.settings_filename_template),
-            listOf(
-                FieldDialog.Field(
-                    label = getString(R.string.settings_filename_template_label),
-                    value = preferences.fileNameTemplate,
-                    hint = FileNameTemplate.DEFAULT,
-                ),
-            ),
-            message = getString(R.string.settings_filename_template_hint),
-        ) { values ->
-            preferences.fileNameTemplate = values[0]
-        }
-    }
-
-    private fun showStorageFolderSettings() {
-        FieldDialog.show(
-            this,
-            getString(R.string.settings_storage_folder),
-            listOf(
-                FieldDialog.Field(
-                    label = getString(R.string.settings_storage_folder_label),
-                    value = preferences.storageFolder,
-                    hint = PreferencesManager.DEFAULT_STORAGE_FOLDER,
-                ),
-            ),
-            message = getString(R.string.settings_storage_folder_hint),
-        ) { values ->
-            preferences.storageFolder = values[0]
-        }
-    }
-
-    private fun showTranscriptionSettings() {
-        FieldDialog.show(
-            this,
-            getString(R.string.settings_transcription),
-            listOf(
-                FieldDialog.Field(
-                    label = getString(R.string.transcription_endpoint),
-                    value = preferences.transcriptionEndpoint,
-                    hint = "http://192.168.1.10:8000/v1",
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.transcription_api_key),
-                    value = preferences.transcriptionApiKey,
-                    secret = true,
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.transcription_model),
-                    value = preferences.transcriptionModel,
-                    hint = "FunAudioLLM/SenseVoiceSmall",
-                ),
-            ),
-            message = getString(R.string.transcription_hint),
-        ) { values ->
-            preferences.transcriptionEndpoint = values[0]
-            preferences.transcriptionApiKey = values[1]
-            preferences.transcriptionModel = values[2]
         }
     }
 

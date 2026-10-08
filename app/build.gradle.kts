@@ -25,6 +25,10 @@ android {
         versionName = "1.1"
     }
 
+    buildFeatures {
+        aidl = true
+    }
+
     buildTypes {
         getByName("release") {
             // Enables code shrinking, obfuscation, and optimization.
