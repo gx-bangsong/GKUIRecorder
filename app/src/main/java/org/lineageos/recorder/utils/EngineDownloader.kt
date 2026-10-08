@@ -14,19 +14,18 @@ import java.net.URL
 import java.security.MessageDigest
 
 /**
- * Downloads the offline speech engine APK on demand. It is stored in the app's private
- * files directory and installed separately, so it does not change this APK's size.
- * Nothing is downloaded unless the user has configured a URL.
+ * Downloads the offline speech engine package on demand. The package is stored in the
+ * app's private files directory, so it does not change the APK size. Nothing is
+ * downloaded unless the user has configured a URL.
  */
 object EngineDownloader {
     private const val DIR = "engine"
-    private const val FILE = "engine.apk"
+    private const val FILE = "engine.pkg"
     private const val BUFFER_SIZE = 64 * 1024
 
     fun installedFile(context: Context): File = File(File(context.filesDir, DIR), FILE)
 
-    /** True when the APK has been downloaded and is waiting to be installed. */
-    fun isDownloaded(context: Context): Boolean = installedFile(context).isFile
+    fun isInstalled(context: Context): Boolean = installedFile(context).isFile
 
     /**
      * Downloads [url] into the engine file. [onProgress] receives 0..100 when the

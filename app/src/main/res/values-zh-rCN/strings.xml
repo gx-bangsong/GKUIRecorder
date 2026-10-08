@@ -138,17 +138,10 @@
     <string name="engine_url">引擎包下载地址</string>
     <string name="engine_sha256">SHA-256（可选）</string>
     <string name="engine_sha256_hint">十六进制摘要；留空则跳过校验</string>
-    <string name="engine_hint">打开设置页时自动下载引擎 APK 和模型，保存在应用私有存储中，不占用本 APK 体积。地址留空即关闭。</string>
+    <string name="engine_hint">打开设置页时自动下载引擎，保存在应用私有存储中，不占用 APK 体积。地址留空即关闭。</string>
     <string name="engine_status_unset">引擎：未配置</string>
     <string name="engine_status_missing">引擎：未安装，打开设置页时下载</string>
     <string name="engine_status_downloading">正在下载引擎：%1$d%%</string>
     <string name="engine_status_installed">引擎：已安装</string>
     <string name="engine_status_failed">引擎下载失败，请检查地址后重试</string>
-
-    <!-- Offline engine APK and model -->
-    <string name="engine_status_downloaded">引擎：已下载，点击“安装引擎”完成安装</string>
-    <string name="engine_install">安装引擎</string>
-    <string name="engine_install_failed">无法安装引擎：%1$s</string>
-    <string name="engine_model_url">模型包地址（zip）</string>
-    <string name="engine_model_sha256">模型 SHA-256（可选）</string>
 </resources>

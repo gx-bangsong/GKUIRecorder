@@ -127,20 +127,6 @@ class PreferencesManager(context: Context) {
             preferences.edit().putString(PREF_ENGINE_SHA256, value.trim()).apply()
         }
 
-    /** URL of the speech model package the engine downloads (zip). Empty means not set. */
-    var engineModelUrl: String
-        get() = preferences.getString(PREF_ENGINE_MODEL_URL, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_ENGINE_MODEL_URL, value.trim()).apply()
-        }
-
-    /** Optional SHA-256 of the model package. */
-    var engineModelSha256: String
-        get() = preferences.getString(PREF_ENGINE_MODEL_SHA256, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_ENGINE_MODEL_SHA256, value.trim()).apply()
-        }
-
     /** Markers of a recording, keyed by its MediaStore uri. */
     fun getMarkers(uri: String): List<Marker> {
         val json = preferences.getString(PREF_MARKERS_PREFIX + uri, null) ?: return emptyList()
@@ -179,8 +165,6 @@ class PreferencesManager(context: Context) {
         private const val PREF_CALL_RECORDING_AUTO = "call_recording_auto"
         private const val PREF_ENGINE_URL = "engine_url"
         private const val PREF_ENGINE_SHA256 = "engine_sha256"
-        private const val PREF_ENGINE_MODEL_URL = "engine_model_url"
-        private const val PREF_ENGINE_MODEL_SHA256 = "engine_model_sha256"
         private const val PREF_MARKERS_PREFIX = "markers:"
         private const val PREF_TRANSCRIPT_PREFIX = "transcript:"
     }

@@ -56,7 +56,6 @@ import org.lineageos.recorder.repository.RecordingsRepository
 import org.lineageos.recorder.ui.FieldDialog
 import org.lineageos.recorder.utils.AudioEditor
 import org.lineageos.recorder.utils.ExportHelper
-import org.lineageos.recorder.utils.EngineClient
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.RecordIntentHelper
 import org.lineageos.recorder.utils.SystemAppHelper
@@ -457,8 +456,7 @@ class ListActivity : AppCompatActivity() {
             apiKey = preferences.transcriptionApiKey,
             model = preferences.transcriptionModel,
         )
-        val useEngine = !config.isConfigured && EngineClient.isInstalled(this)
-        if (!config.isConfigured && !useEngine) {
+        if (!config.isConfigured) {
             MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.transcribe_not_configured)
                 .setPositiveButton(android.R.string.ok, null)
@@ -470,19 +468,9 @@ class ListActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    if (useEngine) {
-                        EngineClient.transcribe(
-                            this@ListActivity,
-                            recording.uri,
-                            "zh",
-                            preferences.engineModelUrl,
-                            preferences.engineModelSha256,
-                        )
-                    } else {
-                        TranscriptionClient.transcribe(
-                            this@ListActivity, recording.uri, recording.title, config,
-                        )
-                    }
+                    TranscriptionClient.transcribe(
+                        this@ListActivity, recording.uri, recording.title, config,
+                    )
                 }
             }
             result.onSuccess { text ->

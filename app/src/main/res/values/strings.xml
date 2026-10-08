@@ -203,17 +203,10 @@
     <string name="engine_url">Engine package URL</string>
     <string name="engine_sha256">SHA-256 (optional)</string>
     <string name="engine_sha256_hint">Hex digest; leave empty to skip the check</string>
-    <string name="engine_hint">The engine APK and model are downloaded when you open settings and kept in app storage. They are not part of this APK. Leave the URL empty to turn this off.</string>
+    <string name="engine_hint">The engine is downloaded when you open settings and kept in app storage. It is not part of the APK. Leave the URL empty to turn this off.</string>
     <string name="engine_status_unset">Engine: not configured</string>
     <string name="engine_status_missing">Engine: not installed, downloading when settings open</string>
     <string name="engine_status_downloading">Downloading engine: %1$d%%</string>
     <string name="engine_status_installed">Engine: installed</string>
     <string name="engine_status_failed">Engine download failed. Check the URL and try again.</string>
-
-    <!-- Offline engine APK and model -->
-    <string name="engine_status_downloaded">Engine: downloaded. Tap Install engine to install it.</string>
-    <string name="engine_install">Install engine</string>
-    <string name="engine_install_failed">Cannot install the engine: %1$s</string>
-    <string name="engine_model_url">Model package URL (zip)</string>
-    <string name="engine_model_sha256">Model SHA-256 (optional)</string>
 </resources>
