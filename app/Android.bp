@@ -11,6 +11,7 @@ android_app {
 
     srcs: [
         "src/main/java/**/*.kt",
+        "src/main/aidl/**/*.aidl",
     ],
 
     product_specific: true,
