@@ -194,4 +194,19 @@
     <string name="playback_delete_segment_message">Deleting a segment marker merges this chapter into the previous one.</string>
     <string name="playback_load_failed">Cannot open this recording</string>
     <string name="playback_waveform">Waveform. Tap or drag to seek</string>
+
+    <!-- Call recording and offline engine -->
+    <string name="settings_call_recording">Call recording (system app only)</string>
+    <string name="call_recording_status_available">Available: this app is a system app with the capture permission. It turns on automatically the first time this is detected.</string>
+    <string name="call_recording_status_unavailable">Not available: needs to be installed in the system partition and granted CAPTURE_AUDIO_OUTPUT by privapp-permissions.</string>
+    <string name="settings_engine">Offline speech engine</string>
+    <string name="engine_url">Engine package URL</string>
+    <string name="engine_sha256">SHA-256 (optional)</string>
+    <string name="engine_sha256_hint">Hex digest; leave empty to skip the check</string>
+    <string name="engine_hint">The engine is downloaded when you open settings and kept in app storage. It is not part of the APK. Leave the URL empty to turn this off.</string>
+    <string name="engine_status_unset">Engine: not configured</string>
+    <string name="engine_status_missing">Engine: not installed, downloading when settings open</string>
+    <string name="engine_status_downloading">Downloading engine: %1$d%%</string>
+    <string name="engine_status_installed">Engine: installed</string>
+    <string name="engine_status_failed">Engine download failed. Check the URL and try again.</string>
 </resources>

@@ -99,6 +99,34 @@ class PreferencesManager(context: Context) {
             preferences.edit().putString(PREF_TRANSCRIPTION_MODEL, value.trim()).apply()
         }
 
+    /** User switch for call recording. Only usable when [SystemAppHelper.isCallRecordingAvailable]. */
+    var callRecordingEnabled: Boolean
+        get() = preferences.getBoolean(PREF_CALL_RECORDING, false)
+        set(value) {
+            preferences.edit().putBoolean(PREF_CALL_RECORDING, value).apply()
+        }
+
+    /** True once the automatic enable has run, so a user who turns it off keeps it off. */
+    var callRecordingAutoEnableDone: Boolean
+        get() = preferences.getBoolean(PREF_CALL_RECORDING_AUTO, false)
+        set(value) {
+            preferences.edit().putBoolean(PREF_CALL_RECORDING_AUTO, value).apply()
+        }
+
+    /** Download URL of the offline ASR engine package. Empty means not configured. */
+    var engineUrl: String
+        get() = preferences.getString(PREF_ENGINE_URL, "") ?: ""
+        set(value) {
+            preferences.edit().putString(PREF_ENGINE_URL, value.trim()).apply()
+        }
+
+    /** Optional SHA-256 of the engine package, checked after download. */
+    var engineSha256: String
+        get() = preferences.getString(PREF_ENGINE_SHA256, "") ?: ""
+        set(value) {
+            preferences.edit().putString(PREF_ENGINE_SHA256, value.trim()).apply()
+        }
+
     /** Markers of a recording, keyed by its MediaStore uri. */
     fun getMarkers(uri: String): List<Marker> {
         val json = preferences.getString(PREF_MARKERS_PREFIX + uri, null) ?: return emptyList()
@@ -133,6 +161,10 @@ class PreferencesManager(context: Context) {
         private const val PREF_TRANSCRIPTION_ENDPOINT = "transcription_endpoint"
         private const val PREF_TRANSCRIPTION_API_KEY = "transcription_api_key"
         private const val PREF_TRANSCRIPTION_MODEL = "transcription_model"
+        private const val PREF_CALL_RECORDING = "call_recording"
+        private const val PREF_CALL_RECORDING_AUTO = "call_recording_auto"
+        private const val PREF_ENGINE_URL = "engine_url"
+        private const val PREF_ENGINE_SHA256 = "engine_sha256"
         private const val PREF_MARKERS_PREFIX = "markers:"
         private const val PREF_TRANSCRIPT_PREFIX = "transcript:"
     }

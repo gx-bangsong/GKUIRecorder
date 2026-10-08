@@ -8,13 +8,18 @@ package org.lineageos.recorder
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import org.lineageos.recorder.ui.FieldDialog
+import org.lineageos.recorder.utils.EngineDownloader
 import org.lineageos.recorder.utils.FileNameTemplate
 import org.lineageos.recorder.utils.PermissionManager
 import org.lineageos.recorder.utils.PreferencesManager
+import org.lineageos.recorder.utils.SystemAppHelper
 
 class DialogActivity : AppCompatActivity() {
     // Views
@@ -52,6 +57,99 @@ class DialogActivity : AppCompatActivity() {
         }
         dialog.findViewById<View>(R.id.transcriptionButton)?.setOnClickListener {
             showTranscriptionSettings()
+        }
+
+        settingsDialog = dialog
+        setupCallRecordingSwitch(dialog)
+
+        dialog.findViewById<View>(R.id.engineButton)?.setOnClickListener {
+            showEngineSettings()
+        }
+        // Download on opening settings, if a URL is configured and the engine is missing
+        refreshEngineStatus(dialog)
+        startEngineDownloadIfNeeded(dialog)
+    }
+
+    private fun setupCallRecordingSwitch(dialog: android.app.Dialog) {
+        val available = SystemAppHelper.isCallRecordingAvailable(this)
+        val switch = dialog.findViewById<MaterialSwitch>(R.id.callRecordingSwitch) ?: return
+        val status = dialog.findViewById<TextView>(R.id.callRecordingStatusText)
+        switch.isChecked = available && preferences.callRecordingEnabled
+        switch.isEnabled = available
+        status?.setText(
+            if (available) R.string.call_recording_status_available
+            else R.string.call_recording_status_unavailable
+        )
+        switch.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            preferences.callRecordingEnabled = isChecked
+        }
+    }
+
+    private fun refreshEngineStatus(dialog: android.app.Dialog) {
+        val text = dialog.findViewById<TextView>(R.id.engineStatusText) ?: return
+        text.setText(
+            when {
+                preferences.engineUrl.isBlank() -> R.string.engine_status_unset
+                EngineDownloader.isInstalled(this) -> R.string.engine_status_installed
+                else -> R.string.engine_status_missing
+            }
+        )
+    }
+
+    private var engineDownloading = false
+    private var settingsDialog: android.app.Dialog? = null
+
+    private fun startEngineDownloadIfNeeded(dialog: android.app.Dialog) {
+        val url = preferences.engineUrl
+        if (url.isBlank() || engineDownloading || EngineDownloader.isInstalled(this)) {
+            return
+        }
+        engineDownloading = true
+        val text = dialog.findViewById<TextView>(R.id.engineStatusText)
+        lifecycleScope.launch {
+            val result = EngineDownloader.download(
+                this@DialogActivity,
+                url,
+                preferences.engineSha256,
+            ) { percent ->
+                runOnUiThread {
+                    text?.text = getString(R.string.engine_status_downloading, percent)
+                }
+            }
+            engineDownloading = false
+            result.onSuccess {
+                text?.setText(R.string.engine_status_installed)
+            }.onFailure {
+                text?.setText(R.string.engine_status_failed)
+            }
+        }
+    }
+
+    private fun showEngineSettings() {
+        FieldDialog.show(
+            this,
+            getString(R.string.settings_engine),
+            listOf(
+                FieldDialog.Field(
+                    label = getString(R.string.engine_url),
+                    value = preferences.engineUrl,
+                    hint = "https://example.com/engine.pkg",
+                ),
+                FieldDialog.Field(
+                    label = getString(R.string.engine_sha256),
+                    value = preferences.engineSha256,
+                    hint = getString(R.string.engine_sha256_hint),
+                ),
+            ),
+            message = getString(R.string.engine_hint),
+        ) { values ->
+            preferences.engineUrl = values[0]
+            preferences.engineSha256 = values[1]
+            // Show the new status and start the download right away
+            settingsDialog?.let {
+                refreshEngineStatus(it)
+                startEngineDownloadIfNeeded(it)
+            }
         }
     }
 

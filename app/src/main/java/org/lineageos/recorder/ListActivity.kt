@@ -58,6 +58,7 @@ import org.lineageos.recorder.utils.AudioEditor
 import org.lineageos.recorder.utils.ExportHelper
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.RecordIntentHelper
+import org.lineageos.recorder.utils.SystemAppHelper
 import org.lineageos.recorder.utils.TranscriptionClient
 import org.lineageos.recorder.viewmodels.RecordingsViewModel
 
@@ -201,6 +202,7 @@ class ListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_list)
+        SystemAppHelper.autoEnableCallRecordingOnce(this, PreferencesManager(this))
 
         // Setup edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(window, false)

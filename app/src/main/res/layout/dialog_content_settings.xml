@@ -21,6 +21,21 @@
         android:layout_height="wrap_content"
         android:text="@string/settings_quality_high" />
 
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/callRecordingSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_call_recording" />
+
+    <TextView
+        android:id="@+id/callRecordingStatusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingBottom="8dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="13sp" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/filenameTemplateButton"
         style="@style/Widget.Material3.Button.TextButton"
@@ -44,5 +59,22 @@
         android:layout_height="wrap_content"
         android:gravity="start|center_vertical"
         android:text="@string/settings_transcription" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/engineButton"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/settings_engine" />
+
+    <TextView
+        android:id="@+id/engineStatusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingBottom="8dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="13sp" />
 
 </LinearLayout>
