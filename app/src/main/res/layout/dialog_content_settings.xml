@@ -21,4 +21,28 @@
         android:layout_height="wrap_content"
         android:text="@string/settings_quality_high" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/filenameTemplateButton"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/settings_filename_template" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/storageFolderButton"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/settings_storage_folder" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/transcriptionButton"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="@string/settings_transcription" />
+
 </LinearLayout>

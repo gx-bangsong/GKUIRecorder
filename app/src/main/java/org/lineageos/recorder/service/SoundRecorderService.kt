@@ -36,6 +36,8 @@ import kotlinx.coroutines.launch
 import org.lineageos.recorder.ListActivity
 import org.lineageos.recorder.R
 import org.lineageos.recorder.RecorderActivity
+import org.lineageos.recorder.models.Marker
+import org.lineageos.recorder.models.MarkerType
 import org.lineageos.recorder.models.UiStatus
 import org.lineageos.recorder.repository.RecordingsRepository
 import org.lineageos.recorder.utils.PreferencesManager
@@ -86,6 +88,7 @@ class SoundRecorderService : LifecycleService() {
     private var elapsedTimeTimer: Timer? = null
     private var isPaused = false
     private var elapsedTime = 0L
+    private val markers = mutableListOf<Marker>()
 
     private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -143,6 +146,18 @@ class SoundRecorderService : LifecycleService() {
 
                 ACTION_RESUME -> if (resumeRecording()) START_STICKY else START_NOT_STICKY
 
+                ACTION_MARK_IMPORTANT -> if (addMarker(MarkerType.IMPORTANT)) {
+                    START_STICKY
+                } else {
+                    START_NOT_STICKY
+                }
+
+                ACTION_MARK_SEGMENT -> if (addMarker(MarkerType.SEGMENT)) {
+                    START_STICKY
+                } else {
+                    START_NOT_STICKY
+                }
+
                 else -> START_NOT_STICKY
             }
         } ?: START_NOT_STICKY
@@ -171,6 +186,7 @@ class SoundRecorderService : LifecycleService() {
 
             isPaused = false
             elapsedTime = 0
+            markers.clear()
             try {
                 recorder.startRecording(file)
             } catch (e: IOException) {
@@ -200,6 +216,7 @@ class SoundRecorderService : LifecycleService() {
         stopTimers()
 
         val success = recorder.stopRecording()
+        val recordedMarkers = markers.toList()
 
         return recordFile?.takeIf { success }?.let {
             lifecycleScope.launch {
@@ -208,6 +225,7 @@ class SoundRecorderService : LifecycleService() {
                     it,
                     recorder.mimeType
                 )?.also { uri ->
+                    preferencesManager.saveMarkers(uri, recordedMarkers)
                     onRecordCompleted(uri)
                 } ?: run {
                     Log.e(TAG, "Failed to save recording")
@@ -274,6 +292,21 @@ class SoundRecorderService : LifecycleService() {
             Log.e(TAG, "Resuming null recorder")
             false
         }
+    }
+
+    /**
+     * Adds a marker at the current recording position. Works while recording or paused.
+     */
+    private fun addMarker(type: MarkerType): Boolean {
+        if (recorder == null) {
+            Log.w(TAG, "Marker requested without an active recording")
+            return false
+        }
+
+        markers.add(Marker(elapsedTime * 1000L, type))
+        notificationManager.notify(NOTIFICATION_ID, createRecordingNotification(elapsedTime))
+
+        return true
     }
 
     private fun onRecordCompleted(uri: String?) {
@@ -466,6 +499,17 @@ class SoundRecorderService : LifecycleService() {
             .setContentText(getString(R.string.sound_notification_message, duration))
             .setSmallIcon(R.drawable.ic_mic)
             .setContentIntent(pi)
+            // Show the controls on the lock screen as well
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        if (markers.isNotEmpty()) {
+            nb.setSubText(
+                getString(
+                    R.string.sound_marker_count,
+                    markers.count { it.type == MarkerType.IMPORTANT },
+                    markers.count { it.type == MarkerType.SEGMENT },
+                )
+            )
+        }
         if (isPaused) {
             val resumePIntent = PendingIntent.getService(
                 this, 0,
@@ -485,6 +529,13 @@ class SoundRecorderService : LifecycleService() {
             nb.setContentTitle(getString(R.string.sound_recording_title_working))
             nb.addAction(R.drawable.ic_pause, getString(R.string.pause), pausePIntent)
         }
+        val markPIntent = PendingIntent.getService(
+            this, 0,
+            Intent(this, SoundRecorderService::class.java)
+                .setAction(ACTION_MARK_IMPORTANT),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        nb.addAction(R.drawable.ic_bookmark, getString(R.string.marker_important), markPIntent)
         nb.addAction(R.drawable.ic_stop, getString(R.string.stop), stopPIntent)
         return nb.build()
     }
@@ -581,6 +632,8 @@ class SoundRecorderService : LifecycleService() {
         const val ACTION_STOP = "STOP"
         const val ACTION_PAUSE = "PAUSE"
         const val ACTION_RESUME = "RESUME"
+        const val ACTION_MARK_IMPORTANT = "MARK_IMPORTANT"
+        const val ACTION_MARK_SEGMENT = "MARK_SEGMENT"
 
         const val MSG_REGISTER_CLIENT = 0
         const val MSG_UNREGISTER_CLIENT = 1

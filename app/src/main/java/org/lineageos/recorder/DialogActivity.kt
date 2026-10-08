@@ -6,10 +6,13 @@
 package org.lineageos.recorder
 
 import android.os.Bundle
+import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
+import org.lineageos.recorder.ui.FieldDialog
+import org.lineageos.recorder.utils.FileNameTemplate
 import org.lineageos.recorder.utils.PermissionManager
 import org.lineageos.recorder.utils.PreferencesManager
 
@@ -40,6 +43,16 @@ class DialogActivity : AppCompatActivity() {
 
         highQualitySwitch = dialog.findViewById(R.id.highQualitySwitch)!!
         setupHighQualitySwitch(highQualitySwitch, isRecording)
+
+        dialog.findViewById<View>(R.id.filenameTemplateButton)?.setOnClickListener {
+            showFilenameTemplateSettings()
+        }
+        dialog.findViewById<View>(R.id.storageFolderButton)?.setOnClickListener {
+            showStorageFolderSettings()
+        }
+        dialog.findViewById<View>(R.id.transcriptionButton)?.setOnClickListener {
+            showTranscriptionSettings()
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -109,6 +122,69 @@ class DialogActivity : AppCompatActivity() {
     private fun toggleAfterPermissionRequest() {
         locationSwitch.isChecked = true
         preferences.tagWithLocation = true
+    }
+
+    private fun showFilenameTemplateSettings() {
+        FieldDialog.show(
+            this,
+            getString(R.string.settings_filename_template),
+            listOf(
+                FieldDialog.Field(
+                    label = getString(R.string.settings_filename_template_label),
+                    value = preferences.fileNameTemplate,
+                    hint = FileNameTemplate.DEFAULT,
+                ),
+            ),
+            message = getString(R.string.settings_filename_template_hint),
+        ) { values ->
+            preferences.fileNameTemplate = values[0]
+        }
+    }
+
+    private fun showStorageFolderSettings() {
+        FieldDialog.show(
+            this,
+            getString(R.string.settings_storage_folder),
+            listOf(
+                FieldDialog.Field(
+                    label = getString(R.string.settings_storage_folder_label),
+                    value = preferences.storageFolder,
+                    hint = PreferencesManager.DEFAULT_STORAGE_FOLDER,
+                ),
+            ),
+            message = getString(R.string.settings_storage_folder_hint),
+        ) { values ->
+            preferences.storageFolder = values[0]
+        }
+    }
+
+    private fun showTranscriptionSettings() {
+        FieldDialog.show(
+            this,
+            getString(R.string.settings_transcription),
+            listOf(
+                FieldDialog.Field(
+                    label = getString(R.string.transcription_endpoint),
+                    value = preferences.transcriptionEndpoint,
+                    hint = "http://192.168.1.10:8000/v1",
+                ),
+                FieldDialog.Field(
+                    label = getString(R.string.transcription_api_key),
+                    value = preferences.transcriptionApiKey,
+                    secret = true,
+                ),
+                FieldDialog.Field(
+                    label = getString(R.string.transcription_model),
+                    value = preferences.transcriptionModel,
+                    hint = "FunAudioLLM/SenseVoiceSmall",
+                ),
+            ),
+            message = getString(R.string.transcription_hint),
+        ) { values ->
+            preferences.transcriptionEndpoint = values[0]
+            preferences.transcriptionApiKey = values[1]
+            preferences.transcriptionModel = values[2]
+        }
     }
 
     companion object {

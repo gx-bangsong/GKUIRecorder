@@ -124,4 +124,59 @@
         <item quantity="one">%d selected</item>
         <item quantity="other">%d selected</item>
     </plurals>
+
+    <!-- Chinese transcription / editing / marker features -->
+    <string name="sound_record_default_name">Sound record</string>
+    <string name="marker_important">Important</string>
+    <string name="marker_segment">Segment</string>
+    <string name="marker_important_toast">Important marker added</string>
+    <string name="marker_segment_toast">Segment marker added</string>
+    <string name="sound_marker_count">Important %1$d · Segment %2$d</string>
+    <string name="save">Save</string>
+    <string name="settings_filename_template">Filename template</string>
+    <string name="settings_filename_template_label">Template</string>
+    <string name="settings_filename_template_hint">Placeholders: {loc} location or default name, {yyyy} year, {MM} month, {dd} day, {HH} hour, {mm} minute, {ss} second</string>
+    <string name="settings_storage_folder">Storage folder</string>
+    <string name="settings_storage_folder_label">Folder name under Recordings</string>
+    <string name="settings_storage_folder_hint">New recordings are saved to Recordings/your-folder-name. Existing recordings are not moved.</string>
+    <string name="settings_transcription">Speech-to-text service</string>
+    <string name="transcription_endpoint">API base URL (OpenAI compatible)</string>
+    <string name="transcription_api_key">API key (optional)</string>
+    <string name="transcription_model">Model name (optional)</string>
+    <string name="transcription_hint">Leave the URL empty to turn this off. Audio is only sent to the URL you enter. A LAN server such as faster-whisper-server works offline.</string>
+    <string name="edit_audio">Edit audio</string>
+    <string name="transcribe">Speech to text</string>
+    <string name="markers">Markers</string>
+    <string name="quick_share">Share to apps</string>
+    <string name="export">Export to Downloads</string>
+    <string name="edit_title">Edit audio</string>
+    <string name="edit_denoise">Noise reduction</string>
+    <string name="edit_gain">Volume boost +6 dB</string>
+    <string name="edit_trim">Trim / cut</string>
+    <string name="edit_wav_only">Editing only works for high-quality WAV recordings. Enable high-quality recording in Settings and record again.</string>
+    <string name="edit_processing">Processing...</string>
+    <string name="edit_done">Saved as a new recording</string>
+    <string name="edit_failed">Failed to process the recording</string>
+    <string name="suffix_denoise">Denoised</string>
+    <string name="suffix_gain">Boosted</string>
+    <string name="suffix_trim">Trimmed</string>
+    <string name="trim_start">Start (seconds)</string>
+    <string name="trim_end">End (seconds, empty = end of recording)</string>
+    <string name="trim_hint">For example start 12.5 and end 90, in seconds.</string>
+    <string name="trim_invalid">Invalid trim range</string>
+    <string name="markers_title">Markers</string>
+    <string name="markers_empty">This recording has no markers</string>
+    <string name="transcribe_not_configured">Set up a speech-to-text service in Settings first</string>
+    <string name="transcribe_running">Transcribing...</string>
+    <string name="transcribe_failed">Transcription failed: %1$s</string>
+    <string name="transcript_title">Transcript</string>
+    <string name="transcript_empty">The transcript is empty</string>
+    <string name="transcript_export">Export TXT</string>
+    <string name="transcript_redo">Redo</string>
+    <string name="transcript_copy">Copy</string>
+    <string name="copied">Copied</string>
+    <string name="quick_share_none">No WeChat, QQ or DingTalk found. Using system share instead.</string>
+    <string name="quick_share_system">System share</string>
+    <string name="export_done">Exported to Download/Recorder exports</string>
+    <string name="export_failed">Export failed</string>
 </resources>

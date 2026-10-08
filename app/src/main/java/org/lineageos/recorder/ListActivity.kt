@@ -5,6 +5,9 @@
 
 package org.lineageos.recorder
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.ActionMode
@@ -14,8 +17,10 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.text.format.DateUtils
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -35,14 +40,24 @@ import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.lineageos.recorder.ext.scheduleShowSoftInput
 import org.lineageos.recorder.list.RecordingItemCallbacks
 import org.lineageos.recorder.list.RecordingItemDetailsLookup
 import org.lineageos.recorder.list.RecordingsAdapter
+import org.lineageos.recorder.models.Marker
+import org.lineageos.recorder.models.MarkerType
 import org.lineageos.recorder.models.Recording
+import org.lineageos.recorder.repository.RecordingsRepository
+import org.lineageos.recorder.ui.FieldDialog
+import org.lineageos.recorder.utils.AudioEditor
+import org.lineageos.recorder.utils.ExportHelper
+import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.RecordIntentHelper
+import org.lineageos.recorder.utils.TranscriptionClient
 import org.lineageos.recorder.viewmodels.RecordingsViewModel
 
 class ListActivity : AppCompatActivity() {
@@ -75,6 +90,26 @@ class ListActivity : AppCompatActivity() {
 
         override fun onRename(recording: Recording) {
             this@ListActivity.onRename(recording)
+        }
+
+        override fun onEdit(recording: Recording) {
+            this@ListActivity.onEdit(recording)
+        }
+
+        override fun onTranscribe(recording: Recording) {
+            this@ListActivity.onTranscribe(recording)
+        }
+
+        override fun onMarkers(recording: Recording) {
+            this@ListActivity.onMarkers(recording)
+        }
+
+        override fun onQuickShare(recording: Recording) {
+            this@ListActivity.onQuickShare(recording)
+        }
+
+        override fun onExport(recording: Recording) {
+            this@ListActivity.onExport(recording)
         }
     }
     private val recordingsAdapter by lazy { RecordingsAdapter(model, recordingItemCallbacks) }
@@ -291,6 +326,248 @@ class ListActivity : AppCompatActivity() {
                 editText.requestFocus()
                 inputMethodManager.scheduleShowSoftInput(editText, 0)
             }
+    }
+
+    fun onEdit(recording: Recording) {
+        if (!recording.title.endsWith(".wav", ignoreCase = true)) {
+            Toast.makeText(this, R.string.edit_wav_only, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val items = arrayOf(
+            getString(R.string.edit_denoise),
+            getString(R.string.edit_gain),
+            getString(R.string.edit_trim),
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.edit_title)
+            .setItems(items) { _: DialogInterface?, which: Int ->
+                when (which) {
+                    0 -> runEdit(
+                        recording,
+                        AudioEditor.Options(denoise = true),
+                        getString(R.string.suffix_denoise),
+                    )
+
+                    1 -> runEdit(
+                        recording,
+                        AudioEditor.Options(gainDb = 6f),
+                        getString(R.string.suffix_gain),
+                    )
+
+                    2 -> promptTrim(recording)
+                    else -> Unit
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun promptTrim(recording: Recording) {
+        FieldDialog.show(
+            this,
+            getString(R.string.edit_trim),
+            listOf(
+                FieldDialog.Field(getString(R.string.trim_start), "0"),
+                FieldDialog.Field(getString(R.string.trim_end), ""),
+            ),
+            message = getString(R.string.trim_hint),
+        ) { values ->
+            val startSec = values[0].toDoubleOrNull()
+            val endText = values[1]
+            val endSec = if (endText.isBlank()) null else endText.toDoubleOrNull()
+            if (startSec == null || startSec < 0 || (endText.isNotBlank() && endSec == null) ||
+                (endSec != null && endSec <= startSec)
+            ) {
+                Toast.makeText(this, R.string.trim_invalid, Toast.LENGTH_SHORT).show()
+                return@show
+            }
+
+            runEdit(
+                recording,
+                AudioEditor.Options(
+                    trimStartMs = (startSec * 1000).toLong(),
+                    trimEndMs = endSec?.let { (it * 1000).toLong() } ?: Long.MAX_VALUE,
+                ),
+                getString(R.string.suffix_trim),
+            )
+        }
+    }
+
+    private fun runEdit(recording: Recording, options: AudioEditor.Options, suffix: String) {
+        Toast.makeText(this, R.string.edit_processing, Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val newUri = RecordingsRepository.editRecording(
+                this@ListActivity, recording.uri, recording.title, options, suffix,
+            )
+            Toast.makeText(
+                this@ListActivity,
+                if (newUri != null) R.string.edit_done else R.string.edit_failed,
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+    }
+
+    fun onMarkers(recording: Recording) {
+        val markers = PreferencesManager(this).getMarkers(recording.uri.toString())
+        if (markers.isEmpty()) {
+            Toast.makeText(this, R.string.markers_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val items = markers.map { marker: Marker ->
+            val typeLabel = getString(
+                if (marker.type == MarkerType.IMPORTANT) {
+                    R.string.marker_important
+                } else {
+                    R.string.marker_segment
+                }
+            )
+            "${DateUtils.formatElapsedTime(marker.timeMs / 1000)}  $typeLabel"
+        }.toTypedArray()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.markers_title)
+            .setItems(items, null)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    fun onTranscribe(recording: Recording) {
+        val cached = PreferencesManager(this).getTranscript(recording.uri.toString())
+        if (cached != null) {
+            showTranscript(recording, cached)
+        } else {
+            startTranscription(recording)
+        }
+    }
+
+    private fun startTranscription(recording: Recording) {
+        val preferences = PreferencesManager(this)
+        val config = TranscriptionClient.Config(
+            endpoint = preferences.transcriptionEndpoint,
+            apiKey = preferences.transcriptionApiKey,
+            model = preferences.transcriptionModel,
+        )
+        if (!config.isConfigured) {
+            MaterialAlertDialogBuilder(this)
+                .setMessage(R.string.transcribe_not_configured)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+
+        Toast.makeText(this, R.string.transcribe_running, Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    TranscriptionClient.transcribe(
+                        this@ListActivity, recording.uri, recording.title, config,
+                    )
+                }
+            }
+            result.onSuccess { text ->
+                PreferencesManager(this@ListActivity)
+                    .saveTranscript(recording.uri.toString(), text)
+                showTranscript(recording, text)
+            }.onFailure { e ->
+                MaterialAlertDialogBuilder(this@ListActivity)
+                    .setMessage(
+                        getString(
+                            R.string.transcribe_failed,
+                            e.message ?: e.javaClass.simpleName,
+                        )
+                    )
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
+        }
+    }
+
+    private fun showTranscript(recording: Recording, text: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.transcript_title)
+            .setMessage(text.ifBlank { getString(R.string.transcript_empty) })
+            .setPositiveButton(R.string.transcript_export) { _: DialogInterface?, _: Int ->
+                exportTranscript(recording, text)
+            }
+            .setNeutralButton(R.string.transcript_redo) { _: DialogInterface?, _: Int ->
+                startTranscription(recording)
+            }
+            .setNegativeButton(R.string.transcript_copy) { _: DialogInterface?, _: Int ->
+                copyToClipboard(text)
+            }
+            .show()
+    }
+
+    private fun exportTranscript(recording: Recording, text: String) {
+        val name = recording.title.substringBeforeLast('.', recording.title) + ".txt"
+        lifecycleScope.launch {
+            val uri = withContext(Dispatchers.IO) {
+                ExportHelper.saveTextToDownloads(this@ListActivity, name, text)
+            }
+            Toast.makeText(
+                this@ListActivity,
+                if (uri != null) R.string.export_done else R.string.export_failed,
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+    }
+
+    private fun copyToClipboard(text: String) {
+        getSystemService(ClipboardManager::class.java)?.setPrimaryClip(
+            ClipData.newPlainText(getString(R.string.transcript_title), text)
+        )
+        Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
+    }
+
+    fun onQuickShare(recording: Recording) {
+        val mimeType = ExportHelper.mimeTypeFor(recording.title)
+        val targets = ExportHelper.installedTargets(this)
+        if (targets.isEmpty()) {
+            Toast.makeText(this, R.string.quick_share_none, Toast.LENGTH_SHORT).show()
+            onShare(recording)
+            return
+        }
+
+        val labels = (targets.map { it.label } + getString(R.string.quick_share_system))
+            .toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.quick_share)
+            .setItems(labels) { _: DialogInterface?, which: Int ->
+                val target = targets.getOrNull(which)
+                try {
+                    if (target != null) {
+                        startActivity(
+                            ExportHelper.directShareIntent(recording.uri, mimeType, target)
+                        )
+                    } else {
+                        onShare(recording)
+                    }
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(this, R.string.quick_share_none, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    fun onExport(recording: Recording) {
+        lifecycleScope.launch {
+            val uri = withContext(Dispatchers.IO) {
+                ExportHelper.exportToDownloads(
+                    this@ListActivity,
+                    recording.uri,
+                    recording.title,
+                    ExportHelper.mimeTypeFor(recording.title),
+                )
+            }
+            Toast.makeText(
+                this@ListActivity,
+                if (uri != null) R.string.export_done else R.string.export_failed,
+                Toast.LENGTH_LONG,
+            ).show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
