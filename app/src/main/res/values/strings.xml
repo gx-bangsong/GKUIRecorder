@@ -217,4 +217,9 @@
     <string name="engine_model_url">Model package URL (zip)</string>
     <string name="engine_model_sha256">Model SHA-256 (optional)</string>
     <string name="call_recording_default_name">Call</string>
+    <!-- Playback layout -->
+    <string name="playback_tab_audio">Audio</string>
+    <string name="playback_tab_transcript">Transcript</string>
+    <string name="playback_remaining">-%1$s</string>
+    <string name="playback_no_transcript">No transcript yet. Transcribe it from the recording list.</string>
 </resources>

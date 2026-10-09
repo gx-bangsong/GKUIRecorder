@@ -152,4 +152,9 @@
     <string name="engine_model_url">模型包地址（zip）</string>
     <string name="engine_model_sha256">模型 SHA-256（可选）</string>
     <string name="call_recording_default_name">通话</string>
+    <!-- Playback layout -->
+    <string name="playback_tab_audio">音频</string>
+    <string name="playback_tab_transcript">转写</string>
+    <string name="playback_remaining">-%1$s</string>
+    <string name="playback_no_transcript">还没有转写。可以在录音列表中点击转写。</string>
 </resources>

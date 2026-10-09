@@ -12,9 +12,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.text.format.DateUtils
 import android.view.View
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,7 +27,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.lineageos.recorder.models.Marker
 import org.lineageos.recorder.models.MarkerType
@@ -37,23 +41,34 @@ import org.lineageos.recorder.ui.PlaybackWaveformView
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.WaveformLoader
 import java.io.IOException
+import kotlin.math.max
 
 /**
- * Player with waveform, markers and chapters (split by segment markers).
+ * Player laid out like the Pixel Recorder: title, waveform with markers and chapters,
+ * an Audio / Transcript switch, and the progress bar with transport controls at the bottom.
  */
 class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     // Views
+    private val rootLayout by lazy { findViewById<View>(R.id.rootLayout) }
     private val toolbar by lazy { findViewById<Toolbar>(R.id.toolbar) }
-    private val timeTextView by lazy { findViewById<TextView>(R.id.timeTextView) }
+    private val titleTextView by lazy { findViewById<TextView>(R.id.titleTextView) }
+    private val dateTextView by lazy { findViewById<TextView>(R.id.dateTextView) }
+    private val tabGroup by lazy { findViewById<MaterialButtonToggleGroup>(R.id.tabGroup) }
+    private val audioGroup by lazy { findViewById<View>(R.id.audioGroup) }
+    private val transcriptScroll by lazy { findViewById<View>(R.id.transcriptScroll) }
+    private val transcriptTextView by lazy { findViewById<TextView>(R.id.transcriptTextView) }
     private val waveformView by lazy { findViewById<PlaybackWaveformView>(R.id.waveformView) }
     private val addImportantButton by lazy { findViewById<MaterialButton>(R.id.addImportantButton) }
     private val addSegmentButton by lazy { findViewById<MaterialButton>(R.id.addSegmentButton) }
-    private val rewindButton by lazy { findViewById<MaterialButton>(R.id.rewindButton) }
-    private val forwardButton by lazy { findViewById<MaterialButton>(R.id.forwardButton) }
-    private val speedButton by lazy { findViewById<MaterialButton>(R.id.speedButton) }
-    private val playPauseImageView by lazy { findViewById<ImageView>(R.id.playPauseImageView) }
     private val emptyTextView by lazy { findViewById<TextView>(R.id.emptyTextView) }
     private val rowsRecyclerView by lazy { findViewById<RecyclerView>(R.id.rowsRecyclerView) }
+    private val progressSlider by lazy { findViewById<Slider>(R.id.progressSlider) }
+    private val currentTimeTextView by lazy { findViewById<TextView>(R.id.currentTimeTextView) }
+    private val remainingTimeTextView by lazy { findViewById<TextView>(R.id.remainingTimeTextView) }
+    private val rewindButton by lazy { findViewById<FloatingActionButton>(R.id.rewindButton) }
+    private val forwardButton by lazy { findViewById<FloatingActionButton>(R.id.forwardButton) }
+    private val playPauseButton by lazy { findViewById<FloatingActionButton>(R.id.playPauseImageView) }
+    private val speedButton by lazy { findViewById<MaterialButton>(R.id.speedButton) }
 
     private val preferences by lazy { PreferencesManager(this) }
     private val adapter by lazy {
@@ -72,6 +87,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private var uri: Uri? = null
     private var recordingTitle = ""
     private var prepared = false
+    private var seeking = false
     private var durationMs = 0L
     private val markers = mutableListOf<Marker>()
     private var speedIndex = 0
@@ -87,8 +103,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         }
         uri = parsed
 
-        // targetSdk 36 draws edge-to-edge: keep the toolbar and content below the system bars
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById<View>(R.id.rootLayout)) { view, insets ->
+        // targetSdk 36 draws edge-to-edge: keep everything below the system bars
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
@@ -96,11 +112,24 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title = ""
 
         recordingTitle = intent.getStringExtra(EXTRA_TITLE)
             ?: displayNameOf(parsed)
             ?: getString(R.string.sound_record_default_name)
-        title = recordingTitle
+        titleTextView.text = recordingTitle.substringBeforeLast('.')
+
+        val dateAdded = dateAddedOf(parsed)
+        dateTextView.isVisible = dateAdded != null
+        if (dateAdded != null) {
+            dateTextView.text = DateUtils.formatDateTime(
+                this,
+                dateAdded * 1000L,
+                DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_ABBREV_WEEKDAY or
+                    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_MONTH or
+                    DateUtils.FORMAT_SHOW_TIME,
+            )
+        }
 
         markers.addAll(preferences.getMarkers(parsed.toString()))
 
@@ -110,10 +139,31 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         waveformView.onSeek = { fraction -> seekTo((fraction * durationMs).toLong()) }
         addImportantButton.setOnClickListener { addMarker(MarkerType.IMPORTANT) }
         addSegmentButton.setOnClickListener { addMarker(MarkerType.SEGMENT) }
-        playPauseImageView.setOnClickListener { togglePlay() }
+        playPauseButton.setOnClickListener { togglePlay() }
         rewindButton.setOnClickListener { seekTo(currentPosition() - SKIP_MS) }
         forwardButton.setOnClickListener { seekTo(currentPosition() + SKIP_MS) }
         speedButton.setOnClickListener { cycleSpeed() }
+
+        progressSlider.addOnChangeListener(Slider.OnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                seekTo(value.toLong())
+            }
+        })
+        progressSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                seeking = true
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                seeking = false
+            }
+        })
+
+        tabGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                showTab(transcript = checkedId == R.id.tabTranscriptButton)
+            }
+        }
 
         loadPlayer(parsed)
         refreshRows()
@@ -174,7 +224,11 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     private fun onPrepared(mediaPlayer: MediaPlayer) {
         prepared = true
-        durationMs = mediaPlayer.duration.toLong()
+        durationMs = mediaPlayer.duration.toLong().coerceAtLeast(0L)
+        // The slider range must be valid before its value is set
+        progressSlider.valueFrom = 0f
+        progressSlider.valueTo = max(durationMs.toFloat(), 1f)
+        progressSlider.isEnabled = durationMs > 0L
         updateProgress()
         refreshRows()
         loadWaveform()
@@ -210,8 +264,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private fun startPlayback() {
         val mediaPlayer = player ?: return
         mediaPlayer.start()
-        playPauseImageView.setImageResource(R.drawable.ic_pause)
-        playPauseImageView.contentDescription = getString(R.string.pause)
+        playPauseButton.setImageResource(R.drawable.ic_pause)
+        playPauseButton.contentDescription = getString(R.string.pause)
         handler.removeCallbacks(ticker)
         handler.post(ticker)
     }
@@ -221,8 +275,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         if (mediaPlayer != null && prepared && mediaPlayer.isPlaying) {
             mediaPlayer.pause()
         }
-        playPauseImageView.setImageResource(R.drawable.ic_play_arrow)
-        playPauseImageView.contentDescription = getString(R.string.play)
+        playPauseButton.setImageResource(R.drawable.ic_play_arrow)
+        playPauseButton.contentDescription = getString(R.string.play)
         handler.removeCallbacks(ticker)
         updateProgress()
     }
@@ -257,16 +311,32 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     }
 
     private fun updateProgress() {
-        val position = currentPosition()
-        timeTextView.text = getString(
-            R.string.playback_time,
-            PlaybackRows.formatTime(position),
-            PlaybackRows.formatTime(durationMs),
+        val position = currentPosition().coerceIn(0L, max(durationMs, 0L))
+        currentTimeTextView.text = PlaybackRows.formatTime(position)
+        remainingTimeTextView.text = getString(
+            R.string.playback_remaining,
+            PlaybackRows.formatTime(durationMs - position),
         )
-        waveformView.progress = if (durationMs > 0L) {
-            position.toFloat() / durationMs
+        if (durationMs > 0L) {
+            if (!seeking) {
+                progressSlider.value = position.toFloat()
+            }
+            waveformView.progress = position.toFloat() / durationMs
         } else {
-            0f
+            waveformView.progress = 0f
+        }
+    }
+
+    private fun showTab(transcript: Boolean) {
+        audioGroup.isVisible = !transcript
+        transcriptScroll.isVisible = transcript
+        if (transcript) {
+            val cached = uri?.let { preferences.getTranscript(it.toString()) }
+            transcriptTextView.text = if (cached.isNullOrBlank()) {
+                getString(R.string.playback_no_transcript)
+            } else {
+                cached
+            }
         }
     }
 
@@ -350,6 +420,15 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             source, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null
         )?.use { cursor ->
             if (cursor.moveToFirst()) cursor.getString(0) else null
+        }
+    }.getOrNull()
+
+    /** Date the recording was added, in seconds since the epoch. */
+    private fun dateAddedOf(source: Uri): Long? = runCatching {
+        contentResolver.query(
+            source, arrayOf(MediaStore.MediaColumns.DATE_ADDED), null, null, null
+        )?.use { cursor ->
+            if (cursor.moveToFirst() && !cursor.isNull(0)) cursor.getLong(0) else null
         }
     }.getOrNull()
 
