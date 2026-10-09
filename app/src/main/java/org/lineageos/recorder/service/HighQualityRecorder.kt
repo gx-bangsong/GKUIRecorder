@@ -19,7 +19,9 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
 
-class HighQualityRecorder : SoundRecording {
+class HighQualityRecorder(
+    private val audioSource: Int = MediaRecorder.AudioSource.DEFAULT,
+) : SoundRecording {
     private var record: AudioRecord? = null
     private var file: File? = null
     private var maxAmplitude = 0
@@ -35,7 +37,7 @@ class HighQualityRecorder : SoundRecording {
             .setEncoding(FORMAT)
             .build()
         record = AudioRecord(
-            MediaRecorder.AudioSource.DEFAULT, audioFormat.sampleRate,
+            audioSource, audioFormat.sampleRate,
             audioFormat.channelMask, audioFormat.encoding, BUFFER_SIZE
         ).apply {
             startRecording()

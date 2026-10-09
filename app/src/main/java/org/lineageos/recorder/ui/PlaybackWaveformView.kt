@@ -87,9 +87,11 @@ class PlaybackWaveformView @JvmOverloads constructor(
             val barWidth = max(2 * density, slot * 0.6f)
             val mid = h / 2f
             val maxHalf = mid - 8 * density
+            // Scale to the loudest bar so quiet recordings still show a shape
+            val norm = max(data.max(), 0.02f)
             for (i in data.indices) {
                 val x = i * slot + slot / 2f
-                val half = max(data[i], 0.04f) * maxHalf
+                val half = max(data[i] / norm, 0.04f) * maxHalf
                 val paint = if ((i + 0.5f) / data.size <= progress) playedPaint else unplayedPaint
                 paint.strokeWidth = barWidth
                 canvas.drawLine(x, mid - half, x, mid + half, paint)

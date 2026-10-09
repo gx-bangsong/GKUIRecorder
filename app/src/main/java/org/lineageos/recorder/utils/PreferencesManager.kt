@@ -127,6 +127,13 @@ class PreferencesManager(context: Context) {
             preferences.edit().putString(PREF_ENGINE_SHA256, value.trim()).apply()
         }
 
+    /** True while a recording that was started by a call is running, so it is stopped by the call end. */
+    var callRecordingStartedByCall: Boolean
+        get() = preferences.getBoolean(PREF_CALL_RECORDING_STARTED, false)
+        set(value) {
+            preferences.edit().putBoolean(PREF_CALL_RECORDING_STARTED, value).apply()
+        }
+
     /** URL of the speech model package the engine downloads (zip). Empty means not set. */
     var engineModelUrl: String
         get() = preferences.getString(PREF_ENGINE_MODEL_URL, "") ?: ""
@@ -177,6 +184,7 @@ class PreferencesManager(context: Context) {
         private const val PREF_TRANSCRIPTION_MODEL = "transcription_model"
         private const val PREF_CALL_RECORDING = "call_recording"
         private const val PREF_CALL_RECORDING_AUTO = "call_recording_auto"
+        private const val PREF_CALL_RECORDING_STARTED = "call_recording_started"
         private const val PREF_ENGINE_URL = "engine_url"
         private const val PREF_ENGINE_SHA256 = "engine_sha256"
         private const val PREF_ENGINE_MODEL_URL = "engine_model_url"

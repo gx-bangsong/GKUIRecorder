@@ -151,4 +151,5 @@
     <string name="engine_install_failed">无法安装引擎：%1$s</string>
     <string name="engine_model_url">模型包地址（zip）</string>
     <string name="engine_model_sha256">模型 SHA-256（可选）</string>
+    <string name="call_recording_default_name">通话</string>
 </resources>

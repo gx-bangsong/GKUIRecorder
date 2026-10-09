@@ -92,6 +92,18 @@
             android:theme="@style/AppTheme.DialogActivity" />
 
         <!-- Sound recorder -->
+        <!--
+             Receives call state changes. Exported because the telephony framework sends it;
+             the receiver ignores everything unless call recording is enabled and allowed.
+        -->
+        <receiver
+            android:name=".service.CallRecordingReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.SoundRecorderService"
             android:exported="false"

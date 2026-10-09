@@ -16,6 +16,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
@@ -134,7 +135,11 @@ class SoundRecorderService : LifecycleService() {
         return intent?.let {
             when (it.action) {
                 ACTION_START -> it.getStringExtra(EXTRA_FILE_NAME)?.let { fileName ->
-                    if (startRecording(fileName)) {
+                    val audioSource = it.getIntExtra(
+                        EXTRA_AUDIO_SOURCE,
+                        MediaRecorder.AudioSource.DEFAULT,
+                    )
+                    if (startRecording(fileName, audioSource)) {
                         START_STICKY
                     } else {
                         START_NOT_STICKY
@@ -164,7 +169,14 @@ class SoundRecorderService : LifecycleService() {
         } ?: START_NOT_STICKY
     }
 
-    private fun startRecording(fileName: String): Boolean {
+    private fun startRecording(fileName: String, audioSource: Int): Boolean {
+        if (recorder != null) {
+            // Already recording (for example a call started while a recording runs).
+            // A service started with startForegroundService must still call startForeground.
+            Log.e(TAG, "Recording already in progress")
+            startForeground(NOTIFICATION_ID, createRecordingNotification(elapsedTime))
+            return false
+        }
         if (checkSelfPermission(permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
@@ -173,11 +185,11 @@ class SoundRecorderService : LifecycleService() {
         }
 
         recorder = when (preferencesManager.recordInHighQuality) {
-            true -> HighQualityRecorder()
-            else -> GoodQualityRecorder(this)
+            true -> HighQualityRecorder(audioSource)
+            else -> GoodQualityRecorder(this, audioSource)
         }
 
-        return recorder?.let { recorder ->
+        val started = recorder?.let { recorder ->
             val file = createNewAudioFile(fileName, recorder.fileExtension) ?: run {
                 Log.e(TAG, "Failed to prepare output file")
                 return@let false
@@ -190,7 +202,7 @@ class SoundRecorderService : LifecycleService() {
             markers.clear()
             try {
                 recorder.startRecording(file)
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 Log.e(TAG, "Error while starting the recorder", e)
                 return@let false
             }
@@ -201,6 +213,11 @@ class SoundRecorderService : LifecycleService() {
 
             true
         } ?: false
+        if (!started) {
+            // Keep the guard above from blocking later recordings
+            this.recorder = null
+        }
+        return started
     }
 
     private fun stopRecording(): Boolean {
@@ -644,6 +661,7 @@ class SoundRecorderService : LifecycleService() {
         const val MSG_TIME_ELAPSED = 4
 
         const val EXTRA_FILE_NAME = "extra_filename"
+        const val EXTRA_AUDIO_SOURCE = "extra_audio_source"
         private const val LEGACY_MUSIC_DIR = "Sound records"
 
         const val NOTIFICATION_ID = 60
