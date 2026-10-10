@@ -5,6 +5,7 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.lineageos.generatebp.GenerateBpPluginExtension
+import org.gradle.api.GradleException
 import org.lineageos.generatebp.models.Module
 import java.io.File
 import java.net.URI
@@ -38,36 +39,58 @@ fun sha256Of(file: File): String {
     return digest.digest().joinToString("") { "%02x".format(it) }
 }
 
+// The verified AAR is cached in the Gradle user home, outside build/, so `clean` keeps it.
+// Only the unpacked outputs under build/sherpa-onnx are generated and removed by `clean`.
+val sherpaOnnxCacheDir: File = File(gradle.gradleUserHomeDir, "caches/gkui-recorder/sherpa-onnx/$SHERPA_ONNX_VERSION")
+val sherpaOnnxAar = File(sherpaOnnxCacheDir, "sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
 val sherpaOnnxDir: File = rootProject.file("build/sherpa-onnx")
-val sherpaOnnxAar = File(sherpaOnnxDir, "sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
 val sherpaOnnxClassesJar = File(sherpaOnnxDir, "sherpa-onnx-classes.jar")
 val sherpaOnnxJniLibs = File(sherpaOnnxDir, "jniLibs")
+val sherpaOnnxOffline: Boolean = gradle.startParameter.isOffline
 
-// Execution-phase task: nothing here runs during configuration, so `help`, `tasks` and `clean`
-// never touch the network or the disk. Outputs are declared, so Gradle skips the task when the
-// files are already present and correct, and re-runs it when they are missing or changed.
 val prepareSherpaOnnx = tasks.register("prepareSherpaOnnx") {
     group = "build setup"
-    description = "Downloads and verifies the pinned sherpa-onnx AAR and unpacks classes.jar and arm64 JNI libraries."
-    outputs.file(sherpaOnnxAar)
+    description = "Verifies the pinned sherpa-onnx AAR (downloads it if needed) and unpacks classes.jar and arm64 JNI libraries."
+    inputs.property("sherpaOnnxVersion", SHERPA_ONNX_VERSION)
+    inputs.property("sherpaOnnxAarSha256", SHERPA_ONNX_AAR_SHA256)
     outputs.file(sherpaOnnxClassesJar)
     outputs.dir(sherpaOnnxJniLibs)
     doLast {
         if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)) {
-            // A missing or corrupt AAR is removed and downloaded again.
             sherpaOnnxAar.delete()
-            sherpaOnnxDir.mkdirs()
-            val part = File(sherpaOnnxDir, sherpaOnnxAar.name + ".part")
+            if (sherpaOnnxOffline) {
+                throw GradleException(
+                    "sherpa-onnx $SHERPA_ONNX_VERSION AAR is not in the cache at $sherpaOnnxAar. " +
+                        "Run once without --offline to download it."
+                )
+            }
+            sherpaOnnxCacheDir.mkdirs()
+            val part = File(sherpaOnnxCacheDir, sherpaOnnxAar.name + ".part")
+            part.delete()
             val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
                 "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
-            val connection = URI(url).toURL().openConnection()
-            connection.connectTimeout = 30_000
-            connection.readTimeout = 120_000
-            connection.getInputStream().use { input ->
-                part.outputStream().use { output -> input.copyTo(output) }
+            var lastError: Exception? = null
+            for (attempt in 1..3) {
+                try {
+                    val connection = URI(url).toURL().openConnection()
+                    connection.connectTimeout = 30_000
+                    connection.readTimeout = 120_000
+                    connection.getInputStream().use { input ->
+                        part.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    lastError = null
+                    break
+                } catch (e: java.io.IOException) {
+                    lastError = e
+                    part.delete()
+                }
             }
+            lastError?.let { throw GradleException("Cannot download sherpa-onnx AAR: ${it.message}", it) }
             val actual = sha256Of(part)
-            check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
+            if (actual != SHERPA_ONNX_AAR_SHA256) {
+                part.delete()
+                throw GradleException("sherpa-onnx AAR checksum mismatch: $actual")
+            }
             check(part.renameTo(sherpaOnnxAar)) { "Cannot move the sherpa-onnx AAR into place" }
         }
 

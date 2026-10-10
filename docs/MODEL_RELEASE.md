@@ -21,14 +21,43 @@ release does not output punctuation, and it is tuned with Cantonese data. The 20
 release outputs digits and punctuation with ITN enabled. The 2025-09-09 release can be added later
 as an optional "Cantonese" package.
 
-## Not yet verified (release blockers)
+## Verification status of the model files (release blocker)
 
-- `model.int8.onnx` and `tokens.txt` inside the archive: byte sizes and SHA-256 are **not yet
-  recorded**. They must be taken from the real archive, not copied from another version or a
-  repackaged mirror. Run `tools/inspect-model-artifact.sh` on a machine that can reach
-  `release-assets.githubusercontent.com`, then fill `ExpectedFile.sha256` and the installed size in
-  `ModelCatalog.kt`.
-- Until those values are recorded, the installer relies on the archive SHA-256 only.
+Verification attempted on 2026-10-10 from the build sandbox:
+
+| Source | Result |
+|---|---|
+| `https://huggingface.co/api/models/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/revision/2365baeacb507f821a0c8120fcee3d484dba7a07` | Not reachable from the sandbox (TLS connection closed). Not verified. |
+| GitHub release archive (`release-assets.githubusercontent.com`) | Not reachable from the sandbox. Archive internals not verified. |
+
+Consequences:
+
+- `model.int8.onnx` and `tokens.txt` keep `sha256 = null` in `ModelCatalog.kt`. The values published by
+  third parties (for example, size `239233841` and the SHA-256 for `model.int8.onnx`) are **not** adopted
+  without official verification.
+- The archive SHA-256 and size and the VAD values come from the GitHub release metadata
+  (`api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/asr-models`), which is reachable.
+- The sherpa-onnx AAR (`v1.13.8`) size `50129134` and SHA-256 `633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96`
+  were confirmed against `api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/v1.13.8` on 2026-10-10.
+
+To close this blocker, run on a machine that can reach Hugging Face and the GitHub release CDN:
+
+```
+tools/inspect-model-artifact.sh
+```
+
+then record the Hugging Face revision API response (oid and size of `model.int8.onnx`, size of
+`tokens.txt`), and fill `ExpectedFile.sha256` in `ModelCatalog.kt`.
+
+Space check (formula, to be filled with verified values):
+
+```
+expectedInstalledPayloadBytes = size(model.int8.onnx) + size(tokens.txt) + size(silero_vad.onnx)
+requiredFreeSpaceBytes        = archiveBytes + vadBytes + expectedInstalledPayloadBytes + 64 MiB
+```
+
+With the verified VAD (643854) and archive (163002883) sizes, the 64 MiB margin (67108864) is fixed.
+The model-file sizes are still needed before the total can be stated.
 
 ## Storage
 

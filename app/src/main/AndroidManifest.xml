@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <!-- Offline model download and on-device transcription run as data-sync foreground jobs -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -44,6 +45,17 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="tiramisu">
+        <!--
+            WorkManager runs the download (dataSync) and transcription (dataSync on API 34,
+            mediaProcessing on API 35+) foreground work through this service. Each runtime type
+            passed to ForegroundInfo must be declared here.
+        -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|mediaProcessing"
+            tools:node="merge" />
+
 
         <activity
             android:name=".RecorderActivity"

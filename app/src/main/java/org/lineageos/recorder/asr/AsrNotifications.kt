@@ -10,6 +10,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
@@ -57,8 +58,19 @@ class AsrNotifications(private val context: Context) {
                 percent = percent,
                 indeterminate = false,
             ),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+            transcriptionServiceType(),
         )
+
+    /**
+     * Local file processing is "mediaProcessing" from API 35. Earlier releases only have dataSync,
+     * which is the closest type for local file work. Must match the type declared in the manifest.
+     */
+    private fun transcriptionServiceType(): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
+        } else {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        }
 
     /** Result notification after a transcription ends. Not ongoing, so the user can dismiss it. */
     fun transcriptionFinished(workId: UUID, title: String, succeeded: Boolean) {
