@@ -42,6 +42,7 @@ import org.lineageos.recorder.models.Marker
 import org.lineageos.recorder.models.MarkerType
 import org.lineageos.recorder.models.UiStatus
 import org.lineageos.recorder.repository.RecordingsRepository
+import org.lineageos.recorder.asr.AsrRuntime
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.RecordIntentHelper
 import java.io.File
@@ -123,6 +124,7 @@ class SoundRecorderService : LifecycleService() {
         unregisterReceiver(shutdownReceiver)
 
         stopTimers()
+        AsrRuntime.recordingInProgress = false
 
         unregisterClients()
 
@@ -208,6 +210,7 @@ class SoundRecorderService : LifecycleService() {
             }
             notifyStatus(UiStatus.RECORDING)
             notifyElapsedTime(0)
+            AsrRuntime.recordingInProgress = true
             startTimers()
             startForeground(NOTIFICATION_ID, createRecordingNotification(0))
 
@@ -232,6 +235,7 @@ class SoundRecorderService : LifecycleService() {
         }
 
         stopTimers()
+        AsrRuntime.recordingInProgress = false
 
         val success = recorder.stopRecording()
         val recordedMarkers = markers.toList()

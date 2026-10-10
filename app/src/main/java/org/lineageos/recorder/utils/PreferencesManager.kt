@@ -7,6 +7,7 @@ package org.lineageos.recorder.utils
 
 import android.content.Context
 import android.net.Uri
+import org.lineageos.recorder.asr.engine.RecognitionOptions
 import org.lineageos.recorder.models.Marker
 
 class PreferencesManager(context: Context) {
@@ -81,22 +82,24 @@ class PreferencesManager(context: Context) {
                 .apply()
         }
 
-    var transcriptionEndpoint: String
-        get() = preferences.getString(PREF_TRANSCRIPTION_ENDPOINT, "") ?: ""
+    /** Recognition language for the offline model: auto, zh, en, yue, ja or ko. */
+    var asrLanguage: String
+        get() = preferences.getString(PREF_ASR_LANGUAGE, RecognitionOptions.DEFAULT_LANGUAGE)
+            ?.takeIf { it in RecognitionOptions.SUPPORTED_LANGUAGES }
+            ?: RecognitionOptions.DEFAULT_LANGUAGE
         set(value) {
-            preferences.edit().putString(PREF_TRANSCRIPTION_ENDPOINT, value.trim()).apply()
+            require(value in RecognitionOptions.SUPPORTED_LANGUAGES)
+            preferences.edit().putString(PREF_ASR_LANGUAGE, value).apply()
         }
 
-    var transcriptionApiKey: String
-        get() = preferences.getString(PREF_TRANSCRIPTION_API_KEY, "") ?: ""
+    /** CPU threads for the offline model (1 to 4). Lower when the phone is warm. */
+    var asrThreads: Int
+        get() = preferences.getInt(PREF_ASR_THREADS, RecognitionOptions.DEFAULT_THREADS)
+            .coerceIn(RecognitionOptions.MIN_THREADS, RecognitionOptions.MAX_THREADS)
         set(value) {
-            preferences.edit().putString(PREF_TRANSCRIPTION_API_KEY, value.trim()).apply()
-        }
-
-    var transcriptionModel: String
-        get() = preferences.getString(PREF_TRANSCRIPTION_MODEL, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_TRANSCRIPTION_MODEL, value.trim()).apply()
+            preferences.edit()
+                .putInt(PREF_ASR_THREADS, value.coerceIn(RecognitionOptions.MIN_THREADS, RecognitionOptions.MAX_THREADS))
+                .apply()
         }
 
     /** User switch for call recording. Only usable when [SystemAppHelper.isCallRecordingAvailable]. */
@@ -113,39 +116,11 @@ class PreferencesManager(context: Context) {
             preferences.edit().putBoolean(PREF_CALL_RECORDING_AUTO, value).apply()
         }
 
-    /** Download URL of the offline ASR engine package. Empty means not configured. */
-    var engineUrl: String
-        get() = preferences.getString(PREF_ENGINE_URL, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_ENGINE_URL, value.trim()).apply()
-        }
-
-    /** Optional SHA-256 of the engine package, checked after download. */
-    var engineSha256: String
-        get() = preferences.getString(PREF_ENGINE_SHA256, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_ENGINE_SHA256, value.trim()).apply()
-        }
-
     /** True while a recording that was started by a call is running, so it is stopped by the call end. */
     var callRecordingStartedByCall: Boolean
         get() = preferences.getBoolean(PREF_CALL_RECORDING_STARTED, false)
         set(value) {
             preferences.edit().putBoolean(PREF_CALL_RECORDING_STARTED, value).apply()
-        }
-
-    /** URL of the speech model package the engine downloads (zip). Empty means not set. */
-    var engineModelUrl: String
-        get() = preferences.getString(PREF_ENGINE_MODEL_URL, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_ENGINE_MODEL_URL, value.trim()).apply()
-        }
-
-    /** Optional SHA-256 of the model package. */
-    var engineModelSha256: String
-        get() = preferences.getString(PREF_ENGINE_MODEL_SHA256, "") ?: ""
-        set(value) {
-            preferences.edit().putString(PREF_ENGINE_MODEL_SHA256, value.trim()).apply()
         }
 
     /** Markers of a recording, keyed by its MediaStore uri. */
@@ -160,14 +135,6 @@ class PreferencesManager(context: Context) {
             .apply()
     }
 
-    /** Cached transcript of a recording, keyed by its MediaStore uri. */
-    fun getTranscript(uri: String): String? =
-        preferences.getString(PREF_TRANSCRIPT_PREFIX + uri, null)
-
-    fun saveTranscript(uri: String, text: String) {
-        preferences.edit().putString(PREF_TRANSCRIPT_PREFIX + uri, text).apply()
-    }
-
     companion object {
         const val DEFAULT_STORAGE_FOLDER = "录音"
 
@@ -179,17 +146,11 @@ class PreferencesManager(context: Context) {
         private const val PREF_LAST_SOUND = "sound_last_path"
         private const val PREF_FILENAME_TEMPLATE = "filename_template"
         private const val PREF_STORAGE_FOLDER = "storage_folder"
-        private const val PREF_TRANSCRIPTION_ENDPOINT = "transcription_endpoint"
-        private const val PREF_TRANSCRIPTION_API_KEY = "transcription_api_key"
-        private const val PREF_TRANSCRIPTION_MODEL = "transcription_model"
+        private const val PREF_ASR_LANGUAGE = "asr_language"
+        private const val PREF_ASR_THREADS = "asr_threads"
         private const val PREF_CALL_RECORDING = "call_recording"
         private const val PREF_CALL_RECORDING_AUTO = "call_recording_auto"
         private const val PREF_CALL_RECORDING_STARTED = "call_recording_started"
-        private const val PREF_ENGINE_URL = "engine_url"
-        private const val PREF_ENGINE_SHA256 = "engine_sha256"
-        private const val PREF_ENGINE_MODEL_URL = "engine_model_url"
-        private const val PREF_ENGINE_MODEL_SHA256 = "engine_model_sha256"
         private const val PREF_MARKERS_PREFIX = "markers:"
-        private const val PREF_TRANSCRIPT_PREFIX = "transcript:"
     }
 }

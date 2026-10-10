@@ -139,11 +139,6 @@
     <string name="settings_storage_folder">Storage folder</string>
     <string name="settings_storage_folder_label">Folder name under Recordings</string>
     <string name="settings_storage_folder_hint">New recordings are saved to Recordings/your-folder-name. Existing recordings are not moved.</string>
-    <string name="settings_transcription">Speech-to-text service</string>
-    <string name="transcription_endpoint">API base URL (OpenAI compatible)</string>
-    <string name="transcription_api_key">API key (optional)</string>
-    <string name="transcription_model">Model name (optional)</string>
-    <string name="transcription_hint">Leave the URL empty to turn this off. Audio is only sent to the URL you enter. A LAN server such as faster-whisper-server works offline.</string>
     <string name="edit_audio">Edit audio</string>
     <string name="transcribe">Speech to text</string>
     <string name="markers">Markers</string>
@@ -166,9 +161,7 @@
     <string name="trim_invalid">Invalid trim range</string>
     <string name="markers_title">Markers</string>
     <string name="markers_empty">This recording has no markers</string>
-    <string name="transcribe_not_configured">Set up a speech-to-text service in Settings first</string>
     <string name="transcribe_running">Transcribing...</string>
-    <string name="transcribe_failed">Transcription failed: %1$s</string>
     <string name="transcript_title">Transcript</string>
     <string name="transcript_empty">The transcript is empty</string>
     <string name="transcript_export">Export TXT</string>
@@ -185,7 +178,6 @@
     <string name="playback_add_segment">+ Segment</string>
     <string name="playback_skip_back">-10s</string>
     <string name="playback_skip_forward">+10s</string>
-    <string name="playback_time">%1$s / %2$s</string>
     <string name="playback_chapter_title">Chapter %1$d</string>
     <string name="playback_chapter_range">%1$s - %2$s · Important %3$d</string>
     <string name="playback_no_markers">No markers yet. Use the buttons above to mark important moments or split chapters.</string>
@@ -199,27 +191,91 @@
     <string name="settings_call_recording">Call recording (system app only)</string>
     <string name="call_recording_status_available">Available: this app is a system app with the capture permission. It turns on automatically the first time this is detected.</string>
     <string name="call_recording_status_unavailable">Not available: needs to be installed in the system partition and granted CAPTURE_AUDIO_OUTPUT by privapp-permissions.</string>
-    <string name="settings_engine">Offline speech engine</string>
-    <string name="engine_url">Engine package URL</string>
-    <string name="engine_sha256">SHA-256 (optional)</string>
-    <string name="engine_sha256_hint">Hex digest; leave empty to skip the check</string>
-    <string name="engine_hint">The engine APK and model are downloaded when you open settings and kept in app storage. They are not part of this APK. Leave the URL empty to turn this off.</string>
-    <string name="engine_status_unset">Engine: not configured</string>
-    <string name="engine_status_missing">Engine: not installed, downloading when settings open</string>
-    <string name="engine_status_downloading">Downloading engine: %1$d%%</string>
-    <string name="engine_status_installed">Engine: installed</string>
-    <string name="engine_status_failed">Engine download failed. Check the URL and try again.</string>
 
     <!-- Offline engine APK and model -->
-    <string name="engine_status_downloaded">Engine: downloaded. Tap Install engine to install it.</string>
-    <string name="engine_install">Install engine</string>
-    <string name="engine_install_failed">Cannot install the engine: %1$s</string>
-    <string name="engine_model_url">Model package URL (zip)</string>
-    <string name="engine_model_sha256">Model SHA-256 (optional)</string>
     <string name="call_recording_default_name">Call</string>
     <!-- Playback layout -->
     <string name="playback_tab_audio">Audio</string>
     <string name="playback_tab_transcript">Transcript</string>
     <string name="playback_remaining">-%1$s</string>
     <string name="playback_no_transcript">No transcript yet. Transcribe it from the recording list.</string>
+
+    <!-- Offline speech model (sherpa-onnx SenseVoice) -->
+    <string name="settings_offline_model">Offline speech model</string>
+    <string name="asr_settings_title">Offline speech model</string>
+    <string name="asr_info_format">Languages: %1$s
+Use: %2$s
+Version: %3$s</string>
+    <string name="asr_download_size_format">Download size: %1$s</string>
+    <string name="asr_installed_size_format">Installed size: %1$s</string>
+    <string name="asr_privacy_note">All recognition runs on this phone. Audio is never uploaded. The only network use is the one-time model download over HTTPS.</string>
+    <string name="asr_licenses_title">Licenses and attribution</string>
+    <string name="asr_licenses_text">SenseVoiceSmall (model weights): FunASR Model Open Source License Agreement v1.1. Copyright FunAudioLLM / Alibaba. https://huggingface.co/FunAudioLLM/SenseVoiceSmall
+sherpa-onnx (Kotlin API and native runtime): Apache License 2.0. https://github.com/k2-fsa/sherpa-onnx
+ONNX Runtime (native runtime): MIT License. https://github.com/microsoft/onnxruntime
+Silero VAD (voice activity detection): MIT License. https://github.com/snakers4/silero-vad
+Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/commons-compress/</string>
+    <string name="asr_state_not_installed">Not installed</string>
+    <string name="asr_state_queued">Waiting to start</string>
+    <string name="asr_state_downloading">Downloading %1$s of %2$s</string>
+    <string name="asr_state_verifying">Checking file integrity</string>
+    <string name="asr_state_installing">Installing</string>
+    <string name="asr_state_ready">Installed, version %1$s. Works offline.</string>
+    <string name="asr_state_update">Installed %1$s. Version %2$s is available.</string>
+    <string name="asr_state_failed">Failed: %1$s. %2$s</string>
+    <string name="asr_retry_hint">You can retry.</string>
+    <string name="asr_retry_no">Check storage and network, then start again.</string>
+    <string name="asr_reason_network">network interrupted</string>
+    <string name="asr_reason_http">server returned an error</string>
+    <string name="asr_reason_size">file size does not match</string>
+    <string name="asr_reason_checksum">checksum does not match</string>
+    <string name="asr_reason_archive">archive structure is not safe</string>
+    <string name="asr_reason_space">not enough free space</string>
+    <string name="asr_reason_storage">cannot write to storage</string>
+    <string name="asr_reason_cancelled">cancelled</string>
+    <string name="asr_reason_unknown">unknown error</string>
+    <string name="asr_action_download">Download model</string>
+    <string name="asr_action_retry">Retry</string>
+    <string name="asr_action_cancel">Cancel</string>
+    <string name="asr_action_delete">Delete model</string>
+    <string name="asr_action_delete_old">Delete old version</string>
+    <string name="asr_delete_title">Delete the offline model?</string>
+    <string name="asr_delete_message">The model files are removed. Transcripts you already have are kept. You can download the model again later.</string>
+    <string name="asr_delete_done">Model deleted</string>
+    <string name="asr_delete_busy">The model is in use or downloading. Try again when it finishes.</string>
+    <string name="asr_consent_title">An offline speech model is needed</string>
+    <string name="asr_consent_model">Model: %1$s</string>
+    <string name="asr_consent_size">Download size: %1$s. The installed size is larger.</string>
+    <string name="asr_consent_languages">Languages: %1$s</string>
+    <string name="asr_consent_first_time">Only needed the first time. The model is downloaded once.</string>
+    <string name="asr_consent_offline">After the download, transcription works offline. Audio never leaves the phone.</string>
+    <string name="asr_consent_cellular">You are on a metered connection, such as mobile data. The download will use mobile data.</string>
+    <string name="asr_consent_download">Download model</string>
+    <string name="asr_consent_view">View model</string>
+    <string name="asr_download_started">Model download started. Transcription starts when it is ready.</string>
+    <string name="asr_model_downloading_wait">The model is downloading. Tap Transcribe again when it finishes.</string>
+    <string name="asr_channel_name">Offline speech</string>
+    <string name="asr_download_notification_title">Downloading %1$s</string>
+    <string name="asr_download_notification_text">Runs on this phone. You can cancel and resume later.</string>
+    <string name="asr_transcribe_notification_title">Transcribing: %1$s</string>
+    <string name="asr_transcribe_notification_text">Runs offline on this phone</string>
+    <string name="asr_transcribe_paused">Paused: the phone is hot. It resumes when it cools down.</string>
+    <string name="asr_transcribe_done">Transcript ready</string>
+    <string name="asr_transcribe_failed_notification">Transcription failed</string>
+    <string name="asr_language_format">Language: %1$s</string>
+    <string name="asr_language_title">Recognition language</string>
+    <string name="asr_threads_format">CPU threads: %1$d</string>
+    <string name="asr_threads_title">CPU threads</string>
+    <string name="asr_threads_option">%1$d thread(s)</string>
+    <string name="asr_lang_auto">Auto-detect</string>
+    <string name="asr_lang_zh">Chinese (Mandarin)</string>
+    <string name="asr_lang_en">English</string>
+    <string name="asr_lang_yue">Cantonese</string>
+    <string name="asr_lang_ja">Japanese</string>
+    <string name="asr_lang_ko">Korean</string>
+    <string name="transcribe_cancel">Cancel transcription</string>
+    <string name="transcribe_progress">Transcribing: %1$d%%</string>
+    <string name="playback_transcript_running">Transcribing… %1$d%%</string>
+    <string name="playback_transcript_failed">Transcription failed. Try again from the recording list.</string>
+    <string name="playback_transcript_cancelled">Transcription was cancelled.</string>
 </resources>

@@ -5,20 +5,17 @@
 
 package org.lineageos.recorder
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
+import org.lineageos.recorder.asr.ui.ModelSettingsActivity
 import org.lineageos.recorder.ui.FieldDialog
-import org.lineageos.recorder.utils.EngineClient
-import org.lineageos.recorder.utils.EngineDownloader
-import org.lineageos.recorder.utils.EngineInstaller
 import org.lineageos.recorder.utils.FileNameTemplate
 import org.lineageos.recorder.utils.PermissionManager
 import org.lineageos.recorder.utils.PreferencesManager
@@ -58,19 +55,12 @@ class DialogActivity : AppCompatActivity() {
         dialog.findViewById<View>(R.id.storageFolderButton)?.setOnClickListener {
             showStorageFolderSettings()
         }
+        // Opens the offline model page. Nothing is downloaded from here.
         dialog.findViewById<View>(R.id.transcriptionButton)?.setOnClickListener {
-            showTranscriptionSettings()
+            startActivity(Intent(this, ModelSettingsActivity::class.java))
         }
 
-        settingsDialog = dialog
         setupCallRecordingSwitch(dialog)
-
-        dialog.findViewById<View>(R.id.engineButton)?.setOnClickListener {
-            showEngineSettings()
-        }
-        // Download on opening settings, if a URL is configured and the engine is missing
-        refreshEngineStatus(dialog)
-        startEngineDownloadIfNeeded(dialog)
     }
 
     private fun setupCallRecordingSwitch(dialog: android.app.Dialog) {
@@ -85,105 +75,6 @@ class DialogActivity : AppCompatActivity() {
         )
         switch.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             preferences.callRecordingEnabled = isChecked
-        }
-    }
-
-    private fun refreshEngineStatus(dialog: android.app.Dialog) {
-        val text = dialog.findViewById<TextView>(R.id.engineStatusText) ?: return
-        val installed = EngineClient.isInstalled(this)
-        val pending = EngineDownloader.isDownloaded(this) && !installed
-        dialog.findViewById<View>(R.id.engineInstallButton)?.apply {
-            visibility = if (pending) View.VISIBLE else View.GONE
-            setOnClickListener { installEngine() }
-        }
-        text.setText(
-            when {
-                installed -> R.string.engine_status_installed
-                pending -> R.string.engine_status_downloaded
-                preferences.engineUrl.isBlank() -> R.string.engine_status_unset
-                else -> R.string.engine_status_missing
-            }
-        )
-    }
-
-    private var engineDownloading = false
-    private var settingsDialog: android.app.Dialog? = null
-
-    private fun startEngineDownloadIfNeeded(dialog: android.app.Dialog) {
-        val url = preferences.engineUrl
-        if (url.isBlank() || engineDownloading || EngineClient.isInstalled(this) ||
-            EngineDownloader.isDownloaded(this)
-        ) {
-            return
-        }
-        engineDownloading = true
-        val text = dialog.findViewById<TextView>(R.id.engineStatusText)
-        lifecycleScope.launch {
-            val result = EngineDownloader.download(
-                this@DialogActivity,
-                url,
-                preferences.engineSha256,
-            ) { percent ->
-                runOnUiThread {
-                    text?.text = getString(R.string.engine_status_downloading, percent)
-                }
-            }
-            engineDownloading = false
-            result.onSuccess {
-                settingsDialog?.let { refreshEngineStatus(it) }
-            }.onFailure {
-                text?.setText(R.string.engine_status_failed)
-            }
-        }
-    }
-
-    private fun installEngine() {
-        EngineInstaller.install(this, EngineDownloader.installedFile(this))?.let { error ->
-            Toast.makeText(
-                this,
-                getString(R.string.engine_install_failed, error),
-                Toast.LENGTH_LONG,
-            ).show()
-        }
-    }
-
-    private fun showEngineSettings() {
-        FieldDialog.show(
-            this,
-            getString(R.string.settings_engine),
-            listOf(
-                FieldDialog.Field(
-                    label = getString(R.string.engine_url),
-                    value = preferences.engineUrl,
-                    hint = "https://example.com/recorder-engine.apk",
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.engine_sha256),
-                    value = preferences.engineSha256,
-                    hint = getString(R.string.engine_sha256_hint),
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.engine_model_url),
-                    value = preferences.engineModelUrl,
-                    hint = "https://example.com/sensevoice-zh.zip",
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.engine_model_sha256),
-                    value = preferences.engineModelSha256,
-                    hint = getString(R.string.engine_sha256_hint),
-                ),
-            ),
-            message = getString(R.string.engine_hint),
-        ) { values ->
-            preferences.engineUrl = values[0]
-            preferences.engineSha256 = values[1]
-            preferences.engineModelUrl = values[2]
-            preferences.engineModelSha256 = values[3]
-            // Show the new status and start the download right away
-            settingsDialog?.let {
-                refreshEngineStatus(it)
-                startEngineDownloadIfNeeded(it)
-            }
         }
     }
 
@@ -287,35 +178,6 @@ class DialogActivity : AppCompatActivity() {
             message = getString(R.string.settings_storage_folder_hint),
         ) { values ->
             preferences.storageFolder = values[0]
-        }
-    }
-
-    private fun showTranscriptionSettings() {
-        FieldDialog.show(
-            this,
-            getString(R.string.settings_transcription),
-            listOf(
-                FieldDialog.Field(
-                    label = getString(R.string.transcription_endpoint),
-                    value = preferences.transcriptionEndpoint,
-                    hint = "http://192.168.1.10:8000/v1",
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.transcription_api_key),
-                    value = preferences.transcriptionApiKey,
-                    secret = true,
-                ),
-                FieldDialog.Field(
-                    label = getString(R.string.transcription_model),
-                    value = preferences.transcriptionModel,
-                    hint = "FunAudioLLM/SenseVoiceSmall",
-                ),
-            ),
-            message = getString(R.string.transcription_hint),
-        ) { values ->
-            preferences.transcriptionEndpoint = values[0]
-            preferences.transcriptionApiKey = values[1]
-            preferences.transcriptionModel = values[2]
         }
     }
 

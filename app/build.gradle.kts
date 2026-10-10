@@ -6,11 +6,57 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.lineageos.generatebp.GenerateBpPluginExtension
 import org.lineageos.generatebp.models.Module
+import java.io.File
+import java.net.URI
+import java.security.MessageDigest
 
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("org.lineageos.generatebp")
+}
+
+// sherpa-onnx Android AAR: Kotlin API plus libsherpa-onnx-jni.so and libonnxruntime.so, one version.
+// Downloaded from the upstream GitHub release at build time and checked against a pinned SHA-256.
+// The file is not committed to git. Update the version and the hash together.
+val SHERPA_ONNX_VERSION = "1.13.8"
+val SHERPA_ONNX_AAR_SHA256 = "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+
+fun sha256Of(file: File): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    file.inputStream().use { input ->
+        val buffer = ByteArray(1 shl 16)
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().joinToString("") { "%02x".format(it) }
+}
+
+val downloadSherpaOnnxAar by tasks.registering {
+    val target = rootProject.file("build/sherpa-onnx/sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
+    outputs.file(target)
+    doLast {
+        target.parentFile.mkdirs()
+        if (target.isFile && sha256Of(target) == SHERPA_ONNX_AAR_SHA256) {
+            return@doLast
+        }
+        val part = File(target.parentFile, target.name + ".part")
+        val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
+            "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
+        URI(url).toURL().openStream().use { input ->
+            part.outputStream().use { output -> input.copyTo(output) }
+        }
+        val actual = sha256Of(part)
+        check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
+        check(part.renameTo(target)) { "Cannot move the sherpa-onnx AAR into place" }
+    }
+}
+
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn(downloadSherpaOnnxAar)
 }
 
 android {
@@ -23,10 +69,11 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.1"
-    }
 
-    buildFeatures {
-        aidl = true
+        // sherpa-onnx native libraries for arm64 phones only (keeps the APK size in check)
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -63,6 +110,15 @@ android {
 dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.10"))
+
+    // Offline speech recognition: sherpa-onnx Kotlin API and native libraries (see downloadSherpaOnnxAar)
+    implementation(mapOf("name" to "sherpa-onnx-$SHERPA_ONNX_VERSION", "ext" to "aar"))
+    // Model archive extraction (tar.bz2)
+    implementation("org.apache.commons:commons-compress:1.28.0")
+    // Background model downloads and transcription jobs
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+
+    testImplementation("junit:junit:4.13.2")
 
     implementation("androidx.activity:activity-ktx:1.7.2")
     implementation("androidx.appcompat:appcompat:1.6.1")

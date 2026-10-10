@@ -11,14 +11,17 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- Offline model download and on-device transcription run as data-sync foreground jobs -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- Speech-to-text upload to the user-configured transcription service -->
+    <!-- Only used to download the offline speech model over HTTPS, and to tell metered networks apart -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Package visibility (Android 11+) for quick share to installed apps -->
     <queries>
@@ -30,8 +33,6 @@
         <package android:name="com.ss.android.ugc.aweme" />
         <package android:name="com.xingin.xhs" />
         <package android:name="com.baidu.netdisk" />
-        <package android:name="org.lineageos.recorder.engine" />
-        <package android:name="org.lineageos.recorder.engine.dev" />
     </queries>
 
     <application
@@ -72,15 +73,10 @@
             android:label="@string/list_title"
             android:parentActivityName=".RecorderActivity" />
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.engine.fileprovider"
+        <activity
+            android:name=".asr.ui.ModelSettingsActivity"
             android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/engine_file_paths" />
-        </provider>
+            android:label="@string/asr_settings_title" />
 
         <activity
             android:name=".PlaybackActivity"

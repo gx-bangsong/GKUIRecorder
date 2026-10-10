@@ -45,6 +45,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.lineageos.recorder.asr.AsrRuntime
+import org.lineageos.recorder.asr.ModelRepository
+import org.lineageos.recorder.asr.TranscriptionScheduler
+import org.lineageos.recorder.asr.model.ModelCatalog
+import org.lineageos.recorder.asr.model.ModelDescriptor
+import org.lineageos.recorder.asr.transcription.TranscriptRecord
+import org.lineageos.recorder.asr.transcription.TranscriptStatus
+import org.lineageos.recorder.asr.ui.ModelDialogs
+import org.lineageos.recorder.asr.ui.ModelSettingsActivity
 import org.lineageos.recorder.ext.scheduleShowSoftInput
 import org.lineageos.recorder.list.RecordingItemCallbacks
 import org.lineageos.recorder.list.RecordingItemDetailsLookup
@@ -56,11 +65,9 @@ import org.lineageos.recorder.repository.RecordingsRepository
 import org.lineageos.recorder.ui.FieldDialog
 import org.lineageos.recorder.utils.AudioEditor
 import org.lineageos.recorder.utils.ExportHelper
-import org.lineageos.recorder.utils.EngineClient
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.RecordIntentHelper
 import org.lineageos.recorder.utils.SystemAppHelper
-import org.lineageos.recorder.utils.TranscriptionClient
 import org.lineageos.recorder.viewmodels.RecordingsViewModel
 
 class ListActivity : AppCompatActivity() {
@@ -442,65 +449,79 @@ class ListActivity : AppCompatActivity() {
     }
 
     fun onTranscribe(recording: Recording) {
-        val cached = PreferencesManager(this).getTranscript(recording.uri.toString())
-        if (cached != null) {
-            showTranscript(recording, cached)
-        } else {
-            startTranscription(recording)
+        lifecycleScope.launch {
+            val uri = recording.uri.toString()
+            val (active, record) = withContext(Dispatchers.IO) {
+                TranscriptionScheduler.isActive(this@ListActivity, uri) to
+                    AsrRuntime.transcripts(this@ListActivity).get(uri)
+            }
+            val completed = record?.takeIf { it.status == TranscriptStatus.COMPLETED }
+            when {
+                active -> showRunningTranscription(recording, record)
+                completed != null -> showTranscript(recording, completed.text)
+                else -> startTranscription(recording)
+            }
         }
     }
 
+    /**
+     * Starts the on-device transcription. The first time, the model must be downloaded: the user
+     * sees the download dialog first. Nothing is sent over the network except the model download.
+     */
     private fun startTranscription(recording: Recording) {
-        val preferences = PreferencesManager(this)
-        val config = TranscriptionClient.Config(
-            endpoint = preferences.transcriptionEndpoint,
-            apiKey = preferences.transcriptionApiKey,
-            model = preferences.transcriptionModel,
-        )
-        val useEngine = !config.isConfigured && EngineClient.isInstalled(this)
-        if (!config.isConfigured && !useEngine) {
-            MaterialAlertDialogBuilder(this)
-                .setMessage(R.string.transcribe_not_configured)
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
-            return
-        }
-
-        Toast.makeText(this, R.string.transcribe_running, Toast.LENGTH_SHORT).show()
+        val model = ModelCatalog.default
+        val uri = recording.uri.toString()
         lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    if (useEngine) {
-                        EngineClient.transcribe(
-                            this@ListActivity,
-                            recording.uri,
-                            "zh",
-                            preferences.engineModelUrl,
-                            preferences.engineModelSha256,
-                        )
-                    } else {
-                        TranscriptionClient.transcribe(
-                            this@ListActivity, recording.uri, recording.title, config,
-                        )
-                    }
-                }
+            val repository = ModelRepository.get(this@ListActivity)
+            val (ready, downloading) = withContext(Dispatchers.IO) {
+                (repository.readyDir(model) != null) to repository.isDownloadActive(model.id)
             }
-            result.onSuccess { text ->
-                PreferencesManager(this@ListActivity)
-                    .saveTranscript(recording.uri.toString(), text)
-                showTranscript(recording, text)
-            }.onFailure { e ->
-                MaterialAlertDialogBuilder(this@ListActivity)
-                    .setMessage(
-                        getString(
-                            R.string.transcribe_failed,
-                            e.message ?: e.javaClass.simpleName,
-                        )
-                    )
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
+            when {
+                ready -> {
+                    TranscriptionScheduler.enqueue(this@ListActivity, uri, recording.title, model, downloadFirst = false)
+                    Toast.makeText(this@ListActivity, R.string.transcribe_running, Toast.LENGTH_SHORT).show()
+                }
+                downloading -> Toast.makeText(
+                    this@ListActivity,
+                    R.string.asr_model_downloading_wait,
+                    Toast.LENGTH_LONG,
+                ).show()
+                else -> showModelConsent(recording, model)
             }
         }
+    }
+
+    private fun showModelConsent(recording: Recording, model: ModelDescriptor) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.asr_consent_title)
+            .setMessage(ModelDialogs.consentMessage(this, model))
+            .setPositiveButton(R.string.asr_consent_download) { _: DialogInterface?, _: Int ->
+                TranscriptionScheduler.enqueue(
+                    this,
+                    recording.uri.toString(),
+                    recording.title,
+                    model,
+                    downloadFirst = true,
+                )
+                Toast.makeText(this, R.string.asr_download_started, Toast.LENGTH_LONG).show()
+            }
+            .setNeutralButton(R.string.asr_consent_view) { _: DialogInterface?, _: Int ->
+                startActivity(Intent(this, ModelSettingsActivity::class.java))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showRunningTranscription(recording: Recording, record: TranscriptRecord?) {
+        val percent = ((record?.progress ?: 0f) * 100).toInt()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.transcript_title)
+            .setMessage(getString(R.string.transcribe_progress, percent))
+            .setPositiveButton(R.string.transcribe_cancel) { _: DialogInterface?, _: Int ->
+                TranscriptionScheduler.cancel(this, recording.uri.toString())
+            }
+            .setNegativeButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun showTranscript(recording: Recording, text: String) {

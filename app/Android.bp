@@ -11,7 +11,6 @@ android_app {
 
     srcs: [
         "src/main/java/**/*.kt",
-        "src/main/aidl/**/*.aidl",
     ],
 
     product_specific: true,
@@ -27,6 +26,7 @@ android_app {
         "androidx.lifecycle_lifecycle-viewmodel-ktx",
         "androidx.recyclerview_recyclerview",
         "androidx.recyclerview_recyclerview-selection",
+        "androidx.work_work-runtime-ktx",
         "com.google.android.material_material",
         "kotlin-stdlib",
     ],

@@ -32,6 +32,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
+import org.lineageos.recorder.asr.AsrRuntime
+import org.lineageos.recorder.asr.transcription.TranscriptRecord
+import org.lineageos.recorder.asr.transcription.TranscriptStatus
 import org.lineageos.recorder.models.Marker
 import org.lineageos.recorder.models.MarkerType
 import org.lineageos.recorder.playback.PlaybackAdapter
@@ -331,12 +334,22 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         audioGroup.isVisible = !transcript
         transcriptScroll.isVisible = transcript
         if (transcript) {
-            val cached = uri?.let { preferences.getTranscript(it.toString()) }
-            transcriptTextView.text = if (cached.isNullOrBlank()) {
-                getString(R.string.playback_no_transcript)
-            } else {
-                cached
-            }
+            val record = uri?.let { AsrRuntime.transcripts(this).get(it.toString()) }
+            transcriptTextView.text = transcriptText(record)
+        }
+    }
+
+    /** What the transcript tab shows for the stored record. Only the record's own fields are used. */
+    private fun transcriptText(record: TranscriptRecord?): String {
+        if (record == null) {
+            return getString(R.string.playback_no_transcript)
+        }
+        return when (record.status) {
+            TranscriptStatus.COMPLETED -> record.text.ifBlank { getString(R.string.transcript_empty) }
+            TranscriptStatus.QUEUED, TranscriptStatus.RUNNING ->
+                getString(R.string.playback_transcript_running, (record.progress * 100).toInt())
+            TranscriptStatus.FAILED -> getString(R.string.playback_transcript_failed)
+            TranscriptStatus.CANCELLED -> getString(R.string.playback_transcript_cancelled)
         }
     }
 
