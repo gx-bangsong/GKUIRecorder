@@ -18,3 +18,6 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# sherpa-onnx: native methods are bound by name over JNI
+-keep class com.k2fsa.sherpa.onnx.** { *; }

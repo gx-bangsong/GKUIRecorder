@@ -17,10 +17,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // sherpa-onnx AAR, downloaded and checksum-verified by app/build.gradle.kts (not committed)
-        flatDir {
-            dirs(file("build/sherpa-onnx"))
-        }
     }
 }
 

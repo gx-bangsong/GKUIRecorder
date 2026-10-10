@@ -16,9 +16,11 @@ plugins {
     id("org.lineageos.generatebp")
 }
 
-// sherpa-onnx Android AAR: Kotlin API plus libsherpa-onnx-jni.so and libonnxruntime.so, one version.
-// Downloaded from the upstream GitHub release at build time and checked against a pinned SHA-256.
-// The file is not committed to git. Update the version and the hash together.
+// sherpa-onnx Android AAR (Kotlin API, libsherpa-onnx-jni.so, libonnxruntime.so), version pinned.
+// It is fetched from the upstream GitHub release during configuration, checked against a pinned
+// SHA-256, and unpacked into build/ (never committed). It is added as plain files, not as a Maven
+// or flatDir module: generateBp only inspects module dependencies, so it neither needs a POM nor
+// writes anything into app/libs. Update the version and the hash together.
 val SHERPA_ONNX_VERSION = "1.13.8"
 val SHERPA_ONNX_AAR_SHA256 = "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
 
@@ -35,12 +37,14 @@ fun sha256Of(file: File): String {
     return digest.digest().joinToString("") { "%02x".format(it) }
 }
 
-// The AAR must exist before dependency resolution, so it is fetched during configuration.
-// It is skipped when the file is already present with the pinned hash.
-val sherpaOnnxAar: File = rootProject.file("build/sherpa-onnx/sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
+val sherpaOnnxDir: File = rootProject.file("build/sherpa-onnx")
+val sherpaOnnxAar = File(sherpaOnnxDir, "sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
+val sherpaOnnxClassesJar = File(sherpaOnnxDir, "sherpa-onnx-classes.jar")
+val sherpaOnnxJniLibs = File(sherpaOnnxDir, "jniLibs")
+
 if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)) {
-    sherpaOnnxAar.parentFile.mkdirs()
-    val part = File(sherpaOnnxAar.parentFile, sherpaOnnxAar.name + ".part")
+    sherpaOnnxDir.mkdirs()
+    val part = File(sherpaOnnxDir, sherpaOnnxAar.name + ".part")
     val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
         "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
     URI(url).toURL().openStream().use { input ->
@@ -50,6 +54,29 @@ if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)
     check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
     check(part.renameTo(sherpaOnnxAar)) { "Cannot move the sherpa-onnx AAR into place" }
 }
+
+if (!sherpaOnnxClassesJar.isFile || !File(sherpaOnnxJniLibs, "arm64-v8a").isDirectory) {
+    java.util.zip.ZipFile(sherpaOnnxAar).use { zip ->
+        val entries = zip.entries()
+        while (entries.hasMoreElements()) {
+            val entry = entries.nextElement()
+            val name = entry.name
+            val target: File? = when {
+                name == "classes.jar" -> sherpaOnnxClassesJar
+                name.startsWith("jni/arm64-v8a/") && !entry.isDirectory ->
+                    File(sherpaOnnxJniLibs, "arm64-v8a/" + name.substringAfterLast('/'))
+                else -> null
+            }
+            if (target != null) {
+                target.parentFile.mkdirs()
+                zip.getInputStream(entry).use { input ->
+                    target.outputStream().use { output -> input.copyTo(output) }
+                }
+            }
+        }
+    }
+}
+check(sherpaOnnxClassesJar.isFile) { "sherpa-onnx classes.jar missing from the AAR" }
 
 android {
     compileSdk = 36
@@ -97,14 +124,17 @@ android {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
+
+    // sherpa-onnx native libraries from the pinned AAR (arm64-v8a only, see ndk.abiFilters)
+    sourceSets["main"].jniLibs.srcDir(sherpaOnnxJniLibs)
 }
 
 dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.10"))
 
-    // Offline speech recognition: sherpa-onnx Kotlin API and native libraries (AAR fetched above)
-    implementation(mapOf("name" to "sherpa-onnx-$SHERPA_ONNX_VERSION", "ext" to "aar"))
+    // Offline speech recognition: sherpa-onnx Kotlin API (classes from the pinned AAR, see above)
+    implementation(files(sherpaOnnxClassesJar))
     // Model archive extraction (tar.bz2)
     implementation("org.apache.commons:commons-compress:1.28.0")
     // Background model downloads and transcription jobs
@@ -138,6 +168,10 @@ configure<GenerateBpPluginExtension> {
             module.group == "com.google.android.material" -> true
             module.group == "com.google.errorprone" -> true
             module.group == "com.google.guava" -> true
+            // commons-compress and its runtime dependencies (archive extraction of the model)
+            module.group == "org.apache.commons" -> true
+            module.group == "commons-codec" -> true
+            module.group == "commons-io" -> true
             else -> false
         }
     }

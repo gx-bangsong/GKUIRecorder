@@ -28,6 +28,7 @@ android_app {
         "androidx.recyclerview_recyclerview-selection",
         "androidx.work_work-runtime-ktx",
         "com.google.android.material_material",
+        "org.apache.commons_commons-compress",
         "kotlin-stdlib",
     ],
 
