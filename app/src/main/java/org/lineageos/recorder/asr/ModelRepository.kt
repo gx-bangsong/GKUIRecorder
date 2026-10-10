@@ -118,10 +118,9 @@ class ModelRepository private constructor(context: Context) {
             ExistingWorkPolicy.KEEP,
             download,
         )
-        if (afterwards != null) {
-            chain.then(afterwards)
-        }
-        chain.enqueue()
+        // then() returns a new continuation; the chain must be built from its result
+        val full = if (afterwards != null) chain.then(afterwards) else chain
+        full.enqueue()
     }
 
     /** Cancels a queued or running download. The partial file stays so the next try resumes it. */

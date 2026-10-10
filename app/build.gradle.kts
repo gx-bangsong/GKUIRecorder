@@ -35,28 +35,20 @@ fun sha256Of(file: File): String {
     return digest.digest().joinToString("") { "%02x".format(it) }
 }
 
-val downloadSherpaOnnxAar by tasks.registering {
-    val target = rootProject.file("build/sherpa-onnx/sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
-    outputs.file(target)
-    doLast {
-        target.parentFile.mkdirs()
-        if (target.isFile && sha256Of(target) == SHERPA_ONNX_AAR_SHA256) {
-            return@doLast
-        }
-        val part = File(target.parentFile, target.name + ".part")
-        val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
-            "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
-        URI(url).toURL().openStream().use { input ->
-            part.outputStream().use { output -> input.copyTo(output) }
-        }
-        val actual = sha256Of(part)
-        check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
-        check(part.renameTo(target)) { "Cannot move the sherpa-onnx AAR into place" }
+// The AAR must exist before dependency resolution, so it is fetched during configuration.
+// It is skipped when the file is already present with the pinned hash.
+val sherpaOnnxAar: File = rootProject.file("build/sherpa-onnx/sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
+if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)) {
+    sherpaOnnxAar.parentFile.mkdirs()
+    val part = File(sherpaOnnxAar.parentFile, sherpaOnnxAar.name + ".part")
+    val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
+        "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
+    URI(url).toURL().openStream().use { input ->
+        part.outputStream().use { output -> input.copyTo(output) }
     }
-}
-
-tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn(downloadSherpaOnnxAar)
+    val actual = sha256Of(part)
+    check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
+    check(part.renameTo(sherpaOnnxAar)) { "Cannot move the sherpa-onnx AAR into place" }
 }
 
 android {
@@ -111,7 +103,7 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.10"))
 
-    // Offline speech recognition: sherpa-onnx Kotlin API and native libraries (see downloadSherpaOnnxAar)
+    // Offline speech recognition: sherpa-onnx Kotlin API and native libraries (AAR fetched above)
     implementation(mapOf("name" to "sherpa-onnx-$SHERPA_ONNX_VERSION", "ext" to "aar"))
     // Model archive extraction (tar.bz2)
     implementation("org.apache.commons:commons-compress:1.28.0")
