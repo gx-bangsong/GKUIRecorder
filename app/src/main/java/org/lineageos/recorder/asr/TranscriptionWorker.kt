@@ -64,9 +64,12 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
 
         return withContext(Dispatchers.IO) {
             try {
-                val segments = models.useModel(modelId) { _, modelDir ->
-                    runPipeline(app, uri, modelDir, language, base, repository, notifications, title)
-                }
+                // One recognizer app-wide: wait here (not in the scheduler) until it is free.
+                val segments = AsrGlobalLock.acquire(app) { isStopped }?.use {
+                    models.useModel(modelId) { _, modelDir ->
+                        runPipeline(app, uri, modelDir, language, base, repository, notifications, title)
+                    }
+                } ?: throw TranscriptionCancelled()
                 repository.complete(uri, base, segments)
                 notifications.transcriptionFinished(id, title, succeeded = true)
                 Result.success()

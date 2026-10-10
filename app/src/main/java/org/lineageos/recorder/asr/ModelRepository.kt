@@ -134,7 +134,7 @@ class ModelRepository private constructor(context: Context) {
      */
     suspend fun delete(modelId: String): Boolean = withContext(Dispatchers.IO) {
         synchronized(this@ModelRepository) {
-            if (isBusy(modelId)) {
+            if (isBusy(modelId) || AsrGlobalLock.isHeld(app)) {
                 return@withContext false
             }
             storage.deleteModel(modelId)

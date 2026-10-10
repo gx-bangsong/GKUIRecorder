@@ -43,41 +43,64 @@ val sherpaOnnxAar = File(sherpaOnnxDir, "sherpa-onnx-$SHERPA_ONNX_VERSION.aar")
 val sherpaOnnxClassesJar = File(sherpaOnnxDir, "sherpa-onnx-classes.jar")
 val sherpaOnnxJniLibs = File(sherpaOnnxDir, "jniLibs")
 
-if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)) {
-    sherpaOnnxDir.mkdirs()
-    val part = File(sherpaOnnxDir, sherpaOnnxAar.name + ".part")
-    val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
-        "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
-    URI(url).toURL().openStream().use { input ->
-        part.outputStream().use { output -> input.copyTo(output) }
-    }
-    val actual = sha256Of(part)
-    check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
-    check(part.renameTo(sherpaOnnxAar)) { "Cannot move the sherpa-onnx AAR into place" }
-}
-
-if (!sherpaOnnxClassesJar.isFile || !File(sherpaOnnxJniLibs, "arm64-v8a").isDirectory) {
-    ZipFile(sherpaOnnxAar).use { zip ->
-        val entries = zip.entries()
-        while (entries.hasMoreElements()) {
-            val entry = entries.nextElement()
-            val name = entry.name
-            val target: File? = when {
-                name == "classes.jar" -> sherpaOnnxClassesJar
-                name.startsWith("jni/arm64-v8a/") && !entry.isDirectory ->
-                    File(sherpaOnnxJniLibs, "arm64-v8a/" + name.substringAfterLast('/'))
-                else -> null
+// Execution-phase task: nothing here runs during configuration, so `help`, `tasks` and `clean`
+// never touch the network or the disk. Outputs are declared, so Gradle skips the task when the
+// files are already present and correct, and re-runs it when they are missing or changed.
+val prepareSherpaOnnx = tasks.register("prepareSherpaOnnx") {
+    group = "build setup"
+    description = "Downloads and verifies the pinned sherpa-onnx AAR and unpacks classes.jar and arm64 JNI libraries."
+    outputs.file(sherpaOnnxAar)
+    outputs.file(sherpaOnnxClassesJar)
+    outputs.dir(sherpaOnnxJniLibs)
+    doLast {
+        if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)) {
+            // A missing or corrupt AAR is removed and downloaded again.
+            sherpaOnnxAar.delete()
+            sherpaOnnxDir.mkdirs()
+            val part = File(sherpaOnnxDir, sherpaOnnxAar.name + ".part")
+            val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
+                "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
+            val connection = URI(url).toURL().openConnection()
+            connection.connectTimeout = 30_000
+            connection.readTimeout = 120_000
+            connection.getInputStream().use { input ->
+                part.outputStream().use { output -> input.copyTo(output) }
             }
-            if (target != null) {
-                target.parentFile.mkdirs()
-                zip.getInputStream(entry).use { input ->
-                    target.outputStream().use { output -> input.copyTo(output) }
+            val actual = sha256Of(part)
+            check(actual == SHERPA_ONNX_AAR_SHA256) { "sherpa-onnx AAR checksum mismatch: $actual" }
+            check(part.renameTo(sherpaOnnxAar)) { "Cannot move the sherpa-onnx AAR into place" }
+        }
+
+        sherpaOnnxClassesJar.delete()
+        sherpaOnnxJniLibs.deleteRecursively()
+        ZipFile(sherpaOnnxAar).use { zip ->
+            val entries = zip.entries()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                val name = entry.name
+                val target: File? = when {
+                    name == "classes.jar" -> sherpaOnnxClassesJar
+                    name.startsWith("jni/arm64-v8a/") && !entry.isDirectory ->
+                        File(sherpaOnnxJniLibs, "arm64-v8a/" + name.substringAfterLast('/'))
+                    else -> null
+                }
+                if (target != null) {
+                    target.parentFile.mkdirs()
+                    zip.getInputStream(entry).use { input ->
+                        target.outputStream().use { output -> input.copyTo(output) }
+                    }
                 }
             }
         }
+        check(sherpaOnnxClassesJar.isFile) { "sherpa-onnx classes.jar missing from the AAR" }
     }
 }
-check(sherpaOnnxClassesJar.isFile) { "sherpa-onnx classes.jar missing from the AAR" }
+
+// Everything that compiles or packages the app runs after the sherpa files are in place.
+tasks.named("preBuild") { dependsOn(prepareSherpaOnnx) }
+tasks.configureEach {
+    if (name.startsWith("merge") && name.endsWith("JniLibFolders")) dependsOn(prepareSherpaOnnx)
+}
 
 android {
     compileSdk = 36
@@ -135,7 +158,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.10"))
 
     // Offline speech recognition: sherpa-onnx Kotlin API (classes from the pinned AAR, see above)
-    implementation(files(sherpaOnnxClassesJar))
+    implementation(files(sherpaOnnxClassesJar).builtBy(prepareSherpaOnnx))
     // Model archive extraction (tar.bz2)
     implementation("org.apache.commons:commons-compress:1.28.0")
     // Background model downloads and transcription jobs

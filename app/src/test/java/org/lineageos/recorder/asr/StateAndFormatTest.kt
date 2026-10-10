@@ -67,7 +67,7 @@ class StateAndFormatTest {
     @Test
     fun catalogEntriesAreValid() {
         val model = ModelCatalog.all.single()
-        assertEquals("sensevoice-small-int8-2025-09-09", model.id)
+        assertEquals("sensevoice-small-int8-2024-07-17", model.id)
         assertTrue(model.archiveUrl.startsWith("https://"))
         assertNotNull(ModelCatalog.find(model.id))
         assertNull(ModelCatalog.find("missing"))

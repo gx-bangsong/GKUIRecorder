@@ -16,17 +16,19 @@ package org.lineageos.recorder.asr.model
 object ModelCatalog {
     private const val SHERPA_RELEASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models"
 
-    private const val SENSEVOICE_ARCHIVE_ROOT = "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09"
+    // 2024-07-17 INT8 is the default for Mandarin recordings: its ITN setting outputs digits and
+    // punctuation. The 2025-09-09 build does not output punctuation (it is tuned for Cantonese).
+    private const val SENSEVOICE_ARCHIVE_ROOT = "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17"
 
     val SENSEVOICE_SMALL_INT8 = ModelDescriptor(
-        id = "sensevoice-small-int8-2025-09-09",
+        id = "sensevoice-small-int8-2024-07-17",
         displayName = "SenseVoiceSmall INT8",
-        version = "2025-09-09",
+        version = "2024-07-17",
         engine = EngineKind.SENSEVOICE_SHERPA,
         supportedLanguages = listOf("auto", "zh", "en", "yue", "ja", "ko"),
         archiveUrl = "$SHERPA_RELEASE/$SENSEVOICE_ARCHIVE_ROOT.tar.bz2",
-        archiveSha256 = "7305f7905bfcf77fa0b39388a313f3da35c68d971661a65475b56fb2162c8e63",
-        archiveBytes = 165_783_878L,
+        archiveSha256 = "7d1efa2138a65b0b488df37f8b89e3d91a60676e416f515b952358d83dfd347e",
+        archiveBytes = 163_002_883L,
         archiveRoot = SENSEVOICE_ARCHIVE_ROOT,
         standaloneDownloads = listOf(
             StandaloneDownload(
