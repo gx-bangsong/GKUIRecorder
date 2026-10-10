@@ -9,6 +9,7 @@ import org.lineageos.generatebp.models.Module
 import java.io.File
 import java.net.URI
 import java.security.MessageDigest
+import java.util.zip.ZipFile
 
 plugins {
     id("com.android.application")
@@ -56,7 +57,7 @@ if (!(sherpaOnnxAar.isFile && sha256Of(sherpaOnnxAar) == SHERPA_ONNX_AAR_SHA256)
 }
 
 if (!sherpaOnnxClassesJar.isFile || !File(sherpaOnnxJniLibs, "arm64-v8a").isDirectory) {
-    java.util.zip.ZipFile(sherpaOnnxAar).use { zip ->
+    ZipFile(sherpaOnnxAar).use { zip ->
         val entries = zip.entries()
         while (entries.hasMoreElements()) {
             val entry = entries.nextElement()
