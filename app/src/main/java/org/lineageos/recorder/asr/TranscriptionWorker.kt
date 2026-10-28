@@ -57,7 +57,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
 
         val descriptor = ModelCatalog.find(modelId)
         if (descriptor == null || models.readyDir(descriptor) == null) {
-            repository.fail(uri, null, MESSAGE_MODEL_MISSING)
+            repository.fail(uri, null, MESSAGE_MODEL_MISSING, errorCode = TranscriptRecord.ERROR_MODEL_MISSING)
             return Result.failure()
         }
         val base = repository.start(uri, descriptor.id, descriptor.version, language)
@@ -70,22 +70,27 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
                         runPipeline(app, uri, modelDir, language, base, repository, notifications, title)
                     }
                 } ?: throw TranscriptionCancelled()
-                repository.complete(uri, base, segments)
+                // A recording deleted during the run must not get its transcript written back
+                if (AsrRuntime.recordingExists(app, uri)) {
+                    repository.complete(uri, base, segments)
+                }
                 notifications.transcriptionFinished(id, title, succeeded = true)
                 Result.success()
             } catch (e: TranscriptionCancelled) {
-                repository.cancel(uri, base)
+                persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
                 Result.failure()
             } catch (e: CancellationException) {
-                repository.cancel(uri, base)
+                persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
                 throw e
             } catch (e: Throwable) {
                 if (isStopped) {
-                    repository.cancel(uri, base)
+                    persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
                     return@withContext Result.failure()
                 }
                 // Only the exception type: no paths, audio or transcript text in messages or logs
-                repository.fail(uri, base, "${MESSAGE_FAILED_PREFIX}${e.javaClass.simpleName}")
+                persistPartial(app, uri, base, repository) { r, b ->
+                    r.fail(uri, b, "${MESSAGE_FAILED_PREFIX}${e.javaClass.simpleName}", latestSegments(), lastFraction)
+                }
                 notifications.transcriptionFinished(id, title, succeeded = false)
                 Result.failure()
             }
@@ -109,6 +114,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
         val audio = TranscriptionPipeline.Audio(source.durationMs) { onChunk -> source.decode(onChunk) }
         var lastCheckpoint = 0f
         var lastCheckpointAt = 0L
+        latestUtterances = emptyList()
 
         val control = object : TranscriptionPipeline.Control {
             override fun checkCancelled() {
@@ -131,6 +137,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
             }
 
             override fun onProgress(fraction: Float, utterances: List<Utterance>) {
+                latestUtterances = utterances
                 val now = System.currentTimeMillis()
                 if (fraction - lastCheckpoint < CHECKPOINT_STEP && now - lastCheckpointAt < CHECKPOINT_MS) {
                     return
@@ -160,6 +167,26 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
 
     @Volatile
     private var lastFraction = 0f
+
+    /** Latest utterances of this run. Read when a cancel or failure has to be stored. */
+    @Volatile
+    private var latestUtterances: List<Utterance> = emptyList()
+
+    private fun latestSegments(): List<TranscriptSegment> =
+        SegmentMerger.merge(latestUtterances).map { TranscriptSegment(it.startMs, it.endMs, it.text) }
+
+    /** Stores the partial state, unless the recording was deleted in the meantime. */
+    private inline fun persistPartial(
+        app: Context,
+        uri: String,
+        base: TranscriptRecord,
+        repository: TranscriptionRepository,
+        write: (TranscriptionRepository, TranscriptRecord) -> Unit,
+    ) {
+        if (AsrRuntime.recordingExists(app, uri)) {
+            write(repository, base)
+        }
+    }
 
     private fun lastPercent(): Int = (lastFraction * 100).toInt()
 

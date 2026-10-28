@@ -41,6 +41,14 @@ class ModelInstaller(
         listener: InstallListener,
         isCancelled: () -> Boolean,
     ): String {
+        // Fail-closed, before any staging directory or READY marker is created.
+        if (descriptor.validateManifest() is ManifestValidationResult.Incomplete) {
+            throw ModelFailure(
+                FailureReason.MANIFEST_INCOMPLETE,
+                recoverable = false,
+                message = "Model manifest is incomplete",
+            )
+        }
         if (storage.isReady(descriptor)) {
             return descriptor.version
         }

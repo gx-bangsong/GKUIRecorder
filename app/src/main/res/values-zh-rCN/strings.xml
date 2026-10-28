@@ -213,4 +213,6 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="playback_transcript_running">正在转写… %1$d%%</string>
     <string name="playback_transcript_failed">转写失败，请在录音列表中重试。</string>
     <string name="playback_transcript_cancelled">转写已取消。</string>
+    <string name="asr_manifest_incomplete">模型清单尚未完成验证，此构建暂不可下载</string>
+    <string name="transcript_corrupt">转写数据损坏，可重新生成</string>
 </resources>

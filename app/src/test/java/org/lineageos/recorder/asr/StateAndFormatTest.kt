@@ -20,6 +20,7 @@ import org.lineageos.recorder.asr.model.ModelStateTransitions
 import org.lineageos.recorder.asr.model.FailureReason
 import org.lineageos.recorder.asr.model.InstalledFile
 import org.lineageos.recorder.asr.model.InstalledManifest
+import org.lineageos.recorder.asr.transcription.TranscriptJson
 import org.lineageos.recorder.asr.transcription.TranscriptRecord
 import org.lineageos.recorder.asr.transcription.TranscriptSegment
 import org.lineageos.recorder.asr.transcription.TranscriptStatus
@@ -125,12 +126,23 @@ class StateAndFormatTest {
     @Test
     fun transcriptRecordRoundTrip() {
         val record = TranscriptRecord(
-            status = TranscriptStatus.COMPLETED, progress = 1f, text = "你好 world",
+            stableRecordingId = TranscriptRecord.stableRecordingId("content://rec/1"),
+            status = TranscriptStatus.COMPLETED,
+            progress = 1f,
+            text = "你好 world",
             segments = listOf(TranscriptSegment(0, 1500, "你好"), TranscriptSegment(1500, 3000, "world")),
-            language = "auto", modelId = "m", modelVersion = "v", errorMessage = null,
-            createdAtMillis = 1, updatedAtMillis = 2,
+            language = "auto",
+            modelId = "m",
+            modelVersion = "v",
+            runtimeVersion = "sherpa-onnx 1.13.8",
+            lastCompletedAudioPositionMs = 3000,
+            resumeFromMs = 0,
+            errorCode = null,
+            errorMessage = null,
+            createdAtMillis = 1,
+            updatedAtMillis = 2,
         )
-        assertEquals(record, TranscriptRecord.fromJson(record.toJson()))
+        assertEquals(record, TranscriptJson.decode(TranscriptJson.encode(record)))
     }
 
     @Test

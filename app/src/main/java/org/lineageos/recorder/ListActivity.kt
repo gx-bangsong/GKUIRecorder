@@ -49,6 +49,7 @@ import org.lineageos.recorder.asr.AsrRuntime
 import org.lineageos.recorder.asr.ModelRepository
 import org.lineageos.recorder.asr.TranscriptionScheduler
 import org.lineageos.recorder.asr.model.ModelCatalog
+import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelDescriptor
 import org.lineageos.recorder.asr.transcription.TranscriptRecord
 import org.lineageos.recorder.asr.transcription.TranscriptStatus
@@ -486,6 +487,8 @@ class ListActivity : AppCompatActivity() {
                     R.string.asr_model_downloading_wait,
                     Toast.LENGTH_LONG,
                 ).show()
+                model.validateManifest() is ManifestValidationResult.Incomplete ->
+                    Toast.makeText(this@ListActivity, R.string.asr_manifest_incomplete, Toast.LENGTH_LONG).show()
                 else -> showModelConsent(recording, model)
             }
         }
@@ -496,14 +499,15 @@ class ListActivity : AppCompatActivity() {
             .setTitle(R.string.asr_consent_title)
             .setMessage(ModelDialogs.consentMessage(this, model))
             .setPositiveButton(R.string.asr_consent_download) { _: DialogInterface?, _: Int ->
-                TranscriptionScheduler.enqueue(
+                val started = TranscriptionScheduler.enqueue(
                     this,
                     recording.uri.toString(),
                     recording.title,
                     model,
                     downloadFirst = true,
                 )
-                Toast.makeText(this, R.string.asr_download_started, Toast.LENGTH_LONG).show()
+                val message = if (started) R.string.asr_download_started else R.string.asr_manifest_incomplete
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             }
             .setNeutralButton(R.string.asr_consent_view) { _: DialogInterface?, _: Int ->
                 startActivity(Intent(this, ModelSettingsActivity::class.java))

@@ -28,7 +28,16 @@ data class ExpectedFile(
     val archivePath: String?,
     val localName: String,
     val sha256: String?,
+    /** Exact byte size. Null when not verified yet, which makes the manifest incomplete. */
+    val sizeBytes: Long? = null,
 )
+
+/** Result of checking that a catalog entry can be downloaded and verified. */
+sealed interface ManifestValidationResult {
+    data object Complete : ManifestValidationResult
+
+    data class Incomplete(val problems: List<String>) : ManifestValidationResult
+}
 
 /** A file downloaded on its own, outside the model archive (for example the VAD model). */
 data class StandaloneDownload(
@@ -80,6 +89,42 @@ data class ModelDescriptor(
         }
     }
 
+    /**
+     * Fail-closed check of the key resources. Every key file needs a non-empty name, a positive
+     * byte size and a SHA-256 in hex form that is not all zeros. Anything missing makes the entry
+     * unusable for download and installation, so no staging directory or READY marker is created.
+     */
+    fun validateManifest(): ManifestValidationResult {
+        val problems = mutableListOf<String>()
+        fun checkHash(label: String, hash: String?) {
+            when {
+                hash == null -> problems.add("$label: sha256 missing")
+                !HEX_SHA256_REGEX.matches(hash) -> problems.add("$label: sha256 malformed")
+                hash.all { it == '0' } -> problems.add("$label: sha256 is all zeros")
+            }
+        }
+        fun checkSize(label: String, bytes: Long?) {
+            if (bytes == null || bytes <= 0L) problems.add("$label: size missing")
+        }
+        checkHash("archive", archiveSha256)
+        checkSize("archive", archiveBytes)
+        standaloneDownloads.forEach {
+            checkHash(it.localName, it.sha256)
+            checkSize(it.localName, it.sizeBytes)
+        }
+        expectedFiles.forEach { file ->
+            if (file.localName.isBlank()) problems.add("expected file without a name")
+            val standalone = standaloneDownloads.firstOrNull { it.localName == file.localName }
+            checkHash(file.localName, file.sha256 ?: standalone?.sha256)
+            checkSize(file.localName, file.sizeBytes ?: standalone?.sizeBytes)
+        }
+        return if (problems.isEmpty()) {
+            ManifestValidationResult.Complete
+        } else {
+            ManifestValidationResult.Incomplete(problems)
+        }
+    }
+
     /** Bytes that have to be downloaded: the archive plus every standalone file. */
     val downloadBytes: Long
         get() = archiveBytes + standaloneDownloads.sumOf { it.sizeBytes }
@@ -98,6 +143,7 @@ data class ModelDescriptor(
         val ID_REGEX = Regex("^[a-z0-9][a-z0-9._-]{0,63}$")
         val SAFE_FILE_NAME = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
         val SHA256_REGEX = Regex("^[0-9a-f]{64}$")
+        val HEX_SHA256_REGEX = Regex("[0-9a-fA-F]{64}")
         const val SAFETY_MARGIN_BYTES = 64L * 1024 * 1024
     }
 }

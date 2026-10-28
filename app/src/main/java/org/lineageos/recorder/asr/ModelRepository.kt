@@ -19,6 +19,7 @@ import androidx.work.workDataOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.model.FailureReason
+import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.model.ModelDescriptor
 import org.lineageos.recorder.asr.model.ModelState
@@ -101,7 +102,14 @@ class ModelRepository private constructor(context: Context) {
      * Queues the download (and install) of [descriptor]. If [afterwards] is given it runs once the
      * model is ready; it is not run when the download fails or is cancelled.
      */
-    fun enqueueDownload(descriptor: ModelDescriptor, afterwards: OneTimeWorkRequest? = null) {
+    /**
+     * Queues a download (and an optional follow-up). Returns false, without queuing anything, when
+     * the catalog entry is incomplete. Callers must not start the follow-up work in that case.
+     */
+    fun enqueueDownload(descriptor: ModelDescriptor, afterwards: OneTimeWorkRequest? = null): Boolean {
+        if (descriptor.validateManifest() is ManifestValidationResult.Incomplete) {
+            return false
+        }
         val download = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
             .setInputData(workDataOf(KEY_MODEL_ID to descriptor.id))
             .setConstraints(
@@ -121,6 +129,7 @@ class ModelRepository private constructor(context: Context) {
         // then() returns a new continuation; the chain must be built from its result
         val full = if (afterwards != null) chain.then(afterwards) else chain
         full.enqueue()
+        return true
     }
 
     /** Cancels a queued or running download. The partial file stays so the next try resumes it. */

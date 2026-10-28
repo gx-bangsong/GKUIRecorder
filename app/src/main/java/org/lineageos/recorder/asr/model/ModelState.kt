@@ -48,6 +48,8 @@ enum class FailureReason {
     NO_SPACE,
     STORAGE,
     CANCELLED,
+    /** The catalog entry has no verified hashes or sizes. Not a network problem. */
+    MANIFEST_INCOMPLETE,
     UNKNOWN,
 }
 

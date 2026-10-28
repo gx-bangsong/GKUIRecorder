@@ -278,4 +278,6 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="playback_transcript_running">Transcribing… %1$d%%</string>
     <string name="playback_transcript_failed">Transcription failed. Try again from the recording list.</string>
     <string name="playback_transcript_cancelled">Transcription was cancelled.</string>
+    <string name="asr_manifest_incomplete">Model manifest is not fully verified yet. This build cannot download it.</string>
+    <string name="transcript_corrupt">Transcript data is damaged. You can transcribe the recording again.</string>
 </resources>

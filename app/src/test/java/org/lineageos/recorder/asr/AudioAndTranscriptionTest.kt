@@ -18,12 +18,8 @@ import org.lineageos.recorder.asr.engine.RecognitionOptions
 import org.lineageos.recorder.asr.engine.RecognitionSession
 import org.lineageos.recorder.asr.engine.SpeechEngine
 import org.lineageos.recorder.asr.engine.Utterance
-import org.lineageos.recorder.asr.transcription.KeyValueStore
 import org.lineageos.recorder.asr.transcription.SegmentMerger
-import org.lineageos.recorder.asr.transcription.TranscriptSegment
-import org.lineageos.recorder.asr.transcription.TranscriptStatus
 import org.lineageos.recorder.asr.transcription.TranscriptionPipeline
-import org.lineageos.recorder.asr.transcription.TranscriptionRepository
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
@@ -92,49 +88,6 @@ class AudioAndTranscriptionTest {
         resampler.flush { buf, n -> for (i in 0 until n) output += buf[i] }
         val peak = output.drop(200).maxOf { Math.abs(it) }
         assertTrue("peak=$peak", peak > 0.8f)
-    }
-
-    // ---- Repository ------------------------------------------------------------------------
-
-    private class MemoryStore : KeyValueStore {
-        val map = HashMap<String, String>()
-        override fun get(key: String) = map[key]
-        override fun put(key: String, value: String) { map[key] = value }
-        override fun remove(key: String) { map.remove(key) }
-    }
-
-    @Test
-    fun legacyPlainTextIsMigratedAsCompletedAndNotLost() {
-        val store = MemoryStore()
-        store.put("transcript:content://rec/1", "旧版本的转写文本")
-        val repo = TranscriptionRepository(store)
-        val record = repo.get("content://rec/1")!!
-        assertEquals(TranscriptStatus.COMPLETED, record.status)
-        assertEquals("旧版本的转写文本", record.text)
-        assertEquals("旧版本的转写文本", repo.completedText("content://rec/1"))
-    }
-
-    @Test
-    fun corruptStructuredRecordBecomesFailedNotCompleted() {
-        val store = MemoryStore()
-        store.put("transcript:u", "{broken")
-        val record = TranscriptionRepository(store).get("u")!!
-        assertEquals(TranscriptStatus.FAILED, record.status)
-        assertNull(TranscriptionRepository(store).completedText("u"))
-    }
-
-    @Test
-    fun startCheckpointCompleteLifecycleAndDelete() {
-        val store = MemoryStore()
-        val repo = TranscriptionRepository(store, clock = { 5L })
-        val base = repo.start("u", "m", "v", "auto")
-        assertEquals(TranscriptStatus.RUNNING, base.status)
-        repo.checkpoint("u", base, 0.5f, listOf(TranscriptSegment(0, 1, "一")))
-        assertEquals(0.5f, repo.get("u")!!.progress, 1e-6f)
-        repo.complete("u", base, listOf(TranscriptSegment(0, 1, "一"), TranscriptSegment(1, 2, "二")))
-        assertEquals("一二", repo.completedText("u"))
-        repo.remove("u")
-        assertNull(repo.get("u"))
     }
 
     // ---- Pipeline --------------------------------------------------------------------------

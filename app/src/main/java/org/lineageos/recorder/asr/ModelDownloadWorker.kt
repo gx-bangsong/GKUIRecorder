@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.model.FailureReason
 import org.lineageos.recorder.asr.model.InstallListener
+import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.model.ModelFailure
 import org.lineageos.recorder.asr.model.ModelInstaller
@@ -29,6 +30,14 @@ class ModelDownloadWorker(context: Context, params: WorkerParameters) : Coroutin
     override suspend fun doWork(): Result {
         val modelId = inputData.getString(ModelRepository.KEY_MODEL_ID) ?: return Result.failure()
         val descriptor = ModelCatalog.find(modelId) ?: return Result.failure()
+        if (descriptor.validateManifest() is ManifestValidationResult.Incomplete) {
+            return Result.failure(
+                workDataOf(
+                    ModelRepository.KEY_REASON to FailureReason.MANIFEST_INCOMPLETE.name,
+                    ModelRepository.KEY_RECOVERABLE to false,
+                ),
+            )
+        }
         val notifications = AsrNotifications(applicationContext)
         setForeground(notifications.downloadForeground(id, descriptor.displayName, 0, indeterminate = true))
 

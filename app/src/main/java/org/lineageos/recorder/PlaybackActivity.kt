@@ -31,7 +31,9 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.AsrRuntime
 import org.lineageos.recorder.asr.transcription.TranscriptRecord
 import org.lineageos.recorder.asr.transcription.TranscriptStatus
@@ -334,8 +336,12 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         audioGroup.isVisible = !transcript
         transcriptScroll.isVisible = transcript
         if (transcript) {
-            val record = uri?.let { AsrRuntime.transcripts(this).get(it.toString()) }
-            transcriptTextView.text = transcriptText(record)
+            val target = uri?.toString() ?: return
+            // File I/O: read off the main thread
+            lifecycleScope.launch {
+                val record = withContext(Dispatchers.IO) { AsrRuntime.transcripts(this@PlaybackActivity).get(target) }
+                transcriptTextView.text = transcriptText(record)
+            }
         }
     }
 
@@ -343,6 +349,9 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private fun transcriptText(record: TranscriptRecord?): String {
         if (record == null) {
             return getString(R.string.playback_no_transcript)
+        }
+        if (record.errorCode == TranscriptRecord.ERROR_CORRUPT) {
+            return getString(R.string.transcript_corrupt)
         }
         return when (record.status) {
             TranscriptStatus.COMPLETED -> record.text.ifBlank { getString(R.string.transcript_empty) }

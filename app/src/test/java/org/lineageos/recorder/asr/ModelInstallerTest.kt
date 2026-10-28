@@ -92,8 +92,9 @@ class ModelInstallerTest {
             StandaloneDownload(fakeHost() + "/silero_vad.onnx", "silero_vad.onnx", vadSha, vadBytesSize),
         ),
         expectedFiles = listOf(
-            ExpectedFile("model.int8.onnx", "model.int8.onnx", null),
-            ExpectedFile("tokens.txt", "tokens.txt", null),
+            // Test data: real hashes and sizes of the bytes the fake archive contains
+            ExpectedFile("model.int8.onnx", "model.int8.onnx", Digests.sha256Of(modelBytes.inputStream()), modelBytes.size.toLong()),
+            ExpectedFile("tokens.txt", "tokens.txt", Digests.sha256Of(tokensBytes.inputStream()), tokensBytes.size.toLong()),
             ExpectedFile(null, "silero_vad.onnx", vadSha),
         ),
         maxExtractedBytes = maxExtracted,
@@ -145,7 +146,7 @@ class ModelInstallerTest {
         val old = descriptor(version = "2025-01-01")
         install(old)
 
-        val bad = descriptor(version = "2025-09-09", archiveSha = "0".repeat(64))
+        val bad = descriptor(version = "2025-09-09", archiveSha = "1".repeat(64))
         val failure = assertThrows(ModelFailure::class.java) { install(bad) }
         assertEquals(FailureReason.CHECKSUM_MISMATCH, failure.reason)
         assertTrue(failure.recoverable)

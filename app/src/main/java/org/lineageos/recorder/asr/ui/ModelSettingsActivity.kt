@@ -25,6 +25,7 @@ import org.lineageos.recorder.asr.engine.RecognitionOptions
 import org.lineageos.recorder.asr.model.FailureReason
 import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.model.ModelDescriptor
+import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelState
 import org.lineageos.recorder.utils.PreferencesManager
 
@@ -98,7 +99,13 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
     }
 
     private fun render(state: ModelState, busy: Boolean) {
-        stateText.text = stateLabel(state)
+        // Fail-closed in the UI too: an incomplete catalog entry cannot be downloaded from here.
+        val manifestOk = model.validateManifest() !is ManifestValidationResult.Incomplete
+        stateText.text = if (!manifestOk && state !is ModelState.Ready) {
+            getString(R.string.asr_manifest_incomplete)
+        } else {
+            stateLabel(state)
+        }
         when (state) {
             is ModelState.Downloading -> showProgress(
                 if (state.totalBytes > 0) (state.downloadedBytes * 100 / state.totalBytes).toInt() else 0,
@@ -121,13 +128,14 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
         when (state) {
             is ModelState.NotInstalled, is ModelState.UpdateAvailable -> {
                 primaryButton.setText(R.string.asr_action_download)
-                primaryButton.isEnabled = !busy
+                primaryButton.isEnabled = !busy && manifestOk
                 primaryButton.tag = Action.DOWNLOAD
             }
             is ModelState.Failed -> {
                 primaryButton.setText(R.string.asr_action_retry)
                 primaryButton.tag = Action.DOWNLOAD
-                primaryButton.isEnabled = true
+                // Retry goes through the same guard, so it cannot bypass an incomplete manifest
+                primaryButton.isEnabled = manifestOk
             }
             is ModelState.Queued, is ModelState.Downloading,
             is ModelState.Verifying, is ModelState.Installing,
@@ -165,7 +173,9 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
     private fun onPrimaryClicked() {
         when (primaryButton.tag) {
             Action.DOWNLOAD -> ModelDialogs.confirmDownload(this, model) {
-                repository.enqueueDownload(model)
+                if (!repository.enqueueDownload(model)) {
+                    Toast.makeText(this, R.string.asr_manifest_incomplete, Toast.LENGTH_LONG).show()
+                }
                 refresh()
             }
             Action.CANCEL -> {
@@ -245,6 +255,7 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
             FailureReason.NO_SPACE -> R.string.asr_reason_space
             FailureReason.STORAGE -> R.string.asr_reason_storage
             FailureReason.CANCELLED -> R.string.asr_reason_cancelled
+            FailureReason.MANIFEST_INCOMPLETE -> R.string.asr_manifest_incomplete
             FailureReason.UNKNOWN -> R.string.asr_reason_unknown
         }
     }

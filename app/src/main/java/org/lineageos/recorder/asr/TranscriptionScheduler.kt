@@ -42,7 +42,7 @@ object TranscriptionScheduler {
         title: String,
         model: ModelDescriptor,
         downloadFirst: Boolean,
-    ) {
+    ): Boolean {
         val language = PreferencesManager(context).asrLanguage
         val request: OneTimeWorkRequest = OneTimeWorkRequestBuilder<TranscriptionWorker>()
             .setInputData(
@@ -57,14 +57,14 @@ object TranscriptionScheduler {
             .build()
         val repository = ModelRepository.get(context)
         if (downloadFirst) {
-            repository.enqueueDownload(model, afterwards = request)
-        } else {
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                tag(uri),
-                ExistingWorkPolicy.KEEP,
-                request,
-            )
+            return repository.enqueueDownload(model, afterwards = request)
         }
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            tag(uri),
+            ExistingWorkPolicy.KEEP,
+            request,
+        )
+        return true
     }
 
     /** Cancels a queued or running transcription. Finished segments are kept. */
