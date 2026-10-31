@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import com.android.build.gradle.api.BaseVariantOutput
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.lineageos.generatebp.GenerateBpPluginExtension
 import org.gradle.api.GradleException
@@ -196,13 +195,22 @@ android {
 }
 
 // APK file names. "legacy" keeps the existing names, which CI and verify-apk read. Any other
-// distribution gets its own name, so building a second distribution never replaces the first APK.
-// The Variant API (androidComponents) no longer exposes outputFileName in AGP 8.13, so this uses the
-// AGP application variant API, which still does.
+// distribution is renamed right after packaging, so its file name differs from the legacy one.
+// Build legacy first and keep its APKs, because the standalone build writes the same output path.
+val apkOutputs = layout.buildDirectory
 if (distributionName != "legacy") {
-    android.applicationVariants.all { variant ->
-        variant.outputs.forEach { output ->
-            (output as BaseVariantOutput).outputFileName = "app-$distributionName-${variant.name}.apk"
+    tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.configureEach {
+        doLast {
+            val type = it.name.removePrefix("package").lowercase()
+            val dir = apkOutputs.dir("outputs/apk/$type").get().asFile
+            val source = listOf("app-$type.apk", "app-$type-unsigned.apk")
+                .map { File(dir, it) }
+                .firstOrNull { file -> file.isFile }
+            if (source != null) {
+                val target = File(dir, "app-$distributionName-$type.apk")
+                target.delete()
+                check(source.renameTo(target)) { "Could not rename ${source.name} to ${target.name}" }
+            }
         }
     }
 }
