@@ -198,7 +198,8 @@ android {
 // distribution is renamed right after packaging, so its file name differs from the legacy one.
 // Build legacy first and keep its APKs, because the standalone build writes the same output path.
 val apkOutputs = layout.buildDirectory
-if (distributionName != "legacy") {
+// AGP creates the variant tasks after this script is evaluated, so the lookup waits for afterEvaluate.
+if (distributionName != "legacy") afterEvaluate {
     for (type in listOf("debug", "release")) {
         tasks.named("package" + type.replaceFirstChar { c -> c.uppercase() }) {
             doLast {
