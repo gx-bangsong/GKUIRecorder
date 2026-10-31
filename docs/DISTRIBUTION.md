@@ -86,13 +86,11 @@ Those checks are not yet run on a device. See the status section below.
 
 ## Status of this change
 
-- The agent cannot edit `.github/workflows/`. The distribution checks for CI are in
-  `docs/ci-patches/0001-verify-distributions.patch`. Apply it to `.github/workflows/build/action.yml`
-  with `git apply`. It adds two distribution builds and the `apkanalyzer` / `aapt2` checks, and it
-  uploads the standalone APKs. Until it is applied, CI only covers the legacy `assembleDebug` path.
-- Not yet run: the standalone build, the `apkanalyzer` checks, and the `aapt2` check of the
-  shortcut target. This sandbox has no Android SDK, Gradle distribution or `apkanalyzer`, so they
-  could not be run here.
+- CI (`.github/workflows/build/action.yml`) builds the legacy release and both standalone variants,
+  runs `apkanalyzer manifest application-id` on each APK, checks the shortcut `targetPackage` string
+  with `aapt2 dump resources`, and uploads the standalone APKs as `standalone-apks`.
+- Not yet confirmed: the CI run for the workflow change. The sandbox has no Android SDK, Gradle
+  distribution or `apkanalyzer`, so the standalone build and these checks were not run here.
 - Not verified on a device: installing both identities side by side, launching, recording,
   playback, transcript pages, notification taps, shortcuts, and the legacy-to-legacy update path.
 - AOSP / Soong: no change. The standalone identity is a Gradle-only build.
