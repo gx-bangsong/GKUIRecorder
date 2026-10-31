@@ -24,6 +24,8 @@ import org.lineageos.recorder.asr.transcription.TranscriptFileStore
 import org.lineageos.recorder.asr.transcription.TranscriptJson
 import org.lineageos.recorder.asr.transcription.TranscriptLoad
 import org.lineageos.recorder.asr.transcription.TranscriptMerge
+import org.lineageos.recorder.asr.transcription.TranscriptPanelState
+import org.lineageos.recorder.asr.transcription.TranscriptPanels
 import org.lineageos.recorder.asr.transcription.TranscriptRecord
 import org.lineageos.recorder.asr.transcription.TranscriptSegment
 import org.lineageos.recorder.asr.transcription.TranscriptSource
@@ -433,5 +435,33 @@ class TranscriptStorageTest {
         repo.complete(uri, base, listOf(TranscriptSegment(0, 1000, "保留")))
         ModelStorage(root).deleteModel("sensevoice-small-int8-2024-07-17")
         assertEquals("保留", repo.completedText(uri))
+    }
+    @Test
+    fun historicalTranscriptIsReadableWithNoModelInstalled() {
+        // No models directory at all: reading saved text must not depend on the model.
+        val root = tmp.root.resolve("noBackup").apply { mkdirs() }
+        val repo = TranscriptionRepository(TranscriptFileStore(File(root, "transcripts"), NioAtomicFileWriter()))
+        val base = repo.start(uri, "sensevoice-small-int8-2024-07-17", "2024-07-17", "auto")
+        repo.complete(uri, base, listOf(TranscriptSegment(0, 1000, "历史结果")))
+        assertFalse(File(root, "models").exists())
+        val panel = TranscriptPanels.of(repo.get(uri), active = false)
+        assertEquals(TranscriptPanelState.COMPLETED, panel.state)
+        assertEquals("历史结果", panel.body)
+    }
+
+    @Test
+    fun checkpointedTextSurvivesARestartAsAnInterruptedRun() {
+        // A process death leaves a RUNNING record with the last checkpoint. A new process reads it.
+        val root = tmp.root.resolve("noBackup").apply { mkdirs() }
+        val first = TranscriptionRepository(TranscriptFileStore(File(root, "transcripts"), NioAtomicFileWriter()))
+        val base = first.start(uri, "sensevoice-small-int8-2024-07-17", "2024-07-17", "auto")
+        first.checkpoint(uri, base, 0.4f, listOf(TranscriptSegment(0, 2000, "已识别")))
+
+        val afterRestart = TranscriptionRepository(TranscriptFileStore(File(root, "transcripts"), NioAtomicFileWriter()))
+        val record = afterRestart.get(uri)!!
+        assertEquals(TranscriptStatus.RUNNING, record.status)
+        val panel = TranscriptPanels.of(record, active = false)
+        assertEquals(TranscriptPanelState.INTERRUPTED, panel.state)
+        assertEquals("已识别", panel.body)
     }
 }

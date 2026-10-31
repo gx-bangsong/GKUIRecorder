@@ -57,7 +57,11 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
 
         val descriptor = ModelCatalog.find(modelId)
         if (descriptor == null || models.readyDir(descriptor) == null) {
-            repository.fail(uri, null, MESSAGE_MODEL_MISSING, errorCode = TranscriptRecord.ERROR_MODEL_MISSING)
+            // Only record the failure when there is nothing saved. A redo must not replace a finished
+            // transcript with an empty failure just because the model is missing.
+            if (repository.get(uri) == null) {
+                repository.fail(uri, null, MESSAGE_MODEL_MISSING, errorCode = TranscriptRecord.ERROR_MODEL_MISSING)
+            }
             return Result.failure()
         }
         val base = repository.start(uri, descriptor.id, descriptor.version, language)
@@ -74,7 +78,9 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
                 if (AsrRuntime.recordingExists(app, uri)) {
                     repository.complete(uri, base, segments)
                 }
-                notifications.transcriptionFinished(id, title, succeeded = true)
+                // After the save, and never allowed to change it: a notification error must not
+                // reach the catch below, which would store the finished transcript as FAILED.
+                runCatching { notifications.transcriptionFinished(id, uri, title, succeeded = true) }
                 Result.success()
             } catch (e: TranscriptionCancelled) {
                 persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
@@ -91,7 +97,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
                 persistPartial(app, uri, base, repository) { r, b ->
                     r.fail(uri, b, "${MESSAGE_FAILED_PREFIX}${e.javaClass.simpleName}", latestSegments(), lastFraction)
                 }
-                notifications.transcriptionFinished(id, title, succeeded = false)
+                runCatching { notifications.transcriptionFinished(id, uri, title, succeeded = false) }
                 Result.failure()
             }
         }

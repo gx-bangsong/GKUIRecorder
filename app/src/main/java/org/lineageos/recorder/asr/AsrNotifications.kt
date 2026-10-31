@@ -8,13 +8,19 @@ package org.lineageos.recorder.asr
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.TaskStackBuilder
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
+import org.lineageos.recorder.ListActivity
+import org.lineageos.recorder.PlaybackActivity
 import org.lineageos.recorder.R
+import org.lineageos.recorder.asr.transcription.TranscriptNavigation
 import java.util.UUID
 
 /** Notifications for model downloads and long transcriptions. */
@@ -72,8 +78,11 @@ class AsrNotifications(private val context: Context) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
         }
 
-    /** Result notification after a transcription ends. Not ongoing, so the user can dismiss it. */
-    fun transcriptionFinished(workId: UUID, title: String, succeeded: Boolean) {
+    /**
+     * Result notification after a transcription ends. Not ongoing, so the user can dismiss it. Tapping
+     * it opens this recording's transcript tab. A failure to post is ignored: the saved result stays.
+     */
+    fun transcriptionFinished(workId: UUID, uri: String, title: String, succeeded: Boolean) {
         val text = context.getString(
             if (succeeded) R.string.asr_transcribe_done else R.string.asr_transcribe_failed_notification,
         )
@@ -81,9 +90,33 @@ class AsrNotifications(private val context: Context) {
             .setSmallIcon(R.drawable.ic_mic)
             .setContentTitle(context.getString(R.string.asr_transcribe_notification_title, title))
             .setContentText(text)
+            .setContentIntent(resultIntent(uri, title))
             .setAutoCancel(true)
             .build()
-        manager.notify(notificationId(workId) + 1, notification)
+        try {
+            manager.notify(notificationId(workId) + 1, notification)
+        } catch (e: SecurityException) {
+            // Notifications permission was revoked. Nothing else depends on this notification.
+        }
+    }
+
+    /**
+     * Opens the transcript tab of [uri]. The stack is the list with the player on top, so Back goes to
+     * the list. A request code per recording keeps notifications for different recordings apart.
+     */
+    private fun resultIntent(uri: String, title: String): PendingIntent {
+        val player = Intent(context, PlaybackActivity::class.java)
+            .putExtra(PlaybackActivity.EXTRA_URI, uri)
+            .putExtra(PlaybackActivity.EXTRA_TITLE, title)
+            .putExtra(PlaybackActivity.EXTRA_SHOW_TRANSCRIPT, true)
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        return TaskStackBuilder.create(context)
+            .addNextIntent(Intent(context, ListActivity::class.java))
+            .addNextIntent(player)
+            .getPendingIntent(
+                TranscriptNavigation.requestCode(uri),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )!!
     }
 
     private fun build(

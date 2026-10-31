@@ -215,4 +215,8 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="playback_transcript_cancelled">转写已取消。</string>
     <string name="asr_manifest_incomplete">模型清单尚未完成验证，此构建暂不可下载</string>
     <string name="transcript_corrupt">转写数据损坏，可重新生成</string>
+    <string name="transcript_no_speech">这段录音中未识别到语音。</string>
+    <string name="transcript_interrupted">转写已中断，以下为已保存的文字。</string>
+    <string name="transcript_redo_confirm">重新转写会替换当前的转写结果，是否继续？</string>
+    <string name="recording_deleted">该录音已被删除。</string>
 </resources>

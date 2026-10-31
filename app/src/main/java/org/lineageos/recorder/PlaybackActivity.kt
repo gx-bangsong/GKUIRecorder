@@ -7,6 +7,8 @@ package org.lineageos.recorder
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.media.PlaybackParams
 import android.net.Uri
 import android.os.Bundle
@@ -32,17 +34,24 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.AsrRuntime
-import org.lineageos.recorder.asr.transcription.TranscriptRecord
-import org.lineageos.recorder.asr.transcription.TranscriptStatus
+import org.lineageos.recorder.asr.TranscriptionScheduler
+import org.lineageos.recorder.asr.model.ManifestValidationResult
+import org.lineageos.recorder.asr.model.ModelCatalog
+import org.lineageos.recorder.asr.transcription.TranscriptPanel
+import org.lineageos.recorder.asr.transcription.TranscriptPanelState
+import org.lineageos.recorder.asr.transcription.TranscriptPanels
+import org.lineageos.recorder.asr.ui.TranscriptionStarter
 import org.lineageos.recorder.models.Marker
 import org.lineageos.recorder.models.MarkerType
 import org.lineageos.recorder.playback.PlaybackAdapter
 import org.lineageos.recorder.playback.PlaybackRow
 import org.lineageos.recorder.playback.PlaybackRows
 import org.lineageos.recorder.ui.PlaybackWaveformView
+import org.lineageos.recorder.utils.ExportHelper
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.WaveformLoader
 import java.io.IOException
@@ -61,7 +70,13 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val tabGroup by lazy { findViewById<MaterialButtonToggleGroup>(R.id.tabGroup) }
     private val audioGroup by lazy { findViewById<View>(R.id.audioGroup) }
     private val transcriptScroll by lazy { findViewById<View>(R.id.transcriptScroll) }
+    private val transcriptStatusTextView by lazy { findViewById<TextView>(R.id.transcriptStatusTextView) }
+    private val transcriptBannerTextView by lazy { findViewById<TextView>(R.id.transcriptBannerTextView) }
     private val transcriptTextView by lazy { findViewById<TextView>(R.id.transcriptTextView) }
+    private val copyTranscriptButton by lazy { findViewById<MaterialButton>(R.id.copyTranscriptButton) }
+    private val exportTranscriptButton by lazy { findViewById<MaterialButton>(R.id.exportTranscriptButton) }
+    private val transcriptActionButton by lazy { findViewById<MaterialButton>(R.id.transcriptActionButton) }
+    private val cancelTranscriptButton by lazy { findViewById<MaterialButton>(R.id.cancelTranscriptButton) }
     private val waveformView by lazy { findViewById<PlaybackWaveformView>(R.id.waveformView) }
     private val addImportantButton by lazy { findViewById<MaterialButton>(R.id.addImportantButton) }
     private val addSegmentButton by lazy { findViewById<MaterialButton>(R.id.addSegmentButton) }
@@ -96,6 +111,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private var durationMs = 0L
     private val markers = mutableListOf<Marker>()
     private var speedIndex = 0
+    private var transcriptLoad: Job? = null
+    private var shownPanel: TranscriptPanel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,8 +187,40 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             }
         }
 
+        copyTranscriptButton.setOnClickListener { copyTranscript() }
+        exportTranscriptButton.setOnClickListener { exportTranscript() }
+        transcriptActionButton.setOnClickListener { onTranscriptActionClicked() }
+        cancelTranscriptButton.setOnClickListener {
+            TranscriptionScheduler.cancel(this, parsed.toString())
+        }
+
+        // Live work changes (progress, completion, cancel) re-read the saved transcript. The saved file
+        // is the source of the text, not the work record. Only delivered while the screen is started.
+        TranscriptionScheduler.liveWork(this, parsed.toString()).observe(this) { _ -> loadTranscript() }
+
         loadPlayer(parsed)
         refreshRows()
+
+        // A recording deleted since the list was shown: say so and leave, rather than show nothing.
+        lifecycleScope.launch {
+            val exists = withContext(Dispatchers.IO) {
+                AsrRuntime.recordingExists(this@PlaybackActivity, parsed.toString())
+            }
+            if (!exists) {
+                Toast.makeText(this@PlaybackActivity, R.string.recording_deleted, Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
+
+        if (intent.getBooleanExtra(EXTRA_SHOW_TRANSCRIPT, false)) {
+            tabGroup.check(R.id.tabTranscriptButton)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Returning to the screen (foreground, after rotation or after the list) re-reads the saved state
+        loadTranscript()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -336,29 +385,113 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         audioGroup.isVisible = !transcript
         transcriptScroll.isVisible = transcript
         if (transcript) {
-            val target = uri?.toString() ?: return
-            // File I/O: read off the main thread
-            lifecycleScope.launch {
-                val record = withContext(Dispatchers.IO) { AsrRuntime.transcripts(this@PlaybackActivity).get(target) }
-                transcriptTextView.text = transcriptText(record)
-            }
+            loadTranscript()
         }
     }
 
-    /** What the transcript tab shows for the stored record. Only the record's own fields are used. */
-    private fun transcriptText(record: TranscriptRecord?): String {
-        if (record == null) {
-            return getString(R.string.playback_no_transcript)
+    /**
+     * Reads the saved transcript and the active state on the IO dispatcher, then shows the panel. A
+     * newer load cancels an older one, so a late read cannot overwrite a newer state.
+     */
+    private fun loadTranscript() {
+        val target = uri?.toString() ?: return
+        transcriptLoad?.cancel()
+        transcriptLoad = lifecycleScope.launch {
+            val panel = withContext(Dispatchers.IO) {
+                val record = AsrRuntime.transcripts(this@PlaybackActivity).get(target)
+                val active = TranscriptionScheduler.isActive(this@PlaybackActivity, target)
+                TranscriptPanels.of(record, active)
+            }
+            showPanel(panel)
         }
-        if (record.errorCode == TranscriptRecord.ERROR_CORRUPT) {
-            return getString(R.string.transcript_corrupt)
+    }
+
+    /**
+     * Shows the status line, the saved body and the actions. The status never hides the body: a
+     * cancelled, failed or running transcript still shows the text saved so far.
+     */
+    private fun showPanel(panel: TranscriptPanel) {
+        shownPanel = panel
+        val status = statusText(panel)
+        transcriptStatusTextView.isVisible = status != null
+        transcriptStatusTextView.text = status.orEmpty()
+
+        transcriptTextView.isVisible = panel.hasBody
+        transcriptTextView.text = panel.body
+
+        // Persistent reason when no model can be downloaded in this build. Only where a run was offered.
+        val unavailable = panel.canStart &&
+            ModelCatalog.default.validateManifest() is ManifestValidationResult.Incomplete
+        transcriptBannerTextView.isVisible = unavailable
+        transcriptBannerTextView.text = getString(R.string.asr_manifest_incomplete)
+
+        transcriptActionButton.isVisible = panel.canStart
+        transcriptActionButton.setText(
+            if (panel.state == TranscriptPanelState.NONE || panel.state == TranscriptPanelState.CORRUPT) {
+                R.string.transcribe
+            } else {
+                R.string.transcript_redo
+            },
+        )
+        cancelTranscriptButton.isVisible = panel.canCancel
+        copyTranscriptButton.isEnabled = panel.hasBody
+        exportTranscriptButton.isEnabled = panel.hasBody
+    }
+
+    private fun statusText(panel: TranscriptPanel): String? = when (panel.state) {
+        TranscriptPanelState.NONE -> getString(R.string.playback_no_transcript)
+        TranscriptPanelState.RUNNING -> getString(R.string.playback_transcript_running, panel.progressPercent)
+        TranscriptPanelState.CANCELLED -> getString(R.string.playback_transcript_cancelled)
+        TranscriptPanelState.FAILED -> getString(R.string.playback_transcript_failed)
+        TranscriptPanelState.INTERRUPTED -> getString(R.string.transcript_interrupted)
+        TranscriptPanelState.COMPLETED -> null
+        TranscriptPanelState.COMPLETED_EMPTY -> getString(R.string.transcript_no_speech)
+        TranscriptPanelState.CORRUPT -> getString(R.string.transcript_corrupt)
+    }
+
+    /**
+     * Starts a first run, or a redo. A redo replaces a finished transcript, so it asks first. Viewing
+     * a result never starts a run; only this button does.
+     */
+    private fun onTranscriptActionClicked() {
+        val target = uri?.toString() ?: return
+        val panel = shownPanel
+        val replacesResult = panel?.state == TranscriptPanelState.COMPLETED ||
+            panel?.state == TranscriptPanelState.COMPLETED_EMPTY
+        if (!replacesResult) {
+            TranscriptionStarter.start(this, target, recordingTitle)
+            return
         }
-        return when (record.status) {
-            TranscriptStatus.COMPLETED -> record.text.ifBlank { getString(R.string.transcript_empty) }
-            TranscriptStatus.QUEUED, TranscriptStatus.RUNNING ->
-                getString(R.string.playback_transcript_running, (record.progress * 100).toInt())
-            TranscriptStatus.FAILED -> getString(R.string.playback_transcript_failed)
-            TranscriptStatus.CANCELLED -> getString(R.string.playback_transcript_cancelled)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.transcript_redo)
+            .setMessage(R.string.transcript_redo_confirm)
+            .setPositiveButton(R.string.transcript_redo) { _, _ ->
+                TranscriptionStarter.start(this, target, recordingTitle)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun copyTranscript() {
+        val text = shownPanel?.body?.takeIf { it.isNotBlank() } ?: return
+        getSystemService(ClipboardManager::class.java)?.setPrimaryClip(
+            ClipData.newPlainText(getString(R.string.transcript_title), text),
+        )
+        Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun exportTranscript() {
+        val text = shownPanel?.body?.takeIf { it.isNotBlank() } ?: return
+        val name = recordingTitle.substringBeforeLast('.', recordingTitle) + ".txt"
+        lifecycleScope.launch {
+            val saved = withContext(Dispatchers.IO) {
+                ExportHelper.saveTextToDownloads(this@PlaybackActivity, name, text)
+            }
+            Toast.makeText(
+                this@PlaybackActivity,
+                if (saved != null) R.string.export_done else R.string.export_failed,
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
 
@@ -457,6 +590,9 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     companion object {
         const val EXTRA_URI = "extra_uri"
         const val EXTRA_TITLE = "extra_title"
+
+        /** Open on the transcript tab (used by result notifications). */
+        const val EXTRA_SHOW_TRANSCRIPT = "extra_show_transcript"
 
         private const val SKIP_MS = 10_000L
         private const val TICK_MS = 200L

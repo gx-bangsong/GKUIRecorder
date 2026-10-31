@@ -7,8 +7,6 @@ package org.lineageos.recorder
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.ActionMode
@@ -46,15 +44,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.AsrRuntime
-import org.lineageos.recorder.asr.ModelRepository
 import org.lineageos.recorder.asr.TranscriptionScheduler
-import org.lineageos.recorder.asr.model.ModelCatalog
-import org.lineageos.recorder.asr.model.ManifestValidationResult
-import org.lineageos.recorder.asr.model.ModelDescriptor
-import org.lineageos.recorder.asr.transcription.TranscriptRecord
-import org.lineageos.recorder.asr.transcription.TranscriptStatus
-import org.lineageos.recorder.asr.ui.ModelDialogs
-import org.lineageos.recorder.asr.ui.ModelSettingsActivity
+import org.lineageos.recorder.asr.transcription.TranscriptEntry
+import org.lineageos.recorder.asr.transcription.TranscriptEntryAction
+import org.lineageos.recorder.asr.ui.TranscriptionStarter
 import org.lineageos.recorder.ext.scheduleShowSoftInput
 import org.lineageos.recorder.list.RecordingItemCallbacks
 import org.lineageos.recorder.list.RecordingItemDetailsLookup
@@ -449,120 +442,33 @@ class ListActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * The transcribe action. When a transcript exists, or a run is active, it opens the transcript tab:
+     * viewing never starts a run. Only when there is nothing yet does it start the first transcription.
+     */
     fun onTranscribe(recording: Recording) {
         lifecycleScope.launch {
             val uri = recording.uri.toString()
-            val (active, record) = withContext(Dispatchers.IO) {
-                TranscriptionScheduler.isActive(this@ListActivity, uri) to
-                    AsrRuntime.transcripts(this@ListActivity).get(uri)
+            val (active, hasRecord) = withContext(Dispatchers.IO) {
+                val active = TranscriptionScheduler.isActive(this@ListActivity, uri)
+                val hasRecord = AsrRuntime.transcripts(this@ListActivity).get(uri) != null
+                active to hasRecord
             }
-            val completed = record?.takeIf { it.status == TranscriptStatus.COMPLETED }
-            when {
-                active -> showRunningTranscription(recording, record)
-                completed != null -> showTranscript(recording, completed.text)
-                else -> startTranscription(recording)
-            }
-        }
-    }
-
-    /**
-     * Starts the on-device transcription. The first time, the model must be downloaded: the user
-     * sees the download dialog first. Nothing is sent over the network except the model download.
-     */
-    private fun startTranscription(recording: Recording) {
-        val model = ModelCatalog.default
-        val uri = recording.uri.toString()
-        lifecycleScope.launch {
-            val repository = ModelRepository.get(this@ListActivity)
-            val (ready, downloading) = withContext(Dispatchers.IO) {
-                (repository.readyDir(model) != null) to repository.isDownloadActive(model.id)
-            }
-            when {
-                ready -> {
-                    TranscriptionScheduler.enqueue(this@ListActivity, uri, recording.title, model, downloadFirst = false)
-                    Toast.makeText(this@ListActivity, R.string.transcribe_running, Toast.LENGTH_SHORT).show()
-                }
-                downloading -> Toast.makeText(
-                    this@ListActivity,
-                    R.string.asr_model_downloading_wait,
-                    Toast.LENGTH_LONG,
-                ).show()
-                model.validateManifest() is ManifestValidationResult.Incomplete ->
-                    Toast.makeText(this@ListActivity, R.string.asr_manifest_incomplete, Toast.LENGTH_LONG).show()
-                else -> showModelConsent(recording, model)
+            when (TranscriptEntry.actionFor(hasRecord, active)) {
+                TranscriptEntryAction.OPEN_VIEW -> openTranscriptTab(recording)
+                TranscriptEntryAction.START ->
+                    TranscriptionStarter.start(this@ListActivity, uri, recording.title)
             }
         }
     }
 
-    private fun showModelConsent(recording: Recording, model: ModelDescriptor) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.asr_consent_title)
-            .setMessage(ModelDialogs.consentMessage(this, model))
-            .setPositiveButton(R.string.asr_consent_download) { _: DialogInterface?, _: Int ->
-                val started = TranscriptionScheduler.enqueue(
-                    this,
-                    recording.uri.toString(),
-                    recording.title,
-                    model,
-                    downloadFirst = true,
-                )
-                val message = if (started) R.string.asr_download_started else R.string.asr_manifest_incomplete
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-            }
-            .setNeutralButton(R.string.asr_consent_view) { _: DialogInterface?, _: Int ->
-                startActivity(Intent(this, ModelSettingsActivity::class.java))
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun showRunningTranscription(recording: Recording, record: TranscriptRecord?) {
-        val percent = ((record?.progress ?: 0f) * 100).toInt()
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.transcript_title)
-            .setMessage(getString(R.string.transcribe_progress, percent))
-            .setPositiveButton(R.string.transcribe_cancel) { _: DialogInterface?, _: Int ->
-                TranscriptionScheduler.cancel(this, recording.uri.toString())
-            }
-            .setNegativeButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun showTranscript(recording: Recording, text: String) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.transcript_title)
-            .setMessage(text.ifBlank { getString(R.string.transcript_empty) })
-            .setPositiveButton(R.string.transcript_export) { _: DialogInterface?, _: Int ->
-                exportTranscript(recording, text)
-            }
-            .setNeutralButton(R.string.transcript_redo) { _: DialogInterface?, _: Int ->
-                startTranscription(recording)
-            }
-            .setNegativeButton(R.string.transcript_copy) { _: DialogInterface?, _: Int ->
-                copyToClipboard(text)
-            }
-            .show()
-    }
-
-    private fun exportTranscript(recording: Recording, text: String) {
-        val name = recording.title.substringBeforeLast('.', recording.title) + ".txt"
-        lifecycleScope.launch {
-            val uri = withContext(Dispatchers.IO) {
-                ExportHelper.saveTextToDownloads(this@ListActivity, name, text)
-            }
-            Toast.makeText(
-                this@ListActivity,
-                if (uri != null) R.string.export_done else R.string.export_failed,
-                Toast.LENGTH_LONG,
-            ).show()
-        }
-    }
-
-    private fun copyToClipboard(text: String) {
-        getSystemService(ClipboardManager::class.java)?.setPrimaryClip(
-            ClipData.newPlainText(getString(R.string.transcript_title), text)
+    private fun openTranscriptTab(recording: Recording) {
+        startActivity(
+            Intent(this, PlaybackActivity::class.java)
+                .putExtra(PlaybackActivity.EXTRA_URI, recording.uri.toString())
+                .putExtra(PlaybackActivity.EXTRA_TITLE, recording.title)
+                .putExtra(PlaybackActivity.EXTRA_SHOW_TRANSCRIPT, true),
         )
-        Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
     }
 
     fun onQuickShare(recording: Recording) {
