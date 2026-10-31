@@ -196,12 +196,12 @@ android {
 
 // APK file names. "legacy" keeps the existing names, which CI and verify-apk read. Any other
 // distribution gets its own name, so building a second distribution never replaces the first APK.
-androidComponents {
-    onVariants { variant ->
-        if (distributionName != "legacy") {
-            variant.outputs.forEach { output ->
-                output.outputFileName.set("app-$distributionName-${variant.name}.apk")
-            }
+// The Variant API (androidComponents) no longer exposes outputFileName in AGP 8.13, so this uses the
+// AGP application variant API, which still does.
+if (distributionName != "legacy") {
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "app-$distributionName-${variant.name}.apk"
         }
     }
 }
