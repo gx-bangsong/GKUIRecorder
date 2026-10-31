@@ -199,9 +199,9 @@ android {
 // Build legacy first and keep its APKs, because the standalone build writes the same output path.
 val apkOutputs = layout.buildDirectory
 if (distributionName != "legacy") {
-    tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.configureEach {
-        doLast {
-            val type = it.name.removePrefix("package").lowercase()
+    tasks.matching { task -> task.name == "packageDebug" || task.name == "packageRelease" }.configureEach { packageTask ->
+        val type = packageTask.name.removePrefix("package").lowercase()
+        packageTask.doLast {
             val dir = apkOutputs.dir("outputs/apk/$type").get().asFile
             val source = listOf("app-$type.apk", "app-$type-unsigned.apk")
                 .map { File(dir, it) }
