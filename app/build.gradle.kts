@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import com.android.build.gradle.api.BaseVariantOutput
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.lineageos.generatebp.GenerateBpPluginExtension
 import org.gradle.api.GradleException
@@ -200,8 +201,8 @@ android {
 // AGP application variant API, which still does.
 if (distributionName != "legacy") {
     android.applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            output.outputFileName = "app-$distributionName-${variant.name}.apk"
+        variant.outputs.forEach { output ->
+            (output as BaseVariantOutput).outputFileName = "app-$distributionName-${variant.name}.apk"
         }
     }
 }
