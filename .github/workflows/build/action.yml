@@ -100,4 +100,3 @@ runs:
       with:
         name: standalone-apks
         path: app/build/outputs/apk/*/app-standalone-*.apk
-        archive: false
