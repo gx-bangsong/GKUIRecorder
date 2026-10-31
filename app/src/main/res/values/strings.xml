@@ -284,4 +284,6 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="transcript_interrupted">Transcription was interrupted. The text saved so far is shown below.</string>
     <string name="transcript_redo_confirm">Transcribing again replaces the current transcript. Continue?</string>
     <string name="recording_deleted">This recording was deleted.</string>
+    <!-- Set per install identity by resValue in app/build.gradle.kts. The default is the legacy package. -->
+    <string name="shortcut_target_package" translatable="false">org.lineageos.recorder</string>
 </resources>

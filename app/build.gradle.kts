@@ -125,12 +125,26 @@ tasks.configureEach {
     if (name.startsWith("merge") && name.endsWith("JniLibFolders")) dependsOn(prepareSherpaOnnx)
 }
 
+// Install identities. "legacy" is the existing release identity and its update path, and is the
+// default. "standalone" is a second install whose package name has no "lineageos" in it. Choose with
+// -Pdistribution=<name>. The set is closed: any other value fails the configuration. Only the install
+// identity changes. The source namespace and the class names stay the same.
+val distributionIds: Map<String, String> = mapOf(
+    "legacy" to "org.lineageos.recorder",
+    "standalone" to "io.github.gxbangsong.gkuirecorder",
+)
+val distributionName: String = providers.gradleProperty("distribution").getOrElse("legacy")
+require(distributionName in distributionIds) {
+    "Unknown -Pdistribution=$distributionName. Use one of: ${distributionIds.keys.joinToString()}."
+}
+val releaseApplicationId: String = distributionIds.getValue(distributionName)
+
 android {
     compileSdk = 36
     namespace = "org.lineageos.recorder"
 
     defaultConfig {
-        applicationId = "org.lineageos.recorder"
+        applicationId = releaseApplicationId
         minSdk = 31
         targetSdk = 36
         versionCode = 1
@@ -147,6 +161,9 @@ android {
             // Enables code shrinking, obfuscation, and optimization.
             isMinifyEnabled = true
 
+            // The shortcut in res/xml/shortcuts.xml must name the package that is installed
+            resValue("string", "shortcut_target_package", releaseApplicationId)
+
             // Includes the default ProGuard rules files.
             setProguardFiles(
                 listOf(
@@ -158,6 +175,7 @@ android {
         getByName("debug") {
             // Append .dev to package name so we won't conflict with AOSP build.
             applicationIdSuffix = ".dev"
+            resValue("string", "shortcut_target_package", "$releaseApplicationId.dev")
         }
     }
 
@@ -174,6 +192,18 @@ android {
 
     // sherpa-onnx native libraries from the pinned AAR (arm64-v8a only, see ndk.abiFilters)
     sourceSets["main"].jniLibs.srcDir(sherpaOnnxJniLibs)
+}
+
+// APK file names. "legacy" keeps the existing names, which CI and verify-apk read. Any other
+// distribution gets its own name, so building a second distribution never replaces the first APK.
+androidComponents {
+    onVariants { variant ->
+        if (distributionName != "legacy") {
+            variant.outputs.forEach { output ->
+                output.outputFileName.set("app-$distributionName-${variant.name}.apk")
+            }
+        }
+    }
 }
 
 dependencies {

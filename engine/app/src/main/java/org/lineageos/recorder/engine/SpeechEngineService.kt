@@ -65,6 +65,8 @@ class SpeechEngineService : Service() {
         private val ALLOWED_CALLERS = setOf(
             "org.lineageos.recorder",
             "org.lineageos.recorder.dev",
+            "io.github.gxbangsong.gkuirecorder",
+            "io.github.gxbangsong.gkuirecorder.dev",
         )
     }
 }

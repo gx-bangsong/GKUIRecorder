@@ -13,7 +13,7 @@
 
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="org.lineageos.recorder"
+            android:targetPackage="@string/shortcut_target_package"
             android:targetClass="org.lineageos.recorder.ListActivity" />
     </shortcut>
 </shortcuts>

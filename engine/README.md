@@ -26,4 +26,4 @@ archive as a zip. Put the URL (and optional SHA-256) in the Recorder settings un
 
 ## Callers
 
-Only `org.lineageos.recorder` and `org.lineageos.recorder.dev` may call the service.
+Only the Recorder packages may call the service: `org.lineageos.recorder`, `org.lineageos.recorder.dev`, `io.github.gxbangsong.gkuirecorder` and `io.github.gxbangsong.gkuirecorder.dev`.
