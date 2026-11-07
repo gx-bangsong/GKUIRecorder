@@ -39,8 +39,18 @@ object ModelCatalog {
             ),
         ),
         expectedFiles = listOf(
-            ExpectedFile(archivePath = "model.int8.onnx", localName = "model.int8.onnx", sha256 = null),
-            ExpectedFile(archivePath = "tokens.txt", localName = "tokens.txt", sha256 = null),
+            ExpectedFile(
+                archivePath = "model.int8.onnx",
+                localName = "model.int8.onnx",
+                sha256 = "c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51",
+                sizeBytes = 239_233_841L,
+            ),
+            ExpectedFile(
+                archivePath = "tokens.txt",
+                localName = "tokens.txt",
+                sha256 = "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+                sizeBytes = 315_894L,
+            ),
             ExpectedFile(
                 archivePath = null,
                 localName = "silero_vad.onnx",
