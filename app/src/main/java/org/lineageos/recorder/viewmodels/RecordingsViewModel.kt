@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
+import org.lineageos.recorder.asr.AsrRuntime
+import org.lineageos.recorder.asr.TranscriptionScheduler
 import org.lineageos.recorder.ext.applicationContext
 import org.lineageos.recorder.models.Recording
 import org.lineageos.recorder.repository.RecordingsRepository
@@ -39,6 +41,10 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
     suspend fun deleteRecordings(vararg uris: Uri) {
         withContext(Dispatchers.IO) {
             for (uri in uris) {
+                val key = uri.toString()
+                // 1. Stop a transcription of this recording first
+                TranscriptionScheduler.cancel(applicationContext, key)
+                // 2. Delete the recording itself
                 try {
                     contentResolver.delete(
                         uri,
@@ -47,6 +53,11 @@ class RecordingsViewModel(application: Application) : AndroidViewModel(applicati
                     )
                 } catch (e: SecurityException) {
                     Log.e(LOG_TAG, "Failed to delete recording", e)
+                }
+                // 3. Remove the transcript only once the recording is confirmed gone. If the
+                // deletion failed, the transcript is kept.
+                if (!AsrRuntime.recordingExists(applicationContext, key)) {
+                    AsrRuntime.transcripts(applicationContext).remove(key)
                 }
             }
 

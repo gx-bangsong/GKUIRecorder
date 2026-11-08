@@ -184,6 +184,31 @@ class RecordingsAdapter(
                 true
             }
 
+            R.id.action_edit_audio -> {
+                callbacks.onEdit(recording)
+                true
+            }
+
+            R.id.action_transcribe -> {
+                callbacks.onTranscribe(recording)
+                true
+            }
+
+            R.id.action_markers -> {
+                callbacks.onMarkers(recording)
+                true
+            }
+
+            R.id.action_quick_share -> {
+                callbacks.onQuickShare(recording)
+                true
+            }
+
+            R.id.action_export -> {
+                callbacks.onExport(recording)
+                true
+            }
+
             else -> false
         }
     }

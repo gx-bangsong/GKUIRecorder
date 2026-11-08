@@ -27,4 +27,39 @@
         android:title="@string/delete"
         android:icon="@drawable/ic_delete"
         app:showAsAction="ifRoom" />
+
+    <item
+        style="@style/AppTheme.MenuItem"
+        android:id="@+id/action_edit_audio"
+        android:title="@string/edit_audio"
+        android:icon="@drawable/ic_content_cut"
+        app:showAsAction="never" />
+
+    <item
+        style="@style/AppTheme.MenuItem"
+        android:id="@+id/action_transcribe"
+        android:title="@string/transcribe"
+        android:icon="@drawable/ic_mic"
+        app:showAsAction="never" />
+
+    <item
+        style="@style/AppTheme.MenuItem"
+        android:id="@+id/action_markers"
+        android:title="@string/markers"
+        android:icon="@drawable/ic_bookmark"
+        app:showAsAction="never" />
+
+    <item
+        style="@style/AppTheme.MenuItem"
+        android:id="@+id/action_quick_share"
+        android:title="@string/quick_share"
+        android:icon="@drawable/ic_share"
+        app:showAsAction="never" />
+
+    <item
+        style="@style/AppTheme.MenuItem"
+        android:id="@+id/action_export"
+        android:title="@string/export"
+        android:icon="@drawable/ic_library_music"
+        app:showAsAction="never" />
 </menu>

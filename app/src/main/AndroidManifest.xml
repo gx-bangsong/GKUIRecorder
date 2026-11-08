@@ -11,10 +11,30 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- Offline model download and on-device transcription run as data-sync foreground jobs -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Only used to download the offline speech model over HTTPS, and to tell metered networks apart -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Package visibility (Android 11+) for quick share to installed apps -->
+    <queries>
+        <package android:name="com.tencent.mm" />
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.tencent.wework" />
+        <package android:name="com.alibaba.android.rimet" />
+        <package android:name="com.ss.android.lark" />
+        <package android:name="com.ss.android.ugc.aweme" />
+        <package android:name="com.xingin.xhs" />
+        <package android:name="com.baidu.netdisk" />
+    </queries>
 
     <application
         android:name=".RecorderApplication"
@@ -23,7 +43,19 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:targetApi="tiramisu">
+        <!--
+            WorkManager runs the download (dataSync) and transcription (dataSync on API 34,
+            mediaProcessing on API 35+) foreground work through this service. Each runtime type
+            passed to ForegroundInfo must be declared here.
+        -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|mediaProcessing"
+            tools:node="merge" />
+
 
         <activity
             android:name=".RecorderActivity"
@@ -54,11 +86,32 @@
             android:parentActivityName=".RecorderActivity" />
 
         <activity
+            android:name=".asr.ui.ModelSettingsActivity"
+            android:exported="false"
+            android:label="@string/asr_settings_title" />
+
+        <activity
+            android:name=".PlaybackActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".DialogActivity"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.DialogActivity" />
 
         <!-- Sound recorder -->
+        <!--
+             Receives call state changes. Exported because the telephony framework sends it;
+             the receiver ignores everything unless call recording is enabled and allowed.
+        -->
+        <receiver
+            android:name=".service.CallRecordingReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.SoundRecorderService"
             android:exported="false"

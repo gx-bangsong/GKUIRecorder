@@ -12,7 +12,10 @@ import androidx.annotation.RequiresPermission
 import java.io.File
 import java.io.IOException
 
-class GoodQualityRecorder(private val context: Context) : SoundRecording {
+class GoodQualityRecorder(
+    private val context: Context,
+    private val audioSource: Int = MediaRecorder.AudioSource.DEFAULT,
+) : SoundRecording {
     private var recorder: MediaRecorder? = null
     private var isPaused = false
 
@@ -21,7 +24,7 @@ class GoodQualityRecorder(private val context: Context) : SoundRecording {
     override fun startRecording(file: File) {
         recorder = MediaRecorder(context).apply {
             setOutputFile(file)
-            setAudioSource(MediaRecorder.AudioSource.DEFAULT)
+            setAudioSource(audioSource)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             prepare()

@@ -7,12 +7,16 @@ package org.lineageos.recorder.repository
 
 import android.content.ContentValues
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.flow.RecordingsFlow
+import org.lineageos.recorder.models.Marker
+import org.lineageos.recorder.utils.AudioEditor
+import org.lineageos.recorder.utils.PreferencesManager
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -24,19 +28,17 @@ object RecordingsRepository {
 
     private const val ALBUM = "Sound records"
 
-    private const val PATH = "Recordings/${ALBUM}"
-    private const val PATH_LEGACY = "Music/${ALBUM}"
-
     fun recordings(context: Context) = RecordingsFlow(context).flowData()
 
     suspend fun addRecordingToContentProvider(
         context: Context, file: File, mimeType: String
     ) = withContext(Dispatchers.IO) {
         val contentResolver = context.contentResolver
+        val folder = PreferencesManager(context).storageFolder
 
         val uri = contentResolver.insert(
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
-            buildCv(file, mimeType)
+            buildCv(file, mimeType, folder)
         ) ?: run {
             Log.e(LOG_TAG, "Failed to insert ${file.absoluteFile}")
 
@@ -71,7 +73,52 @@ object RecordingsRepository {
         }
     }
 
-    private fun buildCv(file: File, mimeType: String) = ContentValues().apply {
+    /**
+     * Creates a processed copy of a WAV recording (trim / denoise / volume boost) as a new
+     * recording. Markers are carried over and shifted when the audio is trimmed.
+     *
+     * @return the uri of the new recording, or null on failure.
+     */
+    suspend fun editRecording(
+        context: Context,
+        source: Uri,
+        sourceTitle: String,
+        options: AudioEditor.Options,
+        suffix: String,
+    ): String? = withContext(Dispatchers.IO) {
+        val baseName = sourceTitle.substringBeforeLast('.', sourceTitle)
+        val tmp = File(context.cacheDir, "${baseName}_$suffix.wav")
+
+        try {
+            FileOutputStream(tmp).use { out ->
+                AudioEditor.edit(
+                    {
+                        context.contentResolver.openInputStream(source)
+                            ?: throw IOException("Cannot open source recording")
+                    },
+                    out,
+                    options,
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Failed to edit recording", e)
+            tmp.delete()
+            return@withContext null
+        }
+
+        val newUri = addRecordingToContentProvider(context, tmp, "audio/wav")
+        if (newUri != null) {
+            val preferences = PreferencesManager(context)
+            val shifted = preferences.getMarkers(source.toString())
+                .filter { it.timeMs >= options.trimStartMs && it.timeMs <= options.trimEndMs }
+                .map { Marker(it.timeMs - options.trimStartMs, it.type) }
+            preferences.saveMarkers(newUri, shifted)
+        }
+
+        newUri
+    }
+
+    private fun buildCv(file: File, mimeType: String, folder: String) = ContentValues().apply {
         val name = file.name
 
         put(MediaStore.Audio.Media.DISPLAY_NAME, name)
@@ -83,9 +130,9 @@ object RecordingsRepository {
         put(
             MediaStore.Audio.Media.RELATIVE_PATH,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PATH
+                "Recordings/$folder"
             } else {
-                PATH_LEGACY
+                "Music/$folder"
             }
         )
         put(MediaStore.Audio.Media.IS_PENDING, 1)

@@ -22,6 +22,7 @@ import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
 import android.provider.MediaStore
+import android.widget.Toast
 import android.telephony.TelephonyManager
 import android.text.format.DateUtils
 import android.view.View
@@ -42,6 +43,7 @@ import kotlinx.coroutines.launch
 import org.lineageos.recorder.models.UiStatus
 import org.lineageos.recorder.service.SoundRecorderService
 import org.lineageos.recorder.ui.WaveFormView
+import org.lineageos.recorder.utils.FileNameTemplate
 import org.lineageos.recorder.utils.LocationHelper
 import org.lineageos.recorder.utils.OnBoardingHelper
 import org.lineageos.recorder.utils.PermissionManager
@@ -49,10 +51,6 @@ import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.Utils
 import org.lineageos.recorder.viewmodels.RecordingsViewModel
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
-import java.time.temporal.ChronoUnit
-import java.util.Locale
 import kotlin.reflect.safeCast
 
 class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
@@ -68,6 +66,9 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
     private val recordingWaveFormView by lazy { findViewById<WaveFormView>(R.id.recordingWaveFormView) }
     private val settingsImageView by lazy { findViewById<ImageView>(R.id.settingsImageView) }
     private val titleTextView by lazy { findViewById<TextView>(R.id.titleTextView) }
+    private val markerContainer by lazy { findViewById<View>(R.id.markerContainer) }
+    private val importantMarkerButton by lazy { findViewById<View>(R.id.importantMarkerButton) }
+    private val segmentMarkerButton by lazy { findViewById<View>(R.id.segmentMarkerButton) }
 
     private val locationHelper by lazy { LocationHelper(this) }
     private val permissionManager by lazy { PermissionManager(this) }
@@ -136,6 +137,12 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         pauseResumeImageView.setOnClickListener { togglePause() }
         openSoundListImageView.setOnClickListener { openList() }
         settingsImageView.setOnClickListener { openSettings() }
+        importantMarkerButton.setOnClickListener {
+            sendMarker(SoundRecorderService.ACTION_MARK_IMPORTANT, R.string.marker_important_toast)
+        }
+        segmentMarkerButton.setOnClickListener {
+            sendMarker(SoundRecorderService.ACTION_MARK_SEGMENT, R.string.marker_segment_toast)
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(contentView) { _, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -242,6 +249,16 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
         }
     }
 
+    private fun sendMarker(action: String, toastRes: Int) {
+        if (uiStatus == UiStatus.READY) {
+            return
+        }
+        startService(
+            Intent(this, SoundRecorderService::class.java).setAction(action)
+        )
+        Toast.makeText(this, toastRes, Toast.LENGTH_SHORT).show()
+    }
+
     private fun togglePause() {
         when (uiStatus) {
             UiStatus.RECORDING -> startService(
@@ -266,12 +283,14 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
             elapsedTimeText.isVisible = false
             recordingWaveFormView.isVisible = false
             pauseResumeImageView.isVisible = false
+            markerContainer.isVisible = false
         } else {
             floatingActionButton.setImageResource(R.drawable.ic_stop)
             elapsedTimeText.isVisible = true
             recordingWaveFormView.isVisible = true
             recordingWaveFormView.setAmplitude(0)
             pauseResumeImageView.isVisible = true
+            markerContainer.isVisible = true
             val prDrawable: Drawable?
             if (UiStatus.PAUSED == status) {
                 titleTextView.text = getString(R.string.sound_recording_title_paused)
@@ -374,21 +393,13 @@ class RecorderActivity : AppCompatActivity(R.layout.activity_main) {
 
     private val newRecordFileName: String
         get() {
-            val tag = locationHelper.currentLocationName ?: FILE_NAME_FALLBACK
-            val formatter = DateTimeFormatterBuilder()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE)
-                .appendLiteral(' ')
-                .append(DateTimeFormatter.ISO_LOCAL_TIME)
-                .toFormatter(Locale.getDefault())
-            val now = LocalDateTime.now()
-            return String.format(
-                FILE_NAME_BASE, tag,
-                formatter.format(now.truncatedTo(ChronoUnit.SECONDS))
-            ) + ".%1\$s"
+            val name = FileNameTemplate.render(
+                template = preferencesManager.fileNameTemplate,
+                now = LocalDateTime.now(),
+                location = locationHelper.currentLocationName,
+                fallbackName = getString(R.string.sound_record_default_name),
+            )
+            // The extension is filled in by the service, depending on the recording quality
+            return "$name.%1\$s"
         }
-
-    companion object {
-        private const val FILE_NAME_BASE = "%1\$s (%2\$s)"
-        private const val FILE_NAME_FALLBACK = "Sound record"
-    }
 }
