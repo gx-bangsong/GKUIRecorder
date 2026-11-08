@@ -21,43 +21,33 @@ release does not output punctuation, and it is tuned with Cantonese data. The 20
 release outputs digits and punctuation with ITN enabled. The 2025-09-09 release can be added later
 as an optional "Cantonese" package.
 
-## Verification status of the model files (release blocker)
+## Verification of the model files
 
-Verification attempted on 2026-10-10 from the build sandbox:
+All values below come from official sherpa-onnx `asr-models` release assets.
 
-| Source | Result |
-|---|---|
-| `https://huggingface.co/api/models/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/revision/2365baeacb507f821a0c8120fcee3d484dba7a07` | Not reachable from the sandbox (TLS connection closed). Not verified. |
-| GitHub release archive (`release-assets.githubusercontent.com`) | Not reachable from the sandbox. Archive internals not verified. |
+| File | Size (bytes) | SHA-256 | Source |
+|---|---|---|---|
+| Archive `sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17.tar.bz2` | 163002883 | `7d1efa2138a65b0b488df37f8b89e3d91a60676e416f515b952358d83dfd347e` | GitHub release asset metadata (API `size` and `digest`), checked against the API. |
+| `model.int8.onnx` (from the archive) | 239233841 | `c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51` | Measured by the maintainer from the official archive. Not re-measured in CI. |
+| `tokens.txt` (from the archive) | 315894 | `f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc` | Measured by the maintainer from the official archive (25055 lines). Not re-measured in CI. |
+| VAD `silero_vad.onnx` | 643854 | `9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6` | GitHub release asset metadata (API `size` and `digest`). |
 
-Consequences:
+The sherpa-onnx AAR (`v1.13.8`) size `50129134` and SHA-256 `633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96`
+are confirmed against `api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/v1.13.8`.
 
-- `model.int8.onnx` and `tokens.txt` keep `sha256 = null` in `ModelCatalog.kt`. The values published by
-  third parties (for example, size `239233841` and the SHA-256 for `model.int8.onnx`) are **not** adopted
-  without official verification.
-- The archive SHA-256 and size and the VAD values come from the GitHub release metadata
-  (`api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/asr-models`), which is reachable.
-- The sherpa-onnx AAR (`v1.13.8`) size `50129134` and SHA-256 `633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96`
-  were confirmed against `api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/v1.13.8` on 2026-10-10.
+Note on reproduction: the GitHub API publishes a digest only for the archive and the VAD file. The two
+in-archive values were measured by the maintainer from the official archive and are not re-checked by CI.
+To re-check, download the archive from the official release, confirm its SHA-256, extract it and run
+`sha256sum` and `stat -c %s` on `model.int8.onnx` and `tokens.txt`.
 
-To close this blocker, run on a machine that can reach Hugging Face and the GitHub release CDN:
-
-```
-tools/inspect-model-artifact.sh
-```
-
-then record the Hugging Face revision API response (oid and size of `model.int8.onnx`, size of
-`tokens.txt`), and fill `ExpectedFile.sha256` in `ModelCatalog.kt`.
-
-Space check (formula, to be filled with verified values):
+Space check, computed from the values above:
 
 ```
 expectedInstalledPayloadBytes = size(model.int8.onnx) + size(tokens.txt) + size(silero_vad.onnx)
+                              = 239233841 + 315894 + 643854 = 240193589
 requiredFreeSpaceBytes        = archiveBytes + vadBytes + expectedInstalledPayloadBytes + 64 MiB
+                              = 163002883 + 643854 + 240193589 + 67108864 = 470949190
 ```
-
-With the verified VAD (643854) and archive (163002883) sizes, the 64 MiB margin (67108864) is fixed.
-The model-file sizes are still needed before the total can be stated.
 
 ## Storage
 
