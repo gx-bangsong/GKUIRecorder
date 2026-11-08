@@ -49,6 +49,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:tint="?attr/colorOnSurface" />
 
+    <LinearLayout
+        android:id="@+id/markerContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/floatingActionButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/importantMarkerButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:text="@string/marker_important" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/segmentMarkerButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/marker_segment" />
+
+    </LinearLayout>
+
     <org.lineageos.recorder.ui.WaveFormView
         android:id="@+id/recordingWaveFormView"
         android:layout_width="0dp"

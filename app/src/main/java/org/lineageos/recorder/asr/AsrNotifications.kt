@@ -1,0 +1,147 @@
+/*
+ * SPDX-FileCopyrightText: The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.lineageos.recorder.asr
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.TaskStackBuilder
+import androidx.work.ForegroundInfo
+import androidx.work.WorkManager
+import org.lineageos.recorder.ListActivity
+import org.lineageos.recorder.PlaybackActivity
+import org.lineageos.recorder.R
+import org.lineageos.recorder.asr.transcription.TranscriptNavigation
+import java.util.UUID
+
+/** Notifications for model downloads and long transcriptions. */
+class AsrNotifications(private val context: Context) {
+    private val manager = context.getSystemService(NotificationManager::class.java)
+
+    init {
+        if (manager.getNotificationChannel(CHANNEL_ID) == null) {
+            manager.createNotificationChannel(
+                NotificationChannel(
+                    CHANNEL_ID,
+                    context.getString(R.string.asr_channel_name),
+                    NotificationManager.IMPORTANCE_LOW,
+                ),
+            )
+        }
+    }
+
+    fun downloadForeground(workId: UUID, modelName: String, percent: Int, indeterminate: Boolean): ForegroundInfo =
+        ForegroundInfo(
+            notificationId(workId),
+            build(
+                workId = workId,
+                title = context.getString(R.string.asr_download_notification_title, modelName),
+                text = context.getString(R.string.asr_download_notification_text),
+                percent = percent,
+                indeterminate = indeterminate,
+            ),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        )
+
+    fun transcriptionForeground(workId: UUID, title: String, percent: Int, paused: Boolean): ForegroundInfo =
+        ForegroundInfo(
+            notificationId(workId),
+            build(
+                workId = workId,
+                title = context.getString(R.string.asr_transcribe_notification_title, title),
+                text = context.getString(
+                    if (paused) R.string.asr_transcribe_paused else R.string.asr_transcribe_notification_text,
+                ),
+                percent = percent,
+                indeterminate = false,
+            ),
+            transcriptionServiceType(),
+        )
+
+    /**
+     * Local file processing is "mediaProcessing" from API 35. Earlier releases only have dataSync,
+     * which is the closest type for local file work. Must match the type declared in the manifest.
+     */
+    private fun transcriptionServiceType(): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING
+        } else {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        }
+
+    /**
+     * Result notification after a transcription ends. Not ongoing, so the user can dismiss it. Tapping
+     * it opens this recording's transcript tab. A failure to post is ignored: the saved result stays.
+     */
+    fun transcriptionFinished(workId: UUID, uri: String, title: String, succeeded: Boolean) {
+        val text = context.getString(
+            if (succeeded) R.string.asr_transcribe_done else R.string.asr_transcribe_failed_notification,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_mic)
+            .setContentTitle(context.getString(R.string.asr_transcribe_notification_title, title))
+            .setContentText(text)
+            .setContentIntent(resultIntent(uri, title))
+            .setAutoCancel(true)
+            .build()
+        try {
+            manager.notify(notificationId(workId) + 1, notification)
+        } catch (e: SecurityException) {
+            // Notifications permission was revoked. Nothing else depends on this notification.
+        }
+    }
+
+    /**
+     * Opens the transcript tab of [uri]. The stack is the list with the player on top, so Back goes to
+     * the list. A request code per recording keeps notifications for different recordings apart.
+     */
+    private fun resultIntent(uri: String, title: String): PendingIntent {
+        val player = Intent(context, PlaybackActivity::class.java)
+            .putExtra(PlaybackActivity.EXTRA_URI, uri)
+            .putExtra(PlaybackActivity.EXTRA_TITLE, title)
+            .putExtra(PlaybackActivity.EXTRA_SHOW_TRANSCRIPT, true)
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        return TaskStackBuilder.create(context)
+            .addNextIntent(Intent(context, ListActivity::class.java))
+            .addNextIntent(player)
+            .getPendingIntent(
+                TranscriptNavigation.requestCode(uri),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )!!
+    }
+
+    private fun build(
+        workId: UUID,
+        title: String,
+        text: String,
+        percent: Int,
+        indeterminate: Boolean,
+    ): Notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_mic)
+        .setContentTitle(title)
+        .setContentText(text)
+        .setOngoing(true)
+        .setOnlyAlertOnce(true)
+        .setProgress(100, percent.coerceIn(0, 100), indeterminate)
+        .addAction(
+            0,
+            context.getString(android.R.string.cancel),
+            WorkManager.getInstance(context).createCancelPendingIntent(workId),
+        )
+        .build()
+
+    private fun notificationId(workId: UUID): Int = 0x4153 + (workId.hashCode() and 0xFFFF) * 2
+
+    companion object {
+        const val CHANNEL_ID = "offline_asr"
+    }
+}

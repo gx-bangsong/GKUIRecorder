@@ -5,13 +5,21 @@
 
 package org.lineageos.recorder
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.CompoundButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
+import org.lineageos.recorder.asr.ui.ModelSettingsActivity
+import org.lineageos.recorder.ui.FieldDialog
+import org.lineageos.recorder.utils.FileNameTemplate
 import org.lineageos.recorder.utils.PermissionManager
 import org.lineageos.recorder.utils.PreferencesManager
+import org.lineageos.recorder.utils.SystemAppHelper
 
 class DialogActivity : AppCompatActivity() {
     // Views
@@ -40,6 +48,34 @@ class DialogActivity : AppCompatActivity() {
 
         highQualitySwitch = dialog.findViewById(R.id.highQualitySwitch)!!
         setupHighQualitySwitch(highQualitySwitch, isRecording)
+
+        dialog.findViewById<View>(R.id.filenameTemplateButton)?.setOnClickListener {
+            showFilenameTemplateSettings()
+        }
+        dialog.findViewById<View>(R.id.storageFolderButton)?.setOnClickListener {
+            showStorageFolderSettings()
+        }
+        // Opens the offline model page. Nothing is downloaded from here.
+        dialog.findViewById<View>(R.id.transcriptionButton)?.setOnClickListener {
+            startActivity(Intent(this, ModelSettingsActivity::class.java))
+        }
+
+        setupCallRecordingSwitch(dialog)
+    }
+
+    private fun setupCallRecordingSwitch(dialog: android.app.Dialog) {
+        val available = SystemAppHelper.isCallRecordingAvailable(this)
+        val switch = dialog.findViewById<MaterialSwitch>(R.id.callRecordingSwitch) ?: return
+        val status = dialog.findViewById<TextView>(R.id.callRecordingStatusText)
+        switch.isChecked = available && preferences.callRecordingEnabled
+        switch.isEnabled = available
+        status?.setText(
+            if (available) R.string.call_recording_status_available
+            else R.string.call_recording_status_unavailable
+        )
+        switch.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            preferences.callRecordingEnabled = isChecked
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -109,6 +145,40 @@ class DialogActivity : AppCompatActivity() {
     private fun toggleAfterPermissionRequest() {
         locationSwitch.isChecked = true
         preferences.tagWithLocation = true
+    }
+
+    private fun showFilenameTemplateSettings() {
+        FieldDialog.show(
+            this,
+            getString(R.string.settings_filename_template),
+            listOf(
+                FieldDialog.Field(
+                    label = getString(R.string.settings_filename_template_label),
+                    value = preferences.fileNameTemplate,
+                    hint = FileNameTemplate.DEFAULT,
+                ),
+            ),
+            message = getString(R.string.settings_filename_template_hint),
+        ) { values ->
+            preferences.fileNameTemplate = values[0]
+        }
+    }
+
+    private fun showStorageFolderSettings() {
+        FieldDialog.show(
+            this,
+            getString(R.string.settings_storage_folder),
+            listOf(
+                FieldDialog.Field(
+                    label = getString(R.string.settings_storage_folder_label),
+                    value = preferences.storageFolder,
+                    hint = PreferencesManager.DEFAULT_STORAGE_FOLDER,
+                ),
+            ),
+            message = getString(R.string.settings_storage_folder_hint),
+        ) { values ->
+            preferences.storageFolder = values[0]
+        }
     }
 
     companion object {
