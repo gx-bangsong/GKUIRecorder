@@ -67,25 +67,41 @@ val prepareSherpaOnnx = tasks.register("prepareSherpaOnnx") {
             sherpaOnnxCacheDir.mkdirs()
             val part = File(sherpaOnnxCacheDir, sherpaOnnxAar.name + ".part")
             part.delete()
-            val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
-                "sherpa-onnx-$SHERPA_ONNX_VERSION.aar"
-            var lastError: Exception? = null
-            for (attempt in 1..3) {
-                try {
-                    val connection = URI(url).toURL().openConnection()
-                    connection.connectTimeout = 30_000
-                    connection.readTimeout = 120_000
-                    connection.getInputStream().use { input ->
-                        part.outputStream().use { output -> input.copyTo(output) }
+            // Sources are tried in order. The first is the GitHub REST asset endpoint for the same
+            // file (asset id 555224925 is for v1.13.8; update it together with SHERPA_ONNX_VERSION).
+            // Its redirect goes to release-assets.githubusercontent.com. The second is the release
+            // download URL. Each source is tried up to 3 times with exponential backoff. Whichever
+            // source delivers the bytes, the SHA-256 check below still decides whether they are used.
+            val sherpaOnnxAarSources = listOf(
+                "https://api.github.com/repos/k2-fsa/sherpa-onnx/releases/assets/555224925" to "application/octet-stream",
+                "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$SHERPA_ONNX_VERSION/" +
+                    "sherpa-onnx-$SHERPA_ONNX_VERSION.aar" to null,
+            )
+            val downloadFailures = mutableListOf<String>()
+            var downloaded = false
+            sourceLoop@ for ((url, accept) in sherpaOnnxAarSources) {
+                for (attempt in 1..3) {
+                    try {
+                        val connection = URI(url).toURL().openConnection()
+                        connection.connectTimeout = 15_000
+                        connection.readTimeout = 60_000
+                        connection.setRequestProperty("User-Agent", "GKUIRecorder-build")
+                        if (accept != null) connection.setRequestProperty("Accept", accept)
+                        connection.getInputStream().use { input ->
+                            part.outputStream().use { output -> input.copyTo(output) }
+                        }
+                        downloaded = true
+                        break@sourceLoop
+                    } catch (e: java.io.IOException) {
+                        part.delete()
+                        downloadFailures += "$url (attempt $attempt): ${e.message}"
+                        if (attempt < 3) Thread.sleep(2_000L shl (attempt - 1))
                     }
-                    lastError = null
-                    break
-                } catch (e: java.io.IOException) {
-                    lastError = e
-                    part.delete()
                 }
             }
-            lastError?.let { throw GradleException("Cannot download sherpa-onnx AAR: ${it.message}", it) }
+            if (!downloaded) {
+                throw GradleException("Cannot download sherpa-onnx AAR. Failures:\n" + downloadFailures.joinToString("\n"))
+            }
             val actual = sha256Of(part)
             if (actual != SHERPA_ONNX_AAR_SHA256) {
                 part.delete()
