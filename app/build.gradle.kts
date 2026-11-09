@@ -9,6 +9,9 @@ import org.gradle.api.GradleException
 import org.lineageos.generatebp.models.Module
 import java.io.File
 import java.net.URI
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.security.MessageDigest
 import java.util.zip.ZipFile
 
@@ -155,16 +158,67 @@ require(distributionName in distributionIds) {
 }
 val releaseApplicationId: String = distributionIds.getValue(distributionName)
 
+// Release versioning and signing (see docs/RELEASE.md).
+//
+// versionCode is the number of commits in the checked-out history; it only grows, so every
+// release is newer than the last. A shallow clone undercounts, so scripts/ci-build.sh refuses
+// to build a release from one. versionName is yyyyMMdd.<versionCode>; the
+// VERSION_NAME environment variable overrides it. Without git (a source archive) the build uses 1.
+//
+// Release signing comes only from environment variables
+// (KEYSTORE_FILE/KEYSTORE_PASS/KEY_ALIAS/KEY_PASS), so ~/.gradle/gradle.properties is never read
+// and a developer's local key cannot be used by CI by accident.
+
+fun runGit(vararg args: String): String? {
+    return try {
+        val process = ProcessBuilder("git", *args)
+            .directory(rootProject.projectDir)
+            .redirectErrorStream(true)
+            .start()
+        val out = process.inputStream.bufferedReader().readText().trim()
+        if (process.waitFor() == 0) out else null
+    } catch (e: Exception) {
+        null
+    }
+}
+
+val releaseVersionCode: Int = runGit("rev-list", "--count", "HEAD")?.toIntOrNull()?.takeIf { it > 0 } ?: 1
+val versionNameOverride: String? = System.getenv("VERSION_NAME")?.trim()?.takeIf { it.isNotEmpty() }
+val buildDate: String = LocalDate.now(ZoneOffset.UTC)
+    .format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+val releaseVersionName: String = versionNameOverride ?: "$buildDate.$releaseVersionCode"
+
+val releaseKeystorePath: String? = System.getenv("KEYSTORE_FILE")?.trim()?.takeIf { it.isNotEmpty() }
+val releaseKeystore: File? = releaseKeystorePath?.let { File(it) }
+val releaseStorePassword: String? = System.getenv("KEYSTORE_PASS")
+val releaseKeyAlias: String? = System.getenv("KEY_ALIAS")
+val releaseKeyPassword: String? = System.getenv("KEY_PASS")
+val releaseSigningReady: Boolean = releaseKeystore?.isFile == true &&
+    !releaseStorePassword.isNullOrEmpty() &&
+    !releaseKeyAlias.isNullOrEmpty() &&
+    !releaseKeyPassword.isNullOrEmpty()
+
 android {
     compileSdk = 36
     namespace = "org.lineageos.recorder"
+
+    if (releaseSigningReady) {
+        signingConfigs {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = releaseApplicationId
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.1"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
 
         // sherpa-onnx native libraries for arm64 phones only (keeps the APK size in check)
         ndk {
@@ -174,6 +228,15 @@ android {
 
     buildTypes {
         getByName("release") {
+            // Release key when the environment provides it. Otherwise the debug key, for
+            // local builds only: the release workflow's scripts/ci-build.sh refuses to run
+            // without the release key.
+            signingConfig = if (releaseSigningReady) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+
             // Enables code shrinking, obfuscation, and optimization.
             isMinifyEnabled = true
 
