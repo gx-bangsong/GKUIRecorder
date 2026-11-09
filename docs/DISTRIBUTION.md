@@ -33,10 +33,13 @@ identities. Check the identity of any APK you intend to ship with `apkanalyzer` 
 
 ## Signing
 
-The repository has no release signing configuration, and this change does not add one. Release
-builds are therefore **unsigned** until the maintainer configures signing. An unsigned APK builds
-successfully but cannot be installed as a release package. The maintainer decides whether the two
-distributions use the same key:
+Release signing is read only from environment variables (`KEYSTORE_FILE`, `KEYSTORE_PASS`,
+`KEY_ALIAS`, `KEY_PASS`), never from repository files or `~/.gradle/gradle.properties`. The
+GitHub Actions release workflow decodes `KEYSTORE_BASE64` into a private temporary file instead
+of using a keystore path; it falls back to the `KEYSTORE_FILE` secret only for compatibility,
+still treating it as base64 keystore contents. The release
+workflow's `scripts/ci-build.sh` refuses to run without a complete signing environment; other
+Gradle builds fall back to the debug key. See `docs/RELEASE.md` for the automated release flow. The two distributions use the same key:
 
 - Same key: the two packages are still separate apps (different applicationIds), so they can be
   installed side by side. The key choice affects only how the publisher is identified.
