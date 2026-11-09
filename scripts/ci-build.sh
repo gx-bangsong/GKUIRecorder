@@ -27,6 +27,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly REPO_ROOT
 readonly SIGNER_FILE="${REPO_ROOT}/release-signer.sha256"
 readonly LEGACY_APK_IN="${REPO_ROOT}/app/build/outputs/apk/release/app-release.apk"
+readonly LEGACY_APK_KEEP="${REPO_ROOT}/build/recorder-legacy-release.apk"
 readonly STANDALONE_APK_IN="${REPO_ROOT}/app/build/outputs/apk/release/app-standalone-release.apk"
 readonly DIST_DIR="${REPO_ROOT}/dist"
 readonly NOTES_FILE="${REPO_ROOT}/build/release-notes.md"
@@ -222,6 +223,11 @@ main() {
 
     log "building legacy release APK"
     ./gradlew --no-daemon assembleRelease
+    # The standalone build reuses the same output path and renames it, so keep a copy before
+    # building it. Gate 1 and the dist outputs read LEGACY_APK_KEEP, not the shared path.
+    [[ -f "${LEGACY_APK_IN}" ]] || die "legacy release APK not found at ${LEGACY_APK_IN} after its build"
+    mkdir -p "$(dirname "${LEGACY_APK_KEEP}")"
+    cp -f "${LEGACY_APK_IN}" "${LEGACY_APK_KEEP}"
 
     log "building standalone release APK"
     ./gradlew --no-daemon -Pdistribution=standalone assembleRelease
@@ -233,7 +239,7 @@ main() {
     fi
 
     local -a dists=(legacy standalone)
-    declare -A APK=( [legacy]="${LEGACY_APK_IN}" [standalone]="${STANDALONE_APK_IN}" )
+    declare -A APK=( [legacy]="${LEGACY_APK_KEEP}" [standalone]="${STANDALONE_APK_IN}" )
     declare -A EXPECTED_ID=( [legacy]="${LEGACY_APPLICATION_ID}" [standalone]="${STANDALONE_APPLICATION_ID}" )
     declare -A APP_ID=()
     declare -A VERSION_CODE=()
