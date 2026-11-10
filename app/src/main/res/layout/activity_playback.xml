@@ -16,60 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize" />
 
-    <!-- Title and date -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        android:paddingTop="8dp">
-
-        <TextView
-            android:id="@+id/titleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textAppearance="?attr/textAppearanceHeadlineSmall"
-            android:textColor="?attr/colorOnSurface"
-            tools:text="Test Recording" />
-
-        <TextView
-            android:id="@+id/dateTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="Fri, Aug 19 • 10:35" />
-    </LinearLayout>
-
-    <!-- Audio / Transcript switch -->
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/tabGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        app:checkedButton="@id/tabAudioButton"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/tabAudioButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/playback_tab_audio" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/tabTranscriptButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/playback_tab_transcript" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
-
     <!-- Tab content -->
     <FrameLayout
         android:layout_width="match_parent"
@@ -86,16 +32,46 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="160dp"
+                android:layout_height="0dp"
+                android:layout_weight="2"
                 app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="0dp">
 
-                <org.lineageos.recorder.ui.PlaybackWaveformView
-                    android:id="@+id/waveformView"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="16dp" />
+                    android:orientation="vertical"
+                    android:paddingHorizontal="24dp"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="16dp">
+
+                    <TextView
+                        android:id="@+id/titleTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textAppearance="?attr/textAppearanceTitleLarge"
+                        android:textColor="?attr/colorOnSurface"
+                        tools:text="Test Recording" />
+
+                    <TextView
+                        android:id="@+id/dateTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        tools:text="Fri, Aug 19 • 10:35" />
+
+                    <org.lineageos.recorder.ui.PlaybackWaveformView
+                        android:id="@+id/waveformView"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_weight="1" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
@@ -231,6 +207,38 @@
         android:paddingBottom="24dp"
         android:paddingTop="8dp">
 
+        <!-- Audio / Transcript switch, above the progress bar as in the Pixel Recorder layout -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/tabGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"
+            app:checkedButton="@id/tabAudioButton"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/tabAudioButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/playback_tab_audio"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_waveform"
+                app:iconGravity="textStart" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/tabTranscriptButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/playback_tab_transcript"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_notes"
+                app:iconGravity="textStart" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
         <com.google.android.material.slider.Slider
             android:id="@+id/progressSlider"
             android:layout_width="match_parent"
@@ -272,11 +280,20 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- Balances the speed button on the right -->
-            <View
+            <!-- Keep the screen on while reading along. Off by default. Balances the speed button on the right -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/keepAwakeButton"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/playback_keep_screen_on"
+                android:gravity="start|center_vertical"
+                android:minWidth="0dp"
+                android:text=""
+                app:icon="@drawable/ic_keep_screen_on"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -311,12 +328,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/play"
-                app:backgroundTint="?attr/colorPrimary"
+                app:backgroundTint="?attr/colorTertiary"
                 app:elevation="0dp"
                 app:fabCustomSize="88dp"
                 app:maxImageSize="44dp"
                 app:srcCompat="@drawable/ic_play_arrow"
-                app:tint="?attr/colorOnPrimary" />
+                app:tint="?attr/colorOnTertiary" />
 
             <FrameLayout
                 android:layout_width="wrap_content"

@@ -185,6 +185,7 @@
     <string name="playback_delete_marker_message">Delete this marker?</string>
     <string name="playback_delete_segment_message">Deleting a segment marker merges this chapter into the previous one.</string>
     <string name="playback_load_failed">Cannot open this recording</string>
+    <string name="playback_notification_channel">Playback</string>
     <string name="playback_waveform">Waveform. Tap or drag to seek</string>
 
     <!-- Call recording and offline engine -->
@@ -288,4 +289,6 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="recording_deleted">This recording was deleted.</string>
     <!-- Set per install identity by resValue in app/build.gradle.kts. The default is the legacy package. -->
     <string name="shortcut_target_package" translatable="false">org.lineageos.recorder</string>
+    <string name="playback_speed_title">Playback speed</string>
+    <string name="playback_keep_screen_on">Keep screen on</string>
 </resources>
