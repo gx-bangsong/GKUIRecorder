@@ -256,6 +256,7 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
             FailureReason.STORAGE -> R.string.asr_reason_storage
             FailureReason.CANCELLED -> R.string.asr_reason_cancelled
             FailureReason.MANIFEST_INCOMPLETE -> R.string.asr_manifest_incomplete
+            FailureReason.FILE_MISSING -> R.string.asr_reason_file_missing
             FailureReason.INTERNAL -> R.string.asr_reason_internal
             FailureReason.UNKNOWN -> R.string.asr_reason_unknown
         }
