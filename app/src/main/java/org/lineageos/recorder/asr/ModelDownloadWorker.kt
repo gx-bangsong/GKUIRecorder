@@ -86,9 +86,9 @@ class ModelDownloadWorker(context: Context, params: WorkerParameters) : Coroutin
         } catch (e: Throwable) {
             // Errors such as NoSuchMethodError escape the branches above. Without this they fail
             // the work with no reason, which the UI shows as "unknown". Log the type and the
-            // stack trace (code locations only, no paths or user data), then report UNKNOWN.
+            // stack trace (code locations only, no paths or user data), then report INTERNAL.
             Log.e(TAG, "Model install ended with ${e.javaClass.name}", e)
-            failure(FailureReason.UNKNOWN, recoverable = false)
+            failure(FailureReason.INTERNAL, recoverable = false)
         }
     }
 

@@ -168,6 +168,7 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="asr_reason_space">存储空间不足</string>
     <string name="asr_reason_storage">无法写入存储</string>
     <string name="asr_reason_cancelled">已取消</string>
+    <string name="asr_reason_internal">内部错误，请导出日志反馈</string>
     <string name="asr_reason_unknown">未知错误</string>
     <string name="asr_action_download">下载模型</string>
     <string name="asr_action_retry">重试</string>

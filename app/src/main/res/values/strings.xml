@@ -233,6 +233,7 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="asr_reason_space">not enough free space</string>
     <string name="asr_reason_storage">cannot write to storage</string>
     <string name="asr_reason_cancelled">cancelled</string>
+    <string name="asr_reason_internal">internal error, export the log to report it</string>
     <string name="asr_reason_unknown">unknown error</string>
     <string name="asr_action_download">Download model</string>
     <string name="asr_action_retry">Retry</string>

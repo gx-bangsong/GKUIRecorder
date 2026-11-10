@@ -50,6 +50,8 @@ enum class FailureReason {
     CANCELLED,
     /** The catalog entry has no verified hashes or sizes. Not a network problem. */
     MANIFEST_INCOMPLETE,
+    /** An unexpected error (a bug or an unsupported API). The details are in the log. */
+    INTERNAL,
     UNKNOWN,
 }
 
