@@ -18,12 +18,20 @@ import org.lineageos.recorder.R
 class PermissionManager(private val activity: Activity) {
     private val notificationManager = activity.getSystemService(NotificationManager::class.java)
 
+    /**
+     * READ_PHONE_STATE is only used by call recording, which needs a system app with the
+     * privileged capture permission. Ordinary installs never need it, so it is not requested.
+     */
+    private fun needsPhoneStatusPermission(): Boolean =
+        SystemAppHelper.isCallRecordingAvailable(activity) &&
+                PreferencesManager(activity).callRecordingEnabled
+
     fun requestEssentialPermissions(): Boolean {
         val missingPermissions: MutableList<String> = mutableListOf()
         if (!hasRecordAudioPermission()) {
             missingPermissions.add(permission.RECORD_AUDIO)
         }
-        if (!hasPhoneReadStatusPermission()) {
+        if (needsPhoneStatusPermission() && !hasPhoneReadStatusPermission()) {
             missingPermissions.add(permission.READ_PHONE_STATE)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationManager.areNotificationsEnabled()) {
@@ -49,11 +57,12 @@ class PermissionManager(private val activity: Activity) {
     }
 
     fun hasEssentialPermissions(): Boolean {
+        val phoneOk = !needsPhoneStatusPermission() || hasPhoneReadStatusPermission()
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            hasRecordAudioPermission() && hasPhoneReadStatusPermission() &&
+            hasRecordAudioPermission() && phoneOk &&
                     notificationManager.areNotificationsEnabled()
         } else {
-            hasRecordAudioPermission() && hasPhoneReadStatusPermission()
+            hasRecordAudioPermission() && phoneOk
         }
     }
 
@@ -73,8 +82,9 @@ class PermissionManager(private val activity: Activity) {
     ).any { activity.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
 
     fun onEssentialPermissionsDenied() {
+        val phoneNeeded = needsPhoneStatusPermission()
         if (activity.shouldShowRequestPermissionRationale(permission.POST_NOTIFICATIONS) ||
-            activity.shouldShowRequestPermissionRationale(permission.READ_PHONE_STATE) ||
+            (phoneNeeded && activity.shouldShowRequestPermissionRationale(permission.READ_PHONE_STATE)) ||
             activity.shouldShowRequestPermissionRationale(permission.RECORD_AUDIO)
         ) {
             // Explain the user why the denied permission is needed
@@ -82,7 +92,7 @@ class PermissionManager(private val activity: Activity) {
             if (!hasRecordAudioPermission()) {
                 error = error or 1
             }
-            if (!hasPhoneReadStatusPermission()) {
+            if (phoneNeeded && !hasPhoneReadStatusPermission()) {
                 error = error or (1 shl 1)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
