@@ -289,4 +289,6 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="recording_deleted">This recording was deleted.</string>
     <!-- Set per install identity by resValue in app/build.gradle.kts. The default is the legacy package. -->
     <string name="shortcut_target_package" translatable="false">org.lineageos.recorder</string>
+    <string name="playback_speed_title">Playback speed</string>
+    <string name="playback_keep_screen_on">Keep screen on</string>
 </resources>

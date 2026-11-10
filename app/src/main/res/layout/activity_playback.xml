@@ -280,11 +280,20 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- Balances the speed button on the right -->
-            <View
+            <!-- Keep the screen on while reading along. Off by default. Balances the speed button on the right -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/keepAwakeButton"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/playback_keep_screen_on"
+                android:gravity="start|center_vertical"
+                android:minWidth="0dp"
+                android:text=""
+                app:icon="@drawable/ic_keep_screen_on"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
 
             <FrameLayout
                 android:layout_width="wrap_content"

@@ -5,9 +5,11 @@
 
 package org.lineageos.recorder
 
-import android.media.MediaPlayer
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.net.Uri
 import android.os.Bundle
@@ -15,8 +17,13 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.format.DateUtils
+import android.text.style.BackgroundColorSpan
 import android.view.View
+import android.view.WindowManager
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +36,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
@@ -43,6 +53,7 @@ import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.transcription.TranscriptPanel
 import org.lineageos.recorder.asr.transcription.TranscriptPanelState
 import org.lineageos.recorder.asr.transcription.TranscriptPanels
+import org.lineageos.recorder.asr.transcription.TranscriptSegment
 import org.lineageos.recorder.asr.ui.TranscriptionStarter
 import org.lineageos.recorder.models.Marker
 import org.lineageos.recorder.models.MarkerType
@@ -53,6 +64,8 @@ import org.lineageos.recorder.ui.PlaybackWaveformView
 import org.lineageos.recorder.utils.ExportHelper
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.WaveformLoader
+import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.max
 
 /**
@@ -67,7 +80,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val dateTextView by lazy { findViewById<TextView>(R.id.dateTextView) }
     private val tabGroup by lazy { findViewById<MaterialButtonToggleGroup>(R.id.tabGroup) }
     private val audioGroup by lazy { findViewById<View>(R.id.audioGroup) }
-    private val transcriptScroll by lazy { findViewById<View>(R.id.transcriptScroll) }
+    private val transcriptScroll by lazy { findViewById<ScrollView>(R.id.transcriptScroll) }
     private val transcriptStatusTextView by lazy { findViewById<TextView>(R.id.transcriptStatusTextView) }
     private val transcriptBannerTextView by lazy { findViewById<TextView>(R.id.transcriptBannerTextView) }
     private val transcriptTextView by lazy { findViewById<TextView>(R.id.transcriptTextView) }
@@ -87,6 +100,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val forwardButton by lazy { findViewById<FloatingActionButton>(R.id.forwardButton) }
     private val playPauseButton by lazy { findViewById<FloatingActionButton>(R.id.playPauseImageView) }
     private val speedButton by lazy { findViewById<MaterialButton>(R.id.speedButton) }
+    private val keepAwakeButton by lazy { findViewById<MaterialButton>(R.id.keepAwakeButton) }
 
     private val preferences by lazy { PreferencesManager(this) }
     private val adapter by lazy {
@@ -112,9 +126,16 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private var errorShown = false
     private val playbackListener: () -> Unit = { onSessionChanged() }
     private val markers = mutableListOf<Marker>()
-    private var speedIndex = 0
+    private var speed = 1f
+    private var keepScreenOn = false
     private var transcriptLoad: Job? = null
     private var shownPanel: TranscriptPanel? = null
+
+    // Sentence highlight: the saved segments and where each one sits in the shown text
+    private var segments: List<TranscriptSegment> = emptyList()
+    private var segmentRanges: List<IntRange?> = emptyList()
+    private var segmentBody = ""
+    private var activeSegment = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,7 +187,15 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         playPauseButton.setOnClickListener { togglePlay() }
         rewindButton.setOnClickListener { seekTo(currentPosition() - SKIP_MS) }
         forwardButton.setOnClickListener { seekTo(currentPosition() + SKIP_MS) }
-        speedButton.setOnClickListener { cycleSpeed() }
+        speed = savedInstanceState?.getFloat(KEY_SPEED, 1f) ?: 1f
+        keepScreenOn = savedInstanceState?.getBoolean(KEY_KEEP_SCREEN_ON, false) ?: false
+        speedButton.text = formatSpeed(speed)
+        renderKeepAwake()
+        speedButton.setOnClickListener { showSpeedDialog() }
+        keepAwakeButton.setOnClickListener {
+            keepScreenOn = !keepScreenOn
+            renderKeepAwake()
+        }
 
         progressSlider.addOnChangeListener(Slider.OnChangeListener { _, value, fromUser ->
             if (fromUser) {
@@ -223,6 +252,12 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         super.onResume()
         // Returning to the screen (foreground, after rotation or after the list) re-reads the saved state
         loadTranscript()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putFloat(KEY_SPEED, speed)
+        outState.putBoolean(KEY_KEEP_SCREEN_ON, keepScreenOn)
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -287,6 +322,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             updateProgress()
             refreshRows()
             loadWaveform()
+            applySpeed()
         }
         renderPlayState()
     }
@@ -358,11 +394,51 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         updateProgress()
     }
 
-    private fun cycleSpeed() {
-        speedIndex = (speedIndex + 1) % SPEEDS.size
-        val speed = SPEEDS[speedIndex]
-        speedButton.text = if (speed % 1f == 0f) "${speed.toInt()}x" else "${speed}x"
+    private fun showSpeedDialog() {
+        val view = layoutInflater.inflate(R.layout.dialog_playback_speed, null)
+        val valueText = view.findViewById<TextView>(R.id.speedValueTextView)
+        val slider = view.findViewById<Slider>(R.id.speedSlider)
+        val chipGroup = view.findViewById<ChipGroup>(R.id.speedChipGroup)
 
+        // Shortcut chips in 0.5 steps. Tapping one moves the slider, which applies the speed.
+        val chips = SPEED_SHORTCUTS.map { value ->
+            Chip(this).also { chip ->
+                chip.text = formatSpeed(value)
+                chip.isCheckable = true
+                chip.setOnClickListener { slider.value = value }
+                chipGroup.addView(chip)
+            }
+        }
+
+        fun update(value: Float) {
+            valueText.text = formatSpeed(value)
+            SPEED_SHORTCUTS.forEachIndexed { index, shortcut ->
+                chips[index].isChecked = abs(shortcut - value) < SPEED_EPSILON
+            }
+        }
+
+        slider.value = speed.coerceIn(SPEED_MIN, SPEED_MAX)
+        update(slider.value)
+        slider.addOnChangeListener(Slider.OnChangeListener { _, value, _ ->
+            setSpeed(value)
+            update(value)
+        })
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.playback_speed_title)
+            .setView(view)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    private fun setSpeed(value: Float) {
+        speed = value.coerceIn(SPEED_MIN, SPEED_MAX)
+        applySpeed()
+    }
+
+    /** Applies the chosen speed to the player when it is ready, and shows it on the button. */
+    private fun applySpeed() {
+        speedButton.text = formatSpeed(speed)
         val mediaPlayer = player ?: return
         if (prepared) {
             try {
@@ -371,6 +447,40 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
                 // Speed is not supported in the current state; keep the previous one
             }
         }
+    }
+
+    private fun formatSpeed(value: Float): String {
+        val number = if (value % 1f == 0f) {
+            value.toInt().toString()
+        } else {
+            String.format(Locale.ROOT, "%.2f", value).trimEnd('0').trimEnd('.')
+        }
+        return "${number}x"
+    }
+
+    /** Keeps the screen on while this screen is visible. Off by default. */
+    private fun renderKeepAwake() {
+        if (keepScreenOn) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        val background = if (keepScreenOn) {
+            MaterialColors.getColor(
+                keepAwakeButton,
+                com.google.android.material.R.attr.colorSecondaryContainer,
+            )
+        } else {
+            Color.TRANSPARENT
+        }
+        val iconColor = if (keepScreenOn) {
+            com.google.android.material.R.attr.colorOnSecondaryContainer
+        } else {
+            com.google.android.material.R.attr.colorOnSurfaceVariant
+        }
+        keepAwakeButton.backgroundTintList = ColorStateList.valueOf(background)
+        keepAwakeButton.iconTint = ColorStateList.valueOf(MaterialColors.getColor(keepAwakeButton, iconColor))
+        keepAwakeButton.isSelected = keepScreenOn
     }
 
     private fun updateProgress() {
@@ -387,6 +497,68 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             waveformView.progress = position.toFloat() / durationMs
         } else {
             waveformView.progress = 0f
+        }
+        applyKaraoke(position)
+    }
+
+    /**
+     * Sets the segments of the shown transcript. Each segment is found in the text in order, so a
+     * segment that cannot be placed is simply not highlighted.
+     */
+    private fun setKaraoke(body: String, found: List<TranscriptSegment>) {
+        segments = found
+        segmentBody = body
+        val ranges = ArrayList<IntRange?>(found.size)
+        var cursor = 0
+        for (segment in found) {
+            val piece = segment.text.trim()
+            val index = if (piece.isEmpty()) -1 else body.indexOf(piece, cursor)
+            if (index >= 0) {
+                ranges += index until index + piece.length
+                cursor = index + piece.length
+            } else {
+                ranges += null
+            }
+        }
+        segmentRanges = ranges
+        activeSegment = -1
+        applyKaraoke(currentPosition())
+    }
+
+    /** Highlights the segment that is playing and keeps it in view. Only on the transcript tab. */
+    private fun applyKaraoke(positionMs: Long) {
+        if (segments.isEmpty()) return
+        val index = segments.indexOfFirst { positionMs >= it.startMs && positionMs < it.endMs }
+        if (index == activeSegment || !transcriptScroll.isVisible) return
+        activeSegment = index
+
+        val text = SpannableString(segmentBody)
+        val range = segmentRanges.getOrNull(index)
+        if (range != null) {
+            val color = MaterialColors.getColor(
+                transcriptTextView,
+                com.google.android.material.R.attr.colorSecondaryContainer,
+            )
+            text.setSpan(
+                BackgroundColorSpan(color),
+                range.first,
+                range.last + 1,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+            scrollToOffset(range.first)
+        }
+        transcriptTextView.text = text
+    }
+
+    private fun scrollToOffset(offset: Int) {
+        transcriptTextView.post {
+            val layout = transcriptTextView.layout ?: return@post
+            if (offset > layout.text.length) return@post
+            val line = layout.getLineForOffset(offset)
+            // The text sits inside a LinearLayout that is the scroll view's only child
+            val top = (transcriptTextView.parent as View).top + transcriptTextView.top +
+                    layout.getLineTop(line)
+            transcriptScroll.smoothScrollTo(0, max(top - transcriptScroll.height / 3, 0))
         }
     }
 
@@ -406,12 +578,13 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         val target = uri?.toString() ?: return
         transcriptLoad?.cancel()
         transcriptLoad = lifecycleScope.launch {
-            val panel = withContext(Dispatchers.IO) {
+            val (panel, found) = withContext(Dispatchers.IO) {
                 val record = AsrRuntime.transcripts(this@PlaybackActivity).get(target)
                 val active = TranscriptionScheduler.isActive(this@PlaybackActivity, target)
-                TranscriptPanels.of(record, active)
+                TranscriptPanels.of(record, active) to record?.segments.orEmpty()
             }
             showPanel(panel)
+            setKaraoke(panel.body, found)
         }
     }
 
@@ -606,6 +779,11 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         private const val SKIP_MS = 10_000L
         private const val TICK_MS = 200L
         private const val WAVEFORM_BINS = 240
-        private val SPEEDS = floatArrayOf(1f, 1.5f, 2f, 0.75f)
+        private const val KEY_SPEED = "playback_speed"
+        private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
+        private const val SPEED_MIN = 0.5f
+        private const val SPEED_MAX = 3f
+        private const val SPEED_EPSILON = 0.001f
+        private val SPEED_SHORTCUTS = floatArrayOf(0.5f, 1f, 1.5f, 2f, 2.5f, 3f)
     }
 }
