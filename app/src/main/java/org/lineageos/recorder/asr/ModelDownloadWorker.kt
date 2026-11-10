@@ -6,10 +6,12 @@
 package org.lineageos.recorder.asr
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.model.FailureReason
@@ -78,6 +80,15 @@ class ModelDownloadWorker(context: Context, params: WorkerParameters) : Coroutin
         } catch (e: IllegalStateException) {
             // For example: the READY marker could not be written
             failure(FailureReason.STORAGE, recoverable = true)
+        } catch (e: CancellationException) {
+            // Cancellation must propagate so WorkManager can finish the work
+            throw e
+        } catch (e: Throwable) {
+            // Errors such as NoSuchMethodError escape the branches above. Without this they fail
+            // the work with no reason, which the UI shows as "unknown". Log the type and the
+            // stack trace (code locations only, no paths or user data), then report UNKNOWN.
+            Log.e(TAG, "Model install ended with ${e.javaClass.name}", e)
+            failure(FailureReason.UNKNOWN, recoverable = false)
         }
     }
 
@@ -123,6 +134,7 @@ class ModelDownloadWorker(context: Context, params: WorkerParameters) : Coroutin
     }
 
     companion object {
+        private const val TAG = "ModelDownloadWorker"
         private const val MAX_ATTEMPTS = 5
     }
 }
