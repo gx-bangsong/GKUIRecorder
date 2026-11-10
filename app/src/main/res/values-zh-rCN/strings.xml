@@ -120,6 +120,7 @@
     <string name="playback_delete_marker_message">确定删除这个标记吗？</string>
     <string name="playback_delete_segment_message">删除分段标记会把这一章合并到上一章。</string>
     <string name="playback_load_failed">无法打开这段录音</string>
+    <string name="playback_notification_channel">播放</string>
     <string name="playback_waveform">波形，点击或拖动可跳转</string>
 
     <!-- Call recording and offline engine -->

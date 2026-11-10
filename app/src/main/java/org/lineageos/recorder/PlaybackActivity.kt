@@ -5,7 +5,6 @@
 
 package org.lineageos.recorder
 
-import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -54,7 +53,6 @@ import org.lineageos.recorder.ui.PlaybackWaveformView
 import org.lineageos.recorder.utils.ExportHelper
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.WaveformLoader
-import java.io.IOException
 import kotlin.math.max
 
 /**
@@ -103,12 +101,16 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         }
     }
 
-    private var player: MediaPlayer? = null
+    // The player belongs to PlaybackSession, so it outlives this screen
+    private val player: MediaPlayer? get() = PlaybackSession.player
+    private val prepared: Boolean get() = PlaybackSession.prepared
+    private val durationMs: Long get() = PlaybackSession.durationMs
     private var uri: Uri? = null
     private var recordingTitle = ""
-    private var prepared = false
     private var seeking = false
-    private var durationMs = 0L
+    private var setupDone = false
+    private var errorShown = false
+    private val playbackListener: () -> Unit = { onSessionChanged() }
     private val markers = mutableListOf<Marker>()
     private var speedIndex = 0
     private var transcriptLoad: Job? = null
@@ -228,64 +230,80 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         return true
     }
 
-    override fun onPause() {
-        pausePlayback()
-        super.onPause()
+    override fun onStart() {
+        super.onStart()
+        // Null when onCreate already finished the screen
+        val target = uri ?: return
+        if (isFinishing) return
+        PlaybackSession.addListener(playbackListener)
+        // Playback is not stopped when the screen is left. Opening a different recording
+        // replaces the one that is loaded, so this screen always shows its own recording.
+        if (PlaybackSession.uri != target) {
+            loadPlayer(target)
+        }
+        onSessionChanged()
+    }
+
+    override fun onStop() {
+        PlaybackSession.removeListener(playbackListener)
+        handler.removeCallbacks(ticker)
+        super.onStop()
     }
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
-        player?.release()
-        player = null
+        // Close the recording only when nothing is playing; a playing recording continues in
+        // the background until it is stopped from the notification.
+        if (isFinishing && !PlaybackSession.isPlaying()) {
+            PlaybackSession.stop()
+        }
         super.onDestroy()
     }
 
     private fun loadPlayer(source: Uri) {
-        val mediaPlayer = MediaPlayer()
-        try {
-            mediaPlayer.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-            )
-            mediaPlayer.setDataSource(this, source)
-            mediaPlayer.setOnPreparedListener { onPrepared(it) }
-            mediaPlayer.setOnCompletionListener {
-                pausePlayback()
-                seekTo(0L)
-            }
-            mediaPlayer.setOnErrorListener { _, _, _ ->
-                Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
-                true
-            }
-            mediaPlayer.prepareAsync()
-            player = mediaPlayer
-        } catch (e: IOException) {
-            mediaPlayer.release()
-            Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
-            finish()
-        } catch (e: IllegalArgumentException) {
-            mediaPlayer.release()
-            Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
-            finish()
-        } catch (e: SecurityException) {
-            mediaPlayer.release()
+        setupDone = false
+        if (!PlaybackSession.open(this, source, recordingTitle)) {
             Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
             finish()
         }
     }
 
-    private fun onPrepared(mediaPlayer: MediaPlayer) {
-        prepared = true
-        durationMs = mediaPlayer.duration.toLong().coerceAtLeast(0L)
-        // The slider range must be valid before its value is set
-        progressSlider.valueFrom = 0f
-        progressSlider.valueTo = max(durationMs.toFloat(), 1f)
-        progressSlider.isEnabled = durationMs > 0L
-        updateProgress()
-        refreshRows()
-        loadWaveform()
+    /** Runs on every change of the session: loads, prepares, play, pause, stop. */
+    private fun onSessionChanged() {
+        if (PlaybackSession.loadFailed) {
+            if (!errorShown) {
+                errorShown = true
+                Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
+            }
+            renderPlayState()
+            return
+        }
+        if (prepared && !setupDone) {
+            setupDone = true
+            // The slider range must be valid before its value is set
+            progressSlider.valueFrom = 0f
+            progressSlider.valueTo = max(durationMs.toFloat(), 1f)
+            progressSlider.isEnabled = durationMs > 0L
+            updateProgress()
+            refreshRows()
+            loadWaveform()
+        }
+        renderPlayState()
+    }
+
+    /** Shows the play or pause state and runs the progress ticker only while playing. */
+    private fun renderPlayState() {
+        if (PlaybackSession.isPlaying()) {
+            playPauseButton.setImageResource(R.drawable.ic_pause)
+            playPauseButton.contentDescription = getString(R.string.pause)
+            handler.removeCallbacks(ticker)
+            handler.post(ticker)
+        } else {
+            playPauseButton.setImageResource(R.drawable.ic_play_arrow)
+            playPauseButton.contentDescription = getString(R.string.play)
+            handler.removeCallbacks(ticker)
+            updateProgress()
+        }
     }
 
     private fun loadWaveform() {
@@ -316,23 +334,14 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     }
 
     private fun startPlayback() {
-        val mediaPlayer = player ?: return
-        mediaPlayer.start()
-        playPauseButton.setImageResource(R.drawable.ic_pause)
-        playPauseButton.contentDescription = getString(R.string.pause)
-        handler.removeCallbacks(ticker)
-        handler.post(ticker)
+        // The foreground service keeps playback alive when this screen is left. Start it only
+        // while the screen is visible, then let the session play; the listener updates the UI.
+        PlaybackService.start(this)
+        PlaybackSession.play()
     }
 
     private fun pausePlayback() {
-        val mediaPlayer = player
-        if (mediaPlayer != null && prepared && mediaPlayer.isPlaying) {
-            mediaPlayer.pause()
-        }
-        playPauseButton.setImageResource(R.drawable.ic_play_arrow)
-        playPauseButton.contentDescription = getString(R.string.play)
-        handler.removeCallbacks(ticker)
-        updateProgress()
+        PlaybackSession.pause()
     }
 
     private fun currentPosition(): Long {

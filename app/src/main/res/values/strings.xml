@@ -185,6 +185,7 @@
     <string name="playback_delete_marker_message">Delete this marker?</string>
     <string name="playback_delete_segment_message">Deleting a segment marker merges this chapter into the previous one.</string>
     <string name="playback_load_failed">Cannot open this recording</string>
+    <string name="playback_notification_channel">Playback</string>
     <string name="playback_waveform">Waveform. Tap or drag to seek</string>
 
     <!-- Call recording and offline engine -->
