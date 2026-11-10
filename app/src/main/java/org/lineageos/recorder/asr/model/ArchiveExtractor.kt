@@ -145,7 +145,17 @@ object ArchiveExtractor {
         soFar: Long,
         maxTotal: Long,
         isCancelled: () -> Boolean,
-    ): Long = copyCounting(input, OutputStream.nullOutputStream(), buffer, soFar, maxTotal, isCancelled)
+    ): Long = copyCounting(input, DiscardingOutputStream, buffer, soFar, maxTotal, isCancelled)
 
     private fun unsafe(message: String) = ModelFailure(FailureReason.ARCHIVE_UNSAFE, recoverable = false, message = message)
+
+    /**
+     * Discards bytes. Used instead of OutputStream.nullOutputStream(), which needs Java 11 and
+     * is missing on Android 12 (minSdk 31), so the call failed with NoSuchMethodError.
+     */
+    private object DiscardingOutputStream : OutputStream() {
+        override fun write(b: Int) = Unit
+
+        override fun write(b: ByteArray, off: Int, len: Int) = Unit
+    }
 }

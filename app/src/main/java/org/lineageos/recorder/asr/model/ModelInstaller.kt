@@ -229,7 +229,7 @@ class ModelInstaller(
             val file = File(installDir, expected.localName)
             if (!file.isFile || file.length() == 0L) {
                 throw ModelFailure(
-                    FailureReason.UNKNOWN,
+                    FailureReason.FILE_MISSING,
                     recoverable = false,
                     message = "Expected file missing: ${expected.localName}",
                 )
