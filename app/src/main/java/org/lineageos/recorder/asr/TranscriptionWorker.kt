@@ -136,6 +136,9 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
         var lastCheckpointAt = 0L
         latestUtterances = emptyList()
         var chunkLogged = false
+        val recTag = TranscriptRecord.stableRecordingId(uri).take(8)
+        val thermal = ThermalGovernor()
+        var publishedThermal = ThermalAction.FULL
 
         val control = object : TranscriptionPipeline.Control {
             override fun checkCancelled() {
@@ -143,18 +146,34 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
             }
 
             override fun beforeChunk() {
-                // Severe heat: pause and keep finished segments. Resume when it cools down.
-                var paused = false
-                while (AsrRuntime.thermalStatus(app) >= PowerManager.THERMAL_STATUS_SEVERE) {
+                var action = thermal.decide(AsrRuntime.thermalStatus(app), System.currentTimeMillis())
+                while (action == ThermalAction.PAUSED) {
+                    publishThermal(action)
                     checkCancelled()
-                    if (!paused) {
-                        paused = true
-                        setForegroundAsync(
-                            notifications.transcriptionForeground(id, title, lastPercent(), paused = true),
-                        )
-                    }
                     Thread.sleep(PAUSE_POLL_MS)
+                    action = thermal.decide(AsrRuntime.thermalStatus(app), System.currentTimeMillis())
                 }
+                publishThermal(action)
+                // Reduced load: a short rest between chunks. Models and threads are not reloaded.
+                if (action == ThermalAction.REDUCED) {
+                    Thread.sleep(REDUCED_REST_MS)
+                }
+            }
+
+            /** Updates the notification only when the thermal action changes. */
+            private fun publishThermal(action: ThermalAction) {
+                if (action == publishedThermal) return
+                publishedThermal = action
+                Log.i(TAG, "rec=$recTag thermal action=$action")
+                setForegroundAsync(
+                    notifications.transcriptionForeground(
+                        id,
+                        title,
+                        lastPercent(),
+                        paused = action == ThermalAction.PAUSED,
+                        reduced = action == ThermalAction.REDUCED,
+                    ),
+                )
             }
 
             override fun onProgress(fraction: Float, utterances: List<Utterance>) {
@@ -241,6 +260,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
         private const val CHECKPOINT_STEP = 0.02f
         private const val CHECKPOINT_MS = 10_000L
         private const val PAUSE_POLL_MS = 2_000L
+        private const val REDUCED_REST_MS = 250L
         private const val MAX_RECORDING_WAITS = 60
     }
 }

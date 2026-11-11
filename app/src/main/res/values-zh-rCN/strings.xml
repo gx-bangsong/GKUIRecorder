@@ -224,4 +224,5 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="recording_deleted">该录音已被删除。</string>
     <string name="playback_speed_title">播放速度</string>
     <string name="playback_keep_screen_on">保持屏幕常亮</string>
+    <string name="asr_transcribe_reduced">设备较热，已降低转写速度。</string>
 </resources>
