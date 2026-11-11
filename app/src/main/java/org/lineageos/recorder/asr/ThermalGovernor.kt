@@ -24,9 +24,11 @@ enum class ThermalAction {
  * `PowerManager.THERMAL_STATUS_*`; they are repeated here so that this class has no Android
  * dependency and can be tested on the JVM.
  *
- * Entering REDUCED or PAUSED happens at once. Leaving them needs the status to stay below the
- * threshold for [stableMs] without a single interruption. This stops quick up-and-down changes from
- * starting and stopping the work again and again.
+ * Entering REDUCED or PAUSED happens at once. Leaving PAUSED needs the status to stay below SEVERE
+ * for [stableMs] (a MODERATE reading during the pause counts as cooling). Leaving REDUCED needs the
+ * status to stay below MODERATE for [stableMs]. A new reading at or above the threshold restarts
+ * that wait. This stops quick up-and-down changes from starting and stopping the work again and
+ * again.
  */
 class ThermalGovernor(private val stableMs: Long = STABLE_MS) {
     private var reduced = false

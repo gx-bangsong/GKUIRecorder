@@ -80,7 +80,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
                 val segments = AsrGlobalLock.acquire(app) { isStopped }?.use {
                     Log.i(TAG, "rec=$tag recognizer lock acquired")
                     models.useModel(modelId) { _, modelDir ->
-                        runPipeline(app, uri, modelDir, language, base, repository, notifications, title)
+                        runPipeline(id, app, uri, modelDir, language, base, repository, notifications, title)
                     }
                 } ?: throw TranscriptionCancelled()
                 // A recording deleted during the run must not get its transcript written back
@@ -116,6 +116,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
     }
 
     private fun runPipeline(
+        workId: java.util.UUID,
         app: Context,
         uri: String,
         modelDir: java.io.File,
@@ -167,7 +168,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
                 Log.i(TAG, "rec=$recTag thermal action=$action")
                 setForegroundAsync(
                     notifications.transcriptionForeground(
-                        id,
+                        workId,
                         title,
                         lastPercent(),
                         paused = action == ThermalAction.PAUSED,
