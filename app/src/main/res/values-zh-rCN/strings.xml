@@ -225,4 +225,7 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="playback_speed_title">播放速度</string>
     <string name="playback_keep_screen_on">保持屏幕常亮</string>
     <string name="asr_transcribe_reduced">设备较热，已降低转写速度。</string>
+    <string name="transcript_tap_to_play">点击一段，从这里开始播放录音。</string>
+    <string name="transcript_back_to_playing">回到当前播放位置</string>
+    <string name="playback_recording_unavailable">录音无法播放，转写文字仍可查看。</string>
 </resources>

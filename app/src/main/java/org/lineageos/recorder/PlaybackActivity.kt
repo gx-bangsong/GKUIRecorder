@@ -17,12 +17,13 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import android.text.SpannableString
-import android.text.Spanned
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.text.format.DateUtils
-import android.text.style.BackgroundColorSpan
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -52,6 +53,7 @@ import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.transcription.TranscriptPanel
 import org.lineageos.recorder.asr.transcription.TranscriptPanelState
+import org.lineageos.recorder.asr.transcription.SegmentLookup
 import org.lineageos.recorder.asr.transcription.TranscriptPanels
 import org.lineageos.recorder.asr.transcription.TranscriptSegment
 import org.lineageos.recorder.asr.ui.TranscriptionStarter
@@ -101,6 +103,11 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val playPauseButton by lazy { findViewById<FloatingActionButton>(R.id.playPauseImageView) }
     private val speedButton by lazy { findViewById<MaterialButton>(R.id.speedButton) }
     private val keepAwakeButton by lazy { findViewById<MaterialButton>(R.id.keepAwakeButton) }
+    private val transcriptHintTextView by lazy { findViewById<TextView>(R.id.transcriptHintTextView) }
+    private val transcriptSegmentsContainer by lazy {
+        findViewById<LinearLayout>(R.id.transcriptSegmentsContainer)
+    }
+    private val followButton by lazy { findViewById<MaterialButton>(R.id.followButton) }
 
     private val preferences by lazy { PreferencesManager(this) }
     private val adapter by lazy {
@@ -131,11 +138,16 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private var transcriptLoad: Job? = null
     private var shownPanel: TranscriptPanel? = null
 
-    // Sentence highlight: the saved segments and where each one sits in the shown text
+    // Timed transcript segments, shown as tappable blocks and highlighted from the playback position
     private var segments: List<TranscriptSegment> = emptyList()
-    private var segmentRanges: List<IntRange?> = emptyList()
-    private var segmentBody = ""
+    private val segmentViews = mutableListOf<TextView>()
     private var activeSegment = -1
+
+    // Follows the playing segment until the user browses the transcript by hand
+    private var followPlayback = true
+
+    // The recording cannot be played (deleted or unreadable). The transcript stays readable.
+    private var recordingUnavailable = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -192,6 +204,17 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         speedButton.text = formatSpeed(speed)
         renderKeepAwake()
         speedButton.setOnClickListener { showSpeedDialog() }
+        transcriptScroll.setOnTouchListener { _, event ->
+            if (event.actionMasked == MotionEvent.ACTION_DOWN || event.actionMasked == MotionEvent.ACTION_MOVE) {
+                onManualBrowse()
+            }
+            false
+        }
+        followButton.setOnClickListener {
+            followPlayback = true
+            followButton.isVisible = false
+            scrollToSegment(activeSegment)
+        }
         keepAwakeButton.setOnClickListener {
             keepScreenOn = !keepScreenOn
             renderKeepAwake()
@@ -232,14 +255,14 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         loadPlayer(parsed)
         refreshRows()
 
-        // A recording deleted since the list was shown: say so and leave, rather than show nothing.
+        // A recording deleted since the list was shown: say so and keep the readable transcript.
         lifecycleScope.launch {
             val exists = withContext(Dispatchers.IO) {
                 AsrRuntime.recordingExists(this@PlaybackActivity, parsed.toString())
             }
             if (!exists) {
                 Toast.makeText(this@PlaybackActivity, R.string.recording_deleted, Toast.LENGTH_LONG).show()
-                finish()
+                markRecordingUnavailable()
             }
         }
 
@@ -299,8 +322,27 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         setupDone = false
         if (!PlaybackSession.open(this, source, recordingTitle)) {
             Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
-            finish()
+            // Keep the screen so the transcript can still be read
+            markRecordingUnavailable()
         }
+    }
+
+    private fun markRecordingUnavailable() {
+        recordingUnavailable = true
+        renderControlsEnabled()
+        if (tabGroup.checkedButtonId != R.id.tabTranscriptButton) {
+            tabGroup.check(R.id.tabTranscriptButton)
+        }
+    }
+
+    /** Transport controls work only with a loaded, playable recording. */
+    private fun renderControlsEnabled() {
+        val ready = prepared && !recordingUnavailable
+        playPauseButton.isEnabled = ready
+        rewindButton.isEnabled = ready
+        forwardButton.isEnabled = ready
+        speedButton.isEnabled = ready
+        progressSlider.isEnabled = ready && durationMs > 0L
     }
 
     /** Runs on every change of the session: loads, prepares, play, pause, stop. */
@@ -329,6 +371,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     /** Shows the play or pause state and runs the progress ticker only while playing. */
     private fun renderPlayState() {
+        renderControlsEnabled()
         if (PlaybackSession.isPlaying()) {
             playPauseButton.setImageResource(R.drawable.ic_pause)
             playPauseButton.contentDescription = getString(R.string.pause)
@@ -483,6 +526,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         keepAwakeButton.isSelected = keepScreenOn
     }
 
+    /** Called on every manual or automatic progress change. Reads the real player position. */
     private fun updateProgress() {
         val position = currentPosition().coerceIn(0L, max(durationMs, 0L))
         currentTimeTextView.text = PlaybackRows.formatTime(position)
@@ -502,65 +546,128 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     }
 
     /**
-     * Sets the segments of the shown transcript. Each segment is found in the text in order, so a
-     * segment that cannot be placed is simply not highlighted.
+     * Shows the timed segments as separate tappable blocks. Records without timed segments keep the
+     * single text view: their text is shown and copied, but nothing is tapped or highlighted.
      */
-    private fun setKaraoke(body: String, found: List<TranscriptSegment>) {
-        segments = found
-        segmentBody = body
-        val ranges = ArrayList<IntRange?>(found.size)
-        var cursor = 0
-        for (segment in found) {
-            val piece = segment.text.trim()
-            val index = if (piece.isEmpty()) -1 else body.indexOf(piece, cursor)
-            if (index >= 0) {
-                ranges += index until index + piece.length
-                cursor = index + piece.length
-            } else {
-                ranges += null
-            }
+    private fun setSegments(found: List<TranscriptSegment>) {
+        val usable = found.filter { it.text.isNotBlank() }
+        transcriptSegmentsContainer.isVisible = usable.isNotEmpty()
+        transcriptHintTextView.isVisible = usable.isNotEmpty()
+        transcriptTextView.isVisible = usable.isEmpty() && shownPanel?.hasBody == true
+        if (usable == segments && segmentViews.size == usable.size) {
+            // Same segments as before (a reload with no change): keep the views and the highlight
+            applyKaraoke(currentPosition())
+            return
         }
-        segmentRanges = ranges
+        segments = usable
         activeSegment = -1
+        segmentViews.clear()
+        transcriptSegmentsContainer.removeAllViews()
+        val density = resources.displayMetrics.density
+        val padH = (12 * density).toInt()
+        val padV = (8 * density).toInt()
+        usable.forEach { segment ->
+            val view = TextView(this).apply {
+                text = segment.text.trim()
+                textSize = 17f
+                setTextColor(attrColor(com.google.android.material.R.attr.colorOnSurface))
+                setPadding(padH, padV, padH, padV)
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    followPlayback = true
+                    followButton.isVisible = false
+                    playFrom(segment.startMs)
+                }
+            }
+            transcriptSegmentsContainer.addView(
+                view,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply { topMargin = (4 * density).toInt() },
+            )
+            segmentViews += view
+        }
         applyKaraoke(currentPosition())
     }
 
-    /** Highlights the segment that is playing and keeps it in view. Only on the transcript tab. */
+    /** Highlights the segment at the real playback position. Only while the transcript tab is shown. */
     private fun applyKaraoke(positionMs: Long) {
-        if (segments.isEmpty()) return
-        val index = segments.indexOfFirst { positionMs >= it.startMs && positionMs < it.endMs }
-        if (index == activeSegment || !transcriptScroll.isVisible) return
+        if (segments.isEmpty() || !transcriptScroll.isVisible) return
+        val index = SegmentLookup.indexAt(segments, positionMs)
+        if (index == activeSegment) return
+        segmentViews.getOrNull(activeSegment)?.let { setSegmentActive(it, false) }
         activeSegment = index
-
-        val text = SpannableString(segmentBody)
-        val range = segmentRanges.getOrNull(index)
-        if (range != null) {
-            val color = MaterialColors.getColor(
-                transcriptTextView,
-                com.google.android.material.R.attr.colorSecondaryContainer,
-            )
-            text.setSpan(
-                BackgroundColorSpan(color),
-                range.first,
-                range.last + 1,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
-            )
-            scrollToOffset(range.first)
-        }
-        transcriptTextView.text = text
-    }
-
-    private fun scrollToOffset(offset: Int) {
-        transcriptTextView.post {
-            val layout = transcriptTextView.layout ?: return@post
-            if (offset > layout.text.length) return@post
-            val line = layout.getLineForOffset(offset)
-            // The text sits inside a LinearLayout that is the scroll view's only child
-            val top = (transcriptTextView.parent as View).top + transcriptTextView.top +
-                    layout.getLineTop(line)
-            transcriptScroll.smoothScrollTo(0, max(top - transcriptScroll.height / 3, 0))
+        segmentViews.getOrNull(index)?.let { setSegmentActive(it, true) }
+        if (followPlayback && index >= 0) {
+            scrollToSegment(index)
         }
     }
+
+    /** Active segment: a background block and bold text, so it is not only a colour change. */
+    private fun setSegmentActive(view: TextView, active: Boolean) {
+        view.typeface = if (active) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        view.setTextColor(
+            attrColor(
+                if (active) {
+                    com.google.android.material.R.attr.colorOnSecondaryContainer
+                } else {
+                    com.google.android.material.R.attr.colorOnSurface
+                },
+            ),
+        )
+        view.background = if (active) {
+            GradientDrawable().apply {
+                cornerRadius = 12 * resources.displayMetrics.density
+                setColor(attrColor(com.google.android.material.R.attr.colorSecondaryContainer))
+            }
+        } else {
+            null
+        }
+    }
+
+    private fun scrollToSegment(index: Int) {
+        val view = segmentViews.getOrNull(index) ?: return
+        view.post {
+            // Put the playing segment about a third of the way down the visible area
+            val target = offsetInScroll(view) - transcriptScroll.height / 3
+            transcriptScroll.smoothScrollTo(0, max(target, 0))
+        }
+    }
+
+    /** Vertical position of [view] inside the scroll view's content. */
+    private fun offsetInScroll(view: View): Int {
+        var y = 0
+        var current: View? = view
+        while (current != null && current !== transcriptScroll) {
+            y += current.top
+            current = current.parent as? View
+        }
+        return y
+    }
+
+    /** A manual scroll stops following the playing segment and offers a way back. */
+    private fun onManualBrowse() {
+        if (followPlayback && segments.isNotEmpty()) {
+            followPlayback = false
+            followButton.isVisible = true
+        }
+    }
+
+    /** Tapping a segment seeks to its start and plays. It does not start transcription. */
+    private fun playFrom(positionMs: Long) {
+        if (recordingUnavailable || !prepared) {
+            Toast.makeText(this, R.string.playback_recording_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        seekTo(positionMs)
+        if (!PlaybackSession.isPlaying()) {
+            startPlayback()
+        }
+    }
+
+    private fun attrColor(attr: Int): Int = MaterialColors.getColor(this, attr, Color.BLACK)
 
     private fun showTab(transcript: Boolean) {
         audioGroup.isVisible = !transcript
@@ -584,7 +691,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
                 TranscriptPanels.of(record, active) to record?.segments.orEmpty()
             }
             showPanel(panel)
-            setKaraoke(panel.body, found)
+            setSegments(found)
         }
     }
 
@@ -598,7 +705,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         transcriptStatusTextView.isVisible = status != null
         transcriptStatusTextView.text = status.orEmpty()
 
-        transcriptTextView.isVisible = panel.hasBody
+        // With timed segments, the segment blocks replace the plain text. The copied text is unchanged.
+        transcriptTextView.isVisible = panel.hasBody && segments.isEmpty()
         transcriptTextView.text = panel.body
 
         // Persistent reason when no model can be downloaded in this build. Only where a run was offered.
