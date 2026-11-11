@@ -22,6 +22,9 @@ object PlaybackSession {
     private var mediaPlayer: MediaPlayer? = null
     private var control: PlaybackControl? = null
     private var appContext: Context? = null
+
+    /** The user's loop choice for the open recording. Cleared when another recording opens or on stop. */
+    private var loopRequested = false
     private val listeners = CopyOnWriteArraySet<() -> Unit>()
 
     /** The open recording, or null when nothing is loaded. */
@@ -73,6 +76,19 @@ object PlaybackSession {
         return true
     }
 
+    val looping: Boolean
+        get() = loopRequested
+
+    /**
+     * Turns repeat-this-recording on or off. Allowed before the player is prepared: the choice is
+     * kept and applied when it is. It never starts or stops playback.
+     */
+    fun setLooping(enabled: Boolean) {
+        loopRequested = enabled
+        control?.setLooping(enabled)
+        notifyListeners()
+    }
+
     fun setSpeed(speed: Float) {
         if (prepared) control?.setSpeed(speed)
     }
@@ -84,6 +100,9 @@ object PlaybackSession {
     fun open(context: Context, source: Uri, title: String): Boolean {
         if (source == uri && mediaPlayer != null && !loadFailed) {
             return true
+        }
+        if (source != uri) {
+            loopRequested = false
         }
         releasePlayer()
         val app = context.applicationContext
@@ -101,6 +120,7 @@ object PlaybackSession {
                 if (mediaPlayer === mp) {
                     prepared = true
                     durationMs = mp.duration.toLong().coerceAtLeast(0L)
+                    control?.onPrepared()
                     notifyListeners()
                 }
             }
@@ -139,6 +159,7 @@ object PlaybackSession {
             port = MediaPlayerPort(player),
             durationMs = { durationMs },
             onChanged = { notifyListeners() },
+            initialLooping = loopRequested,
         )
         uri = source
         this.title = title
@@ -173,6 +194,7 @@ object PlaybackSession {
     /** Stops playback, releases the player and closes the recording. */
     fun stop() {
         releasePlayer()
+        loopRequested = false
         notifyListeners()
     }
 
@@ -217,5 +239,11 @@ object PlaybackSession {
             // Keep the paused or playing state as it was. See PlaybackControl.setSpeed.
             runCatching { player.playbackParams = PlaybackParams().setSpeed(speed) }
         }
+
+        override var looping: Boolean
+            get() = runCatching { player.isLooping }.getOrDefault(false)
+            set(value) {
+                runCatching { player.isLooping = value }
+            }
     }
 }

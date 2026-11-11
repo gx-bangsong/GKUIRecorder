@@ -18,6 +18,7 @@ private class FakePort : PlayerPort {
     var starts = 0
     var pauses = 0
     var speedChangesStartPlayback = false
+    override var looping = false
 
     override fun seekTo(positionMs: Long) {
         seeks += positionMs
@@ -40,6 +41,90 @@ private class FakePort : PlayerPort {
     /** Completes a seek as the real player does: the position is the target. */
     fun finishSeek(target: Long) {
         positionMs = target
+    }
+}
+
+class LoopTest {
+    private val port = FakePort()
+    private var changes = 0
+
+    private fun control(initialLooping: Boolean = false) =
+        PlaybackControl(port, durationMs = { 10_000L }, onChanged = { changes++ }, initialLooping = initialLooping)
+
+    @Test
+    fun defaultsToOffAndNothingIsApplied() {
+        val c = control()
+        assertFalse(c.looping)
+        c.onPrepared()
+        assertFalse(port.looping)
+    }
+
+    @Test
+    fun choiceBeforePreparedIsAppliedOnPrepare() {
+        val c = control()
+        c.setLooping(true)
+        // Not prepared yet: the player is not touched
+        assertFalse(port.looping)
+        assertTrue(c.looping)
+        c.onPrepared()
+        assertTrue(port.looping)
+    }
+
+    @Test
+    fun togglingWhilePausedKeepsPositionAndDoesNotPlay() {
+        val c = control()
+        c.onPrepared()
+        port.positionMs = 4_200L
+        c.setLooping(true)
+        assertTrue(port.looping)
+        assertEquals(4_200L, port.positionMs)
+        assertFalse(port.isPlaying)
+        assertEquals(0, port.starts)
+        assertEquals(0, port.pauses)
+        assertTrue(changes >= 1)
+    }
+
+    @Test
+    fun togglingWhilePlayingKeepsPlaying() {
+        val c = control()
+        c.onPrepared()
+        c.play()
+        port.positionMs = 7_000L
+        c.setLooping(true)
+        c.setLooping(false)
+        assertTrue(port.isPlaying)
+        assertEquals(7_000L, port.positionMs)
+        assertFalse(port.looping)
+        assertEquals(1, port.starts)
+        assertEquals(0, port.pauses)
+    }
+
+    @Test
+    fun loopingAfterPauseDoesNotRestartPlayback() {
+        val c = control(initialLooping = true)
+        c.onPrepared()
+        assertTrue(port.looping)
+        assertFalse(port.isPlaying)
+        assertEquals(0, port.starts)
+    }
+
+    @Test
+    fun sameValueIsANoOp() {
+        val c = control()
+        c.onPrepared()
+        val before = changes
+        c.setLooping(false)
+        assertEquals(before, changes)
+    }
+
+    @Test
+    fun lateSeekCompletionAfterStopCannotStartPlayback() {
+        // No seek is pending (the recording was stopped): a late completion must not start playback
+        val c = control()
+        c.onPrepared()
+        c.onSeekComplete()
+        assertEquals(0, port.starts)
+        assertFalse(port.isPlaying)
     }
 }
 

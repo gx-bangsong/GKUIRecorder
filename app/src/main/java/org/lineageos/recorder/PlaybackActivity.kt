@@ -27,6 +27,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -104,6 +105,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val playPauseButton by lazy { findViewById<FloatingActionButton>(R.id.playPauseImageView) }
     private val speedButton by lazy { findViewById<MaterialButton>(R.id.speedButton) }
     private val keepAwakeButton by lazy { findViewById<MaterialButton>(R.id.keepAwakeButton) }
+    private val loopButton by lazy { findViewById<MaterialButton>(R.id.loopButton) }
     private val transcriptHintTextView by lazy { findViewById<TextView>(R.id.transcriptHintTextView) }
     private val transcriptSegmentsContainer by lazy {
         findViewById<LinearLayout>(R.id.transcriptSegmentsContainer)
@@ -231,6 +233,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             keepScreenOn = !keepScreenOn
             renderKeepAwake()
         }
+        // Stored in PlaybackSession, so it survives tab changes, rotation and background return.
+        loopButton.setOnClickListener { PlaybackSession.setLooping(!PlaybackSession.looping) }
 
         progressSlider.addOnChangeListener(Slider.OnChangeListener { _, value, fromUser ->
             if (fromUser) {
@@ -355,10 +359,47 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         forwardButton.isEnabled = ready
         speedButton.isEnabled = ready
         progressSlider.isEnabled = ready && durationMs > 0L
+        // Enabled as soon as a recording is open, so a choice made while loading is kept
+        loopButton.isEnabled = PlaybackSession.uri != null && !recordingUnavailable
+    }
+
+    /**
+     * Loop choice: a checked state, an icon, a colour, and a spoken description. The colour is
+     * not the only signal.
+     */
+    private fun renderLoop() {
+        val on = PlaybackSession.looping
+        loopButton.isCheckable = true
+        loopButton.isChecked = on
+        loopButton.icon = AppCompatResources.getDrawable(
+            this,
+            if (on) R.drawable.ic_repeat_one else R.drawable.ic_repeat,
+        )
+        loopButton.contentDescription = getString(R.string.playback_loop_description)
+        loopButton.stateDescription = getString(
+            if (on) R.string.playback_loop_state_on else R.string.playback_loop_state_off,
+        )
+        val background = if (on) {
+            MaterialColors.getColor(loopButton, com.google.android.material.R.attr.colorSecondaryContainer)
+        } else {
+            Color.TRANSPARENT
+        }
+        val content = MaterialColors.getColor(
+            loopButton,
+            if (on) {
+                com.google.android.material.R.attr.colorOnSecondaryContainer
+            } else {
+                com.google.android.material.R.attr.colorOnSurfaceVariant
+            },
+        )
+        loopButton.backgroundTintList = ColorStateList.valueOf(background)
+        loopButton.iconTint = ColorStateList.valueOf(content)
+        loopButton.setTextColor(content)
     }
 
     /** Runs on every change of the session: loads, prepares, play, pause, stop. */
     private fun onSessionChanged() {
+        renderLoop()
         if (PlaybackSession.loadFailed) {
             pendingTapMs = null
             if (!errorShown) {

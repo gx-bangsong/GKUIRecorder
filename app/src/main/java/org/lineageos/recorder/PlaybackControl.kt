@@ -23,6 +23,9 @@ interface PlayerPort {
     fun pause()
 
     fun setSpeed(speed: Float)
+
+    /** Native looping of the player. Only valid once the player is prepared. */
+    var looping: Boolean
 }
 
 /**
@@ -39,7 +42,33 @@ class PlaybackControl(
     private val port: PlayerPort,
     private val durationMs: () -> Long,
     private val onChanged: () -> Unit,
+    initialLooping: Boolean = false,
 ) {
+    /**
+     * Repeat the current recording when it ends. Changing it never starts, stops or seeks the
+     * player. A choice made before the player is prepared is applied in [onPrepared].
+     */
+    var looping: Boolean = initialLooping
+        private set
+
+    private var ready = false
+
+    /** Called once the player reports it is prepared. Applies a choice made while loading. */
+    fun onPrepared() {
+        ready = true
+        port.looping = looping
+    }
+
+    fun setLooping(enabled: Boolean) {
+        if (looping == enabled) {
+            return
+        }
+        looping = enabled
+        if (ready) {
+            port.looping = enabled
+        }
+        onChanged()
+    }
     /** Target of the newest seek whose completion has not been accepted yet. */
     private var pendingMs: Long? = null
 

@@ -224,6 +224,10 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="recording_deleted">该录音已被删除。</string>
     <string name="playback_speed_title">播放速度</string>
     <string name="playback_keep_screen_on">保持屏幕常亮</string>
+    <string name="playback_loop_label">循环</string>
+    <string name="playback_loop_description">循环播放当前录音</string>
+    <string name="playback_loop_state_on">单条循环已开启，重复播放当前录音</string>
+    <string name="playback_loop_state_off">循环已关闭</string>
     <string name="asr_transcribe_reduced">设备较热，已降低转写速度。</string>
     <string name="transcript_tap_to_play">点击一段，从这里开始播放录音。</string>
     <string name="transcript_back_to_playing">回到当前播放位置</string>
