@@ -63,6 +63,9 @@ class GateHarness(
     /** Runs after every sleep. Tests use it to cancel at a chosen moment. */
     var onSleep: (Long) -> Unit = {}
 
+    /** Runs when a waiting phase starts, as TranscriptionWorker does (it saves the segments here). */
+    var onWait: (RunPhase) -> Unit = {}
+
     val gate = TranscriptionGate(
         thermalStatus = { statusByCall(++thermalCalls) },
         recordingInProgress = { recordingAt(now) },
@@ -76,6 +79,7 @@ class GateHarness(
         onEnterWait = { phase ->
             entered += phase
             log += "enter"
+            onWait(phase)
         },
         onPhaseChanged = { phases += it },
         metrics = metrics,
@@ -220,6 +224,8 @@ class GatedPipelineTest {
             canWrite = { true },
             onPublish = {},
         )
+        // Same wiring as TranscriptionWorker: a wait saves the finished segments first
+        harness.onWait = { checkpointer.persistBeforeWait() }
         return Setup(store, repo, base, state, checkpointer)
     }
 
