@@ -296,4 +296,8 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="transcript_back_to_playing">Back to playing position</string>
     <string name="playback_recording_unavailable">Recording cannot be played. The transcript is still available.</string>
     <string name="asr_transcribe_wait_recording">Recording in progress: transcription resumes when it stops.</string>
+    <string name="playback_transcript_reduced">Phone is warm: running slower to protect the device.</string>
+    <string name="playback_transcript_waiting_cool">Phone is too hot: waiting to cool down. Saved text is kept.</string>
+    <string name="playback_transcript_waiting_recording">Recording in progress: transcription resumes when it stops.</string>
+    <string name="playback_loading_wait">Recording is still loading. Playback starts when it is ready.</string>
 </resources>

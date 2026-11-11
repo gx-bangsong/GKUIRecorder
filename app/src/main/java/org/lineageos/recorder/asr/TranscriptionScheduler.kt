@@ -28,6 +28,15 @@ object TranscriptionScheduler {
         WorkManager.getInstance(context).getWorkInfosByTag(tag(uri)).get()
             .any { !it.state.isFinished }
 
+    /**
+     * Phase of the active run for [uri], or null when no run is active. Read from the work progress
+     * that the worker publishes. Blocking: call off the main thread.
+     */
+    fun activePhase(context: Context, uri: String): RunPhase? =
+        WorkManager.getInstance(context).getWorkInfosByTag(tag(uri)).get()
+            .firstOrNull { !it.state.isFinished }
+            ?.let { RunPhase.fromName(it.progress.getString(TranscriptionWorker.KEY_PHASE)) }
+
     /** Live state of the transcription work for [uri]. */
     fun liveWork(context: Context, uri: String): LiveData<List<WorkInfo>> =
         WorkManager.getInstance(context).getWorkInfosByTagLiveData(tag(uri))

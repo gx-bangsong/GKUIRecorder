@@ -8,6 +8,7 @@ package org.lineageos.recorder
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.PlaybackParams
 import android.net.Uri
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArraySet
@@ -19,6 +20,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  */
 object PlaybackSession {
     private var mediaPlayer: MediaPlayer? = null
+    private var control: PlaybackControl? = null
     private var appContext: Context? = null
     private val listeners = CopyOnWriteArraySet<() -> Unit>()
 
@@ -56,6 +58,25 @@ object PlaybackSession {
 
     fun isPlaying(): Boolean = prepared && mediaPlayer?.isPlaying == true
 
+    /** Position to show: the newest seek target while a seek is in flight, else the real position. */
+    fun positionMs(): Long = control?.displayPositionMs() ?: 0L
+
+    /**
+     * Seeks the open recording. Returns false when it is not prepared yet, so the caller can keep
+     * the request and apply it later. The last request wins; [play] starts playback when the seek
+     * completes.
+     */
+    fun seekTo(positionMs: Long, play: Boolean): Boolean {
+        val control = control ?: return false
+        if (!prepared) return false
+        control.seekTo(positionMs, play)
+        return true
+    }
+
+    fun setSpeed(speed: Float) {
+        if (prepared) control?.setSpeed(speed)
+    }
+
     /**
      * Opens [source] for playback. Returns false if it cannot be opened. Reopening the recording
      * that is already open keeps its state, so a rotation does not restart playback.
@@ -90,6 +111,11 @@ object PlaybackSession {
                     notifyListeners()
                 }
             }
+            player.setOnSeekCompleteListener { mp ->
+                if (mediaPlayer === mp) {
+                    control?.onSeekComplete()
+                }
+            }
             player.setOnErrorListener { mp, _, _ ->
                 if (mediaPlayer === mp) {
                     loadFailed = true
@@ -109,6 +135,11 @@ object PlaybackSession {
             return false
         }
         mediaPlayer = player
+        control = PlaybackControl(
+            port = MediaPlayerPort(player),
+            durationMs = { durationMs },
+            onChanged = { notifyListeners() },
+        )
         uri = source
         this.title = title
         prepared = false
@@ -119,20 +150,20 @@ object PlaybackSession {
     }
 
     fun play() {
-        val player = mediaPlayer ?: return
-        if (!prepared || player.isPlaying) {
+        val control = control ?: return
+        if (!prepared || isPlaying()) {
             return
         }
-        player.start()
-        notifyListeners()
+        control.play()
     }
 
     fun pause() {
-        val player = mediaPlayer ?: return
-        if (prepared && player.isPlaying) {
-            player.pause()
+        val control = control ?: return
+        if (prepared) {
+            control.pause()
+        } else {
+            notifyListeners()
         }
-        notifyListeners()
     }
 
     fun toggle() {
@@ -148,6 +179,7 @@ object PlaybackSession {
     private fun releasePlayer() {
         val player = mediaPlayer ?: return
         mediaPlayer = null
+        control = null
         uri = null
         prepared = false
         durationMs = 0L
@@ -158,5 +190,32 @@ object PlaybackSession {
 
     private fun notifyListeners() {
         listeners.forEach { it() }
+    }
+
+    /** MediaPlayer behind [PlayerPort]. Calls that the player rejects in its current state are ignored. */
+    private class MediaPlayerPort(private val player: MediaPlayer) : PlayerPort {
+        override val isPlaying: Boolean
+            get() = runCatching { player.isPlaying }.getOrDefault(false)
+
+        override val positionMs: Long
+            get() = runCatching { player.currentPosition.toLong() }.getOrDefault(0L)
+
+        override fun seekTo(positionMs: Long) {
+            // Closest frame, not the previous sync point: the highlight follows the real position
+            runCatching { player.seekTo(positionMs, MediaPlayer.SEEK_CLOSEST) }
+        }
+
+        override fun start() {
+            runCatching { player.start() }
+        }
+
+        override fun pause() {
+            runCatching { player.pause() }
+        }
+
+        override fun setSpeed(speed: Float) {
+            // Keep the paused or playing state as it was. See PlaybackControl.setSpeed.
+            runCatching { player.playbackParams = PlaybackParams().setSpeed(speed) }
+        }
     }
 }

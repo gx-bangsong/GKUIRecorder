@@ -9,8 +9,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.media.MediaPlayer
-import android.media.PlaybackParams
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -22,6 +20,7 @@ import android.graphics.drawable.GradientDrawable
 import android.text.format.DateUtils
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -32,6 +31,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -48,6 +48,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lineageos.recorder.asr.AsrRuntime
+import org.lineageos.recorder.asr.RunPhase
 import org.lineageos.recorder.asr.TranscriptionScheduler
 import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelCatalog
@@ -123,7 +124,6 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     }
 
     // The player belongs to PlaybackSession, so it outlives this screen
-    private val player: MediaPlayer? get() = PlaybackSession.player
     private val prepared: Boolean get() = PlaybackSession.prepared
     private val durationMs: Long get() = PlaybackSession.durationMs
     private var uri: Uri? = null
@@ -145,6 +145,10 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     // Follows the playing segment until the user browses the transcript by hand
     private var followPlayback = true
+    private var scrollRequest = 0L
+
+    // A segment tapped while the recording is still loading. Applied when it is ready.
+    private var pendingTapMs: Long? = null
 
     // The recording cannot be played (deleted or unreadable). The transcript stays readable.
     private var recordingUnavailable = false
@@ -204,8 +208,16 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         speedButton.text = formatSpeed(speed)
         renderKeepAwake()
         speedButton.setOnClickListener { showSpeedDialog() }
+        // Only a real drag stops auto-follow. A tap on a segment does not.
+        val detector = ManualScrollDetector(ViewConfiguration.get(this).scaledTouchSlop.toFloat())
         transcriptScroll.setOnTouchListener { _, event ->
-            if (event.actionMasked == MotionEvent.ACTION_DOWN || event.actionMasked == MotionEvent.ACTION_MOVE) {
+            val touch = when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> TouchPhase.DOWN
+                MotionEvent.ACTION_MOVE -> TouchPhase.MOVE
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> TouchPhase.UP
+                else -> null
+            }
+            if (touch != null && detector.onTouch(touch, event.y)) {
                 onManualBrowse()
             }
             false
@@ -348,10 +360,12 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     /** Runs on every change of the session: loads, prepares, play, pause, stop. */
     private fun onSessionChanged() {
         if (PlaybackSession.loadFailed) {
+            pendingTapMs = null
             if (!errorShown) {
                 errorShown = true
                 Toast.makeText(this, R.string.playback_load_failed, Toast.LENGTH_SHORT).show()
             }
+            markRecordingUnavailable()
             renderPlayState()
             return
         }
@@ -367,6 +381,11 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             applySpeed()
         }
         renderPlayState()
+        // A segment tapped during loading starts now. Only the newest tap was kept.
+        pendingTapMs?.let { tapped ->
+            pendingTapMs = null
+            playFrom(tapped)
+        }
     }
 
     /** Shows the play or pause state and runs the progress ticker only while playing. */
@@ -401,11 +420,11 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     }
 
     private fun togglePlay() {
-        val mediaPlayer = player ?: return
         if (!prepared) {
             return
         }
-        if (mediaPlayer.isPlaying) {
+        pendingTapMs = null
+        if (PlaybackSession.isPlaying()) {
             pausePlayback()
         } else {
             startPlayback()
@@ -423,17 +442,15 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         PlaybackSession.pause()
     }
 
-    private fun currentPosition(): Long {
-        val mediaPlayer = player ?: return 0L
-        return if (prepared) mediaPlayer.currentPosition.toLong() else 0L
-    }
+    /** The position to show: the newest seek target while a seek is in flight, else the real position. */
+    private fun currentPosition(): Long = PlaybackSession.positionMs()
 
+    /** A seek from the controls. It keeps the current play or pause state. */
     private fun seekTo(positionMs: Long) {
-        val mediaPlayer = player ?: return
-        if (!prepared) {
+        if (!prepared || recordingUnavailable) {
             return
         }
-        mediaPlayer.seekTo(positionMs.coerceIn(0L, durationMs).toInt())
+        PlaybackSession.seekTo(positionMs.coerceIn(0L, durationMs), play = false)
         updateProgress()
     }
 
@@ -482,13 +499,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     /** Applies the chosen speed to the player when it is ready, and shows it on the button. */
     private fun applySpeed() {
         speedButton.text = formatSpeed(speed)
-        val mediaPlayer = player ?: return
         if (prepared) {
-            try {
-                mediaPlayer.playbackParams = PlaybackParams().setSpeed(speed)
-            } catch (e: IllegalStateException) {
-                // Speed is not supported in the current state; keep the previous one
-            }
+            PlaybackSession.setSpeed(speed)
         }
     }
 
@@ -629,10 +641,22 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     private fun scrollToSegment(index: Int) {
         val view = segmentViews.getOrNull(index) ?: return
+        val request = ++scrollRequest
         view.post {
-            // Put the playing segment about a third of the way down the visible area
-            val target = offsetInScroll(view) - transcriptScroll.height / 3
-            transcriptScroll.smoothScrollTo(0, max(target, 0))
+            // Checked again when it runs: the user may have browsed, left the tab, or left the screen
+            val allowed = FollowPolicy.mayAutoScroll(
+                followEnabled = followPlayback,
+                transcriptVisible = transcriptScroll.isVisible,
+                requestId = request,
+                latestRequestId = scrollRequest,
+                targetIndex = index,
+                activeIndex = activeSegment,
+            ) && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+            if (allowed) {
+                // Put the playing segment about a third of the way down the visible area
+                val target = offsetInScroll(view) - transcriptScroll.height / 3
+                transcriptScroll.smoothScrollTo(0, max(target, 0))
+            }
         }
     }
 
@@ -649,6 +673,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     /** A manual scroll stops following the playing segment and offers a way back. */
     private fun onManualBrowse() {
+        // Drop any auto-scroll that is already queued
+        scrollRequest++
         if (followPlayback && segments.isNotEmpty()) {
             followPlayback = false
             followButton.isVisible = true
@@ -657,14 +683,23 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     /** Tapping a segment seeks to its start and plays. It does not start transcription. */
     private fun playFrom(positionMs: Long) {
-        if (recordingUnavailable || !prepared) {
+        if (recordingUnavailable) {
             Toast.makeText(this, R.string.playback_recording_unavailable, Toast.LENGTH_SHORT).show()
             return
         }
-        seekTo(positionMs)
-        if (!PlaybackSession.isPlaying()) {
-            startPlayback()
+        followPlayback = true
+        followButton.isVisible = false
+        if (!prepared) {
+            // Still loading is not a failure. Keep this tap and apply it when the recording is ready.
+            pendingTapMs = positionMs
+            Toast.makeText(this, R.string.playback_loading_wait, Toast.LENGTH_SHORT).show()
+            return
         }
+        pendingTapMs = null
+        // The service keeps playback alive when this screen is left. Start it before the seek ends.
+        PlaybackService.start(this)
+        PlaybackSession.seekTo(positionMs, play = true)
+        updateProgress()
     }
 
     private fun attrColor(attr: Int): Int = MaterialColors.getColor(this, attr, Color.BLACK)
@@ -687,8 +722,9 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         transcriptLoad = lifecycleScope.launch {
             val (panel, found) = withContext(Dispatchers.IO) {
                 val record = AsrRuntime.transcripts(this@PlaybackActivity).get(target)
-                val active = TranscriptionScheduler.isActive(this@PlaybackActivity, target)
-                TranscriptPanels.of(record, active) to record?.segments.orEmpty()
+                val phase = TranscriptionScheduler.activePhase(this@PlaybackActivity, target)
+                TranscriptPanels.of(record, active = phase != null, phase = phase ?: RunPhase.FULL) to
+                    record?.segments.orEmpty()
             }
             showPanel(panel)
             setSegments(found)
@@ -730,7 +766,12 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
 
     private fun statusText(panel: TranscriptPanel): String? = when (panel.state) {
         TranscriptPanelState.NONE -> getString(R.string.playback_no_transcript)
-        TranscriptPanelState.RUNNING -> getString(R.string.playback_transcript_running, panel.progressPercent)
+        TranscriptPanelState.RUNNING -> when (panel.phase) {
+            RunPhase.FULL -> getString(R.string.playback_transcript_running, panel.progressPercent)
+            RunPhase.REDUCED -> getString(R.string.playback_transcript_reduced)
+            RunPhase.WAITING_COOL -> getString(R.string.playback_transcript_waiting_cool)
+            RunPhase.WAITING_RECORDING -> getString(R.string.playback_transcript_waiting_recording)
+        }
         TranscriptPanelState.CANCELLED -> getString(R.string.playback_transcript_cancelled)
         TranscriptPanelState.FAILED -> getString(R.string.playback_transcript_failed)
         TranscriptPanelState.INTERRUPTED -> getString(R.string.transcript_interrupted)

@@ -229,4 +229,8 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="transcript_back_to_playing">回到当前播放位置</string>
     <string name="playback_recording_unavailable">录音无法播放，转写文字仍可查看。</string>
     <string name="asr_transcribe_wait_recording">正在录音，录音结束后继续转写。</string>
+    <string name="playback_transcript_reduced">设备较热，正在降载转写，速度已降低。</string>
+    <string name="playback_transcript_waiting_cool">设备过热，等待降温中，已保存的文字不会丢失。</string>
+    <string name="playback_transcript_waiting_recording">正在录音，录音结束后继续转写。</string>
+    <string name="playback_loading_wait">录音仍在加载，加载完成后开始播放。</string>
 </resources>
