@@ -189,7 +189,6 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="asr_consent_offline">下载完成后，转写完全离线进行，录音不会离开手机。</string>
     <string name="asr_consent_cellular">当前为计费网络（如移动数据），下载会消耗流量。</string>
     <string name="asr_consent_download">下载模型</string>
-    <string name="asr_consent_view">查看模型</string>
     <string name="asr_download_started">已开始下载模型，完成后自动开始转写。</string>
     <string name="asr_model_downloading_wait">模型正在下载，完成后请再次点击转写。</string>
     <string name="asr_channel_name">离线语音</string>
@@ -237,4 +236,17 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="playback_transcript_waiting_cool">设备过热，等待降温中，已保存的文字不会丢失。</string>
     <string name="playback_transcript_waiting_recording">正在录音，录音结束后继续转写。</string>
     <string name="playback_loading_wait">录音仍在加载，加载完成后开始播放。</string>
+    <string name="asr_import_action">导入本地模型</string>
+    <string name="asr_import_info">导入需要官方压缩包（%1$s %2$s，tar.bz2 格式）以及压缩包外的伴随文件 %3$s。只从本机选择文件，不会联网下载。</string>
+    <string name="asr_import_already_installed">该版本已安装，未复制任何文件。</string>
+    <string name="asr_import_busy_wait">已有下载或导入正在进行，请等待完成。</string>
+    <string name="asr_import_in_use">正在用该模型转写，请等转写完成后再替换模型。</string>
+    <string name="asr_import_missing_title">缺少伴随文件</string>
+    <string name="asr_import_missing_message">压缩包已接收，但仍需要以下文件：%1$s。请从本机选择，不会下载。</string>
+    <string name="asr_import_choose_file">选择文件</string>
+    <string name="asr_import_done">模型已导入。</string>
+    <string name="asr_state_importing">正在复制本地文件…</string>
+    <string name="asr_reason_source">无法读取所选文件：访问权限可能已撤销，或读取中断。</string>
+    <string name="asr_reason_in_use">模型正在使用中。</string>
+    <string name="asr_consent_import">导入本地模型</string>
 </resources>

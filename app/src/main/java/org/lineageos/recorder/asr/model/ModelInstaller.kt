@@ -39,6 +39,7 @@ class ModelInstaller(
     fun install(
         descriptor: ModelDescriptor,
         listener: InstallListener,
+        allowDownload: Boolean = true,
         isCancelled: () -> Boolean,
     ): String {
         // Fail-closed, before any staging directory or READY marker is created.
@@ -56,8 +57,19 @@ class ModelInstaller(
         staging.mkdirs()
         checkFreeSpace(descriptor, staging)
 
-        val archive = downloadArchive(descriptor, staging, listener, isCancelled)
-        downloadStandalone(descriptor, staging, listener, isCancelled, completedBefore = descriptor.archiveBytes)
+        // Offline (import): every file must already be staged. Nothing is fetched from the network.
+        if (!allowDownload) {
+            val missing = missingFiles(descriptor, staging)
+            if (missing.isNotEmpty()) {
+                throw ModelFailure(
+                    FailureReason.FILE_MISSING,
+                    recoverable = true,
+                    message = "Missing files: ${missing.joinToString()}",
+                )
+            }
+        }
+        val archive = downloadArchive(descriptor, staging, allowDownload, listener, isCancelled)
+        downloadStandalone(descriptor, staging, allowDownload, listener, isCancelled, completedBefore = descriptor.archiveBytes)
 
         listener.onInstalling()
         val installDir = File(staging, INSTALL_DIR)
@@ -108,17 +120,43 @@ class ModelInstaller(
         }
     }
 
+    /**
+     * Names of the files an install still needs in [staging]: the archive and every standalone
+     * file, when absent or of the wrong size. Used to list missing companions before a failure.
+     */
+    fun missingFiles(descriptor: ModelDescriptor, staging: File): List<String> {
+        val missing = mutableListOf<String>()
+        val archive = File(staging, ARCHIVE_NAME)
+        if (!archive.isFile || archive.length() != descriptor.archiveBytes) {
+            missing += descriptor.archiveUrl.substringAfterLast('/')
+        }
+        for (standalone in descriptor.standaloneDownloads) {
+            val file = File(staging, standaloneName(standalone.localName))
+            if (!file.isFile || file.length() != standalone.sizeBytes) {
+                missing += standalone.localName
+            }
+        }
+        return missing
+    }
+
     private fun downloadArchive(
         descriptor: ModelDescriptor,
         staging: File,
+        allowDownload: Boolean,
         listener: InstallListener,
         isCancelled: () -> Boolean,
     ): File {
         val archive = File(staging, ARCHIVE_NAME)
         if (archive.isFile && archive.length() == descriptor.archiveBytes) {
-            return archive
+            // A staged copy is reused only after its digest matches the trusted value again
+            if (Digests.sha256Of(archive) == descriptor.archiveSha256) {
+                return archive
+            }
         }
         archive.delete()
+        if (!allowDownload) {
+            throw ModelFailure(FailureReason.FILE_MISSING, recoverable = true, message = "Archive is not staged")
+        }
         val part = File(staging, "$ARCHIVE_NAME.part")
         val meta = File(staging, "$ARCHIVE_NAME.meta.json")
         downloader.download(
@@ -152,6 +190,7 @@ class ModelInstaller(
     private fun downloadStandalone(
         descriptor: ModelDescriptor,
         staging: File,
+        allowDownload: Boolean,
         listener: InstallListener,
         isCancelled: () -> Boolean,
         completedBefore: Long,
@@ -160,10 +199,19 @@ class ModelInstaller(
         for (standalone in descriptor.standaloneDownloads) {
             val target = File(staging, standaloneName(standalone.localName))
             if (target.isFile && target.length() == standalone.sizeBytes) {
-                completed += standalone.sizeBytes
-                continue
+                if (Digests.sha256Of(target) == standalone.sha256) {
+                    completed += standalone.sizeBytes
+                    continue
+                }
             }
             target.delete()
+            if (!allowDownload) {
+                throw ModelFailure(
+                    FailureReason.FILE_MISSING,
+                    recoverable = true,
+                    message = "File is not staged: ${standalone.localName}",
+                )
+            }
             val part = File(staging, "${target.name}.part")
             val meta = File(staging, "${target.name}.meta.json")
             val base = completed
@@ -271,6 +319,6 @@ class ModelInstaller(
         const val NOTICE_FILE = "THIRD_PARTY_NOTICES.txt"
         private const val MB = 1024L * 1024
 
-        private fun standaloneName(localName: String) = "standalone-$localName"
+        fun standaloneName(localName: String) = "standalone-$localName"
     }
 }

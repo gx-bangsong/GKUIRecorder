@@ -78,7 +78,8 @@ object TranscriptionStarter {
                     showUnavailable(activity)
                 }
             }
-            .setNeutralButton(R.string.asr_consent_view) { _: DialogInterface?, _: Int ->
+            // Opens the model page, where the local import is offered. Nothing starts here.
+            .setNeutralButton(R.string.asr_consent_import) { _: DialogInterface?, _: Int ->
                 activity.startActivity(Intent(activity, ModelSettingsActivity::class.java))
             }
             .setNegativeButton(android.R.string.cancel, null)
