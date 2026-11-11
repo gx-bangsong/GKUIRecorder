@@ -1,6 +1,7 @@
 name: unit-test
 
 # Separate from build.yml, which is left unchanged. Runs the JVM unit tests and Android lint.
+# Each step runs even when an earlier one fails, so both results are reported.
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -20,10 +21,27 @@ jobs:
         cache: 'gradle'
 
     - name: Unit tests
-      run: ./gradlew testDebugUnitTest
+      id: unit
+      shell: bash
+      run: |
+        set -o pipefail
+        ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee unit-test.log
+
+    - name: Unit test failure lines as annotations
+      if: failure() && steps.unit.outcome == 'failure'
+      shell: bash
+      run: |
+        # Full log is in the uploaded artifact. Annotations give the failing lines in the check run.
+        grep -E '^e: |FAILED|AssertionError|Exception|What went wrong|^[A-Za-z0-9_.]+ > .*' -A2 unit-test.log \
+          | head -n 120 \
+          | while IFS= read -r line; do
+              msg="${line//'%'/%25}"
+              echo "::error title=unit-test::${msg}"
+            done
 
     - name: Lint
-      run: ./gradlew lintDebug
+      if: always()
+      run: ./gradlew :app:lintDebug --stacktrace
 
     - name: Upload test and lint reports
       if: always()
@@ -31,6 +49,7 @@ jobs:
       with:
         name: unit-test-reports
         path: |
+          unit-test.log
           app/build/reports/tests/
           app/build/test-results/
           app/build/reports/lint-results-debug.html
