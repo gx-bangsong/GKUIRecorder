@@ -27,21 +27,28 @@ jobs:
         set -o pipefail
         ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee unit-test.log
 
-    - name: Unit test failure lines as annotations
-      if: failure() && steps.unit.outcome == 'failure'
+    - name: Lint
+      id: lint
+      if: always()
       shell: bash
       run: |
-        # Full log is in the uploaded artifact. Annotations give the failing lines in the check run.
-        grep -E '^e: |FAILED|AssertionError|Exception|What went wrong|^[A-Za-z0-9_.]+ > .*' -A2 unit-test.log \
-          | head -n 120 \
-          | while IFS= read -r line; do
-              msg="${line//'%'/%25}"
-              echo "::error title=unit-test::${msg}"
-            done
+        set -o pipefail
+        ./gradlew :app:lintDebug --stacktrace 2>&1 | tee lint.log
 
-    - name: Lint
-      if: always()
-      run: ./gradlew :app:lintDebug --stacktrace
+    - name: Failing lines as annotations
+      if: always() && (steps.unit.outcome == 'failure' || steps.lint.outcome == 'failure')
+      shell: bash
+      run: |
+        # Full logs are in the uploaded artifact. Annotations give the failing lines in the check run.
+        for log in unit-test.log lint.log; do
+          [ -f "$log" ] || continue
+          grep -E '^e: |Error:|FAILED|AssertionError|Exception|What went wrong|Lint found' -A2 "$log" \
+            | head -n 80 \
+            | while IFS= read -r line; do
+                msg="${line//'%'/%25}"
+                echo "::error title=${log}::${msg}"
+              done
+        done
 
     - name: Upload test and lint reports
       if: always()
@@ -50,6 +57,7 @@ jobs:
         name: unit-test-reports
         path: |
           unit-test.log
+          lint.log
           app/build/reports/tests/
           app/build/test-results/
           app/build/reports/lint-results-debug.html
