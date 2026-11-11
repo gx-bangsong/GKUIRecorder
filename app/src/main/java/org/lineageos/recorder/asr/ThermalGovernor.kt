@@ -78,3 +78,29 @@ class ThermalGovernor(private val stableMs: Long = STABLE_MS) {
         const val STABLE_MS = 30_000L
     }
 }
+
+/**
+ * What a transcription run is doing right now. Stored in the WorkManager progress data, so the
+ * notification and the transcript page show the same value. Waiting phases keep saved segments.
+ */
+enum class RunPhase {
+    /** Normal speed. */
+    FULL,
+
+    /** Moderate heat: a short rest after each chunk. */
+    REDUCED,
+
+    /** Severe heat: stopped at a chunk boundary until the device cools down. */
+    WAITING_COOL,
+
+    /** A recording is in progress: transcription waits until it stops. */
+    WAITING_RECORDING,
+    ;
+
+    val isWaiting: Boolean get() = this == WAITING_COOL || this == WAITING_RECORDING
+
+    companion object {
+        /** Unknown or missing names are treated as FULL. */
+        fun fromName(name: String?): RunPhase = entries.firstOrNull { it.name == name } ?: FULL
+    }
+}

@@ -56,8 +56,7 @@ class AsrNotifications(private val context: Context) {
         workId: UUID,
         title: String,
         percent: Int,
-        paused: Boolean,
-        reduced: Boolean = false,
+        phase: RunPhase,
     ): ForegroundInfo =
         ForegroundInfo(
             notificationId(workId),
@@ -65,10 +64,11 @@ class AsrNotifications(private val context: Context) {
                 workId = workId,
                 title = context.getString(R.string.asr_transcribe_notification_title, title),
                 text = context.getString(
-                    when {
-                        paused -> R.string.asr_transcribe_paused
-                        reduced -> R.string.asr_transcribe_reduced
-                        else -> R.string.asr_transcribe_notification_text
+                    when (phase) {
+                        RunPhase.WAITING_COOL -> R.string.asr_transcribe_paused
+                        RunPhase.WAITING_RECORDING -> R.string.asr_transcribe_wait_recording
+                        RunPhase.REDUCED -> R.string.asr_transcribe_reduced
+                        RunPhase.FULL -> R.string.asr_transcribe_notification_text
                     },
                 ),
                 percent = percent,

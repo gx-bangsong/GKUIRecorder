@@ -295,4 +295,5 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="transcript_tap_to_play">Tap a segment to play the recording from there.</string>
     <string name="transcript_back_to_playing">Back to playing position</string>
     <string name="playback_recording_unavailable">Recording cannot be played. The transcript is still available.</string>
+    <string name="asr_transcribe_wait_recording">Recording in progress: transcription resumes when it stops.</string>
 </resources>
