@@ -290,7 +290,6 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="shortcut_target_package" translatable="false">org.lineageos.recorder</string>
     <string name="playback_speed_title">Playback speed</string>
     <string name="playback_keep_screen_on">Keep screen on</string>
-    <string name="playback_loop_label">Loop</string>
     <string name="playback_loop_description">Loop this recording</string>
     <string name="playback_loop_state_on">Loop on: repeats this recording</string>
     <string name="playback_loop_state_off">Loop off</string>

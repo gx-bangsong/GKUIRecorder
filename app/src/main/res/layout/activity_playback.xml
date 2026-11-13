@@ -326,13 +326,15 @@
             <!-- Repeat this recording from the start when it ends. Off by default. Shared by the audio and transcript tabs -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/loopButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="@string/playback_loop_label"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="4dp"
+                android:minWidth="48dp"
+                android:padding="0dp"
                 app:icon="@drawable/ic_repeat"
-                app:iconGravity="textStart" />
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
