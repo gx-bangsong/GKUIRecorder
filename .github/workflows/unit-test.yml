@@ -1,0 +1,66 @@
+name: unit-test
+
+# Separate from build.yml, which is left unchanged. Runs the JVM unit tests and Android lint.
+# Each step runs even when an earlier one fails, so both results are reported.
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: 17
+        cache: 'gradle'
+
+    - name: Unit tests
+      id: unit
+      shell: bash
+      run: |
+        set -o pipefail
+        ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee unit-test.log
+
+    - name: Lint
+      id: lint
+      if: always()
+      shell: bash
+      run: |
+        set -o pipefail
+        ./gradlew :app:lintDebug --stacktrace 2>&1 | tee lint.log
+
+    - name: Failing lines as annotations
+      if: always() && (steps.unit.outcome == 'failure' || steps.lint.outcome == 'failure')
+      shell: bash
+      run: |
+        # Full logs are in the uploaded artifact. Annotations give the failing lines in the check run.
+        for log in unit-test.log lint.log; do
+          [ -f "$log" ] || continue
+          grep -E '^e: |Error:|FAILED|AssertionError|Exception|What went wrong|Lint found' -A2 "$log" \
+            | head -n 80 \
+            | while IFS= read -r line; do
+                msg="${line//'%'/%25}"
+                echo "::error title=${log}::${msg}"
+              done
+        done
+
+    - name: Upload test and lint reports
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: unit-test-reports
+        path: |
+          unit-test.log
+          lint.log
+          app/build/reports/tests/
+          app/build/test-results/
+          app/build/reports/lint-results-debug.html
+          app/build/reports/lint-results-debug.xml
+        if-no-files-found: ignore
+        retention-days: 7

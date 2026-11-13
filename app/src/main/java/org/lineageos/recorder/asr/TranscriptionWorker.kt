@@ -8,6 +8,8 @@ package org.lineageos.recorder.asr
 import android.content.Context
 import android.net.Uri
 import android.os.PowerManager
+import android.os.SystemClock
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -47,16 +49,21 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
         val repository = AsrRuntime.transcripts(app)
         val models = ModelRepository.get(app)
         val notifications = AsrNotifications(app)
+        val tag = TranscriptRecord.stableRecordingId(uri).take(8)
+        Log.i(TAG, "start rec=$tag model=$modelId language=$language attempt=$runAttemptCount")
 
         // No heavy work while a recording is running. Try again later instead.
         if (AsrRuntime.recordingInProgress) {
+            Log.i(TAG, "rec=$tag recording in progress, retry")
             return if (runAttemptCount < MAX_RECORDING_WAITS) Result.retry() else Result.failure()
         }
 
-        setForeground(notifications.transcriptionForeground(id, title, 0, paused = false))
+        setForeground(notifications.transcriptionForeground(id, title, 0, RunPhase.FULL))
+        Log.i(TAG, "rec=$tag foreground notification set")
 
         val descriptor = ModelCatalog.find(modelId)
         if (descriptor == null || models.readyDir(descriptor) == null) {
+            Log.w(TAG, "rec=$tag model not ready")
             // Only record the failure when there is nothing saved. A redo must not replace a finished
             // transcript with an empty failure just because the model is missing.
             if (repository.get(uri) == null) {
@@ -64,14 +71,17 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
             }
             return Result.failure()
         }
+        Log.i(TAG, "rec=$tag model ready, saving RUNNING record")
         val base = repository.start(uri, descriptor.id, descriptor.version, language)
+        Log.i(TAG, "rec=$tag RUNNING record saved, waiting for recognizer lock")
 
         return withContext(Dispatchers.IO) {
             try {
                 // One recognizer app-wide: wait here (not in the scheduler) until it is free.
                 val segments = AsrGlobalLock.acquire(app) { isStopped }?.use {
+                    Log.i(TAG, "rec=$tag recognizer lock acquired")
                     models.useModel(modelId) { _, modelDir ->
-                        runPipeline(app, uri, modelDir, language, base, repository, notifications, title)
+                        runPipeline(id, app, uri, modelDir, language, base, repository, notifications, title)
                     }
                 } ?: throw TranscriptionCancelled()
                 // A recording deleted during the run must not get its transcript written back
@@ -80,15 +90,18 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
                 }
                 // After the save, and never allowed to change it: a notification error must not
                 // reach the catch below, which would store the finished transcript as FAILED.
+                Log.i(TAG, "rec=$tag finished segments=${segments.size}")
                 runCatching { notifications.transcriptionFinished(id, uri, title, succeeded = true) }
                 Result.success()
             } catch (e: TranscriptionCancelled) {
+                Log.i(TAG, "rec=$tag cancelled")
                 persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
                 Result.failure()
             } catch (e: CancellationException) {
                 persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
                 throw e
             } catch (e: Throwable) {
+                Log.e(TAG, "rec=$tag failed: ${e.javaClass.name}", e)
                 if (isStopped) {
                     persistPartial(app, uri, base, repository) { r, b -> r.cancel(uri, b, latestSegments(), lastFraction) }
                     return@withContext Result.failure()
@@ -104,6 +117,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
     }
 
     private fun runPipeline(
+        workId: java.util.UUID,
         app: Context,
         uri: String,
         modelDir: java.io.File,
@@ -116,59 +130,82 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
         val preferences = PreferencesManager(app)
         val threads = effectiveThreads(app, preferences.asrThreads)
         val options = RecognitionOptions(language = language, useItn = true, numThreads = threads)
+        Log.i(TAG, "opening audio")
         val source = PcmSource.open(app.contentResolver, Uri.parse(uri))
+        Log.i(TAG, "audio opened durationMs=${source.durationMs} threads=$threads")
         val audio = TranscriptionPipeline.Audio(source.durationMs) { onChunk -> source.decode(onChunk) }
-        var lastCheckpoint = 0f
-        var lastCheckpointAt = 0L
+        val recTag = TranscriptRecord.stableRecordingId(uri).take(8)
+        val state = RunState()
+        val metrics = RunMetrics()
+        var chunkLogged = false
         latestUtterances = emptyList()
 
-        val control = object : TranscriptionPipeline.Control {
-            override fun checkCancelled() {
-                if (isStopped) throw TranscriptionCancelled()
-            }
-
-            override fun beforeChunk() {
-                // Severe heat: pause and keep finished segments. Resume when it cools down.
-                var paused = false
-                while (AsrRuntime.thermalStatus(app) >= PowerManager.THERMAL_STATUS_SEVERE) {
-                    checkCancelled()
-                    if (!paused) {
-                        paused = true
-                        setForegroundAsync(
-                            notifications.transcriptionForeground(id, title, lastPercent(), paused = true),
-                        )
-                    }
-                    Thread.sleep(PAUSE_POLL_MS)
-                }
-            }
-
-            override fun onProgress(fraction: Float, utterances: List<Utterance>) {
-                latestUtterances = utterances
-                val now = System.currentTimeMillis()
-                if (fraction - lastCheckpoint < CHECKPOINT_STEP && now - lastCheckpointAt < CHECKPOINT_MS) {
-                    return
-                }
-                lastCheckpoint = fraction
-                lastCheckpointAt = now
-                lastFraction = fraction
-                val segments = SegmentMerger.merge(utterances).map {
-                    TranscriptSegment(it.startMs, it.endMs, it.text)
-                }
-                repository.checkpoint(uri, base, fraction, segments)
-                setProgressAsync(
-                    androidx.work.Data.Builder()
-                        .putFloat(KEY_PROGRESS, fraction)
-                        .build(),
-                )
-                setForegroundAsync(
-                    notifications.transcriptionForeground(id, title, lastPercent(), paused = false),
-                )
-            }
+        // The one place that publishes the phase and progress. It always reads the current state,
+        // so a progress update cannot replace REDUCED or WAITING with a normal-speed notification.
+        fun publish() {
+            setProgressAsync(
+                androidx.work.Data.Builder()
+                    .putFloat(KEY_PROGRESS, state.processedFraction)
+                    .putString(KEY_PHASE, state.phase.name)
+                    .build(),
+            )
+            setForegroundAsync(
+                notifications.transcriptionForeground(workId, title, state.percent(), state.phase),
+            )
         }
 
-        val utterances = SpeechEngines.forKind(ModelCatalog.default.engine)
-            .let { engine -> TranscriptionPipeline(engine).run(modelDir, options, audio, control) }
-        return SegmentMerger.merge(utterances).map { TranscriptSegment(it.startMs, it.endMs, it.text) }
+        val checkpointer = RunCheckpointer(
+            repository = repository,
+            uri = uri,
+            base = base,
+            state = state,
+            monotonicMs = { SystemClock.elapsedRealtime() },
+            canWrite = { AsrRuntime.recordingExists(app, uri) },
+            onPublish = { publish() },
+        )
+        val gate = TranscriptionGate(
+            thermalStatus = { AsrRuntime.thermalStatus(app) },
+            recordingInProgress = { AsrRuntime.recordingInProgress },
+            monotonicMs = { SystemClock.elapsedRealtime() },
+            sleepMs = { Thread.sleep(it) },
+            checkCancelled = { if (isStopped) throw TranscriptionCancelled() },
+            onEnterWait = { next ->
+                // Save what is finished now. Waiting can last a long time.
+                checkpointer.persistBeforeWait()
+                Log.i(TAG, "rec=$recTag wait phase=$next segments=${checkpointer.completedSegments().size}")
+            },
+            onPhaseChanged = { next ->
+                state.setPhase(next)
+                Log.i(TAG, "rec=$recTag phase=$next")
+                publish()
+            },
+            metrics = metrics,
+        )
+        val control = GatedPipelineControl(
+            gate = gate,
+            metrics = metrics,
+            cancelCheck = { if (isStopped) throw TranscriptionCancelled() },
+            progress = { fraction, utterances ->
+                if (!chunkLogged) {
+                    chunkLogged = true
+                    Log.i(TAG, "first chunk decoded fraction=$fraction")
+                }
+                latestUtterances = utterances
+                lastFraction = fraction
+                checkpointer.onProgress(fraction, utterances)
+            },
+        )
+
+        Log.i(TAG, "engine run starting")
+        try {
+            val utterances = SpeechEngines.forKind(ModelCatalog.default.engine)
+                .let { engine -> TranscriptionPipeline(engine).run(modelDir, options, audio, control) }
+            Log.i(TAG, "engine run returned utterances=${utterances.size}")
+            return SegmentMerger.merge(utterances).map { TranscriptSegment(it.startMs, it.endMs, it.text) }
+        } finally {
+            // Timings only. No audio, text or file names.
+            Log.i(TAG, "rec=$recTag pacing ${metrics.summary()}")
+        }
     }
 
     @Volatile
@@ -194,8 +231,6 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
         }
     }
 
-    private fun lastPercent(): Int = (lastFraction * 100).toInt()
-
     /** Moderate heat: fewer threads for the rest of the run. Severe heat is handled by pausing. */
     private fun effectiveThreads(app: Context, configured: Int): Int {
         val status = AsrRuntime.thermalStatus(app)
@@ -207,18 +242,18 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
     }
 
     companion object {
+        private const val TAG = "TranscriptionWorker"
         const val KEY_URI = "uri"
         const val KEY_TITLE = "title"
         const val KEY_MODEL_ID = "model_id"
         const val KEY_LANGUAGE = "language"
         const val KEY_PROGRESS = "progress"
+        /** [RunPhase] name, shown by the transcript page and the notification. */
+        const val KEY_PHASE = "phase"
 
         const val MESSAGE_MODEL_MISSING = "Model is not installed"
         const val MESSAGE_FAILED_PREFIX = "Transcription failed: "
 
-        private const val CHECKPOINT_STEP = 0.02f
-        private const val CHECKPOINT_MS = 10_000L
-        private const val PAUSE_POLL_MS = 2_000L
         private const val MAX_RECORDING_WAITS = 60
     }
 }

@@ -17,6 +17,8 @@ sealed interface ModelState {
         val bytesPerSecond: Long,
     ) : ModelState
 
+    /** A local file is being copied into staging. [totalBytes] is the trusted size, never a guess. */
+    data class Importing(val copiedBytes: Long, val totalBytes: Long) : ModelState
     data object Verifying : ModelState
 
     data object Installing : ModelState
@@ -48,6 +50,10 @@ enum class FailureReason {
     NO_SPACE,
     STORAGE,
     CANCELLED,
+    /** The picked file cannot be read: permission lost or read interrupted. */
+    SOURCE_UNAVAILABLE,
+    /** A transcription is using the model, so it cannot be replaced now. */
+    IN_USE,
     /** The catalog entry has no verified hashes or sizes. Not a network problem. */
     MANIFEST_INCOMPLETE,
     /** A required file is missing or empty after the archive was unpacked. */
@@ -68,7 +74,9 @@ object ModelStateTransitions {
         }
         return when (from) {
             is ModelState.NotInstalled -> to is ModelState.Queued || to is ModelState.Downloading ||
-                to is ModelState.Failed || to is ModelState.Ready
+                to is ModelState.Failed || to is ModelState.Ready || to is ModelState.Importing
+            is ModelState.Importing -> to is ModelState.Importing || to is ModelState.Verifying ||
+                to is ModelState.Failed || to is ModelState.NotInstalled
             is ModelState.Queued -> to is ModelState.Downloading || to is ModelState.Failed ||
                 to is ModelState.NotInstalled || to is ModelState.Verifying
             is ModelState.Downloading -> to is ModelState.Downloading || to is ModelState.Verifying ||
@@ -82,14 +90,14 @@ object ModelStateTransitions {
             is ModelState.UpdateAvailable -> to is ModelState.Ready || to is ModelState.NotInstalled ||
                 to is ModelState.Queued || to is ModelState.UpdateAvailable
             is ModelState.Failed -> to is ModelState.Queued || to is ModelState.NotInstalled ||
-                to is ModelState.Downloading || to is ModelState.Ready
+                to is ModelState.Downloading || to is ModelState.Ready || to is ModelState.Importing
         }
     }
 
     /** States in which a model must not be deleted or re-installed under the running work. */
     fun isBusy(state: ModelState): Boolean = when (state) {
         is ModelState.Queued, is ModelState.Downloading, is ModelState.Verifying,
-        is ModelState.Installing,
+        is ModelState.Installing, is ModelState.Importing,
         -> true
         else -> false
     }

@@ -52,14 +52,24 @@ class AsrNotifications(private val context: Context) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         )
 
-    fun transcriptionForeground(workId: UUID, title: String, percent: Int, paused: Boolean): ForegroundInfo =
+    fun transcriptionForeground(
+        workId: UUID,
+        title: String,
+        percent: Int,
+        phase: RunPhase,
+    ): ForegroundInfo =
         ForegroundInfo(
             notificationId(workId),
             build(
                 workId = workId,
                 title = context.getString(R.string.asr_transcribe_notification_title, title),
                 text = context.getString(
-                    if (paused) R.string.asr_transcribe_paused else R.string.asr_transcribe_notification_text,
+                    when (phase) {
+                        RunPhase.WAITING_COOL -> R.string.asr_transcribe_paused
+                        RunPhase.WAITING_RECORDING -> R.string.asr_transcribe_wait_recording
+                        RunPhase.REDUCED -> R.string.asr_transcribe_reduced
+                        RunPhase.FULL -> R.string.asr_transcribe_notification_text
+                    },
                 ),
                 percent = percent,
                 indeterminate = false,

@@ -254,7 +254,6 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="asr_consent_offline">After the download, transcription works offline. Audio never leaves the phone.</string>
     <string name="asr_consent_cellular">You are on a metered connection, such as mobile data. The download will use mobile data.</string>
     <string name="asr_consent_download">Download model</string>
-    <string name="asr_consent_view">View model</string>
     <string name="asr_download_started">Model download started. Transcription starts when it is ready.</string>
     <string name="asr_model_downloading_wait">The model is downloading. Tap Transcribe again when it finishes.</string>
     <string name="asr_channel_name">Offline speech</string>
@@ -291,4 +290,29 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="shortcut_target_package" translatable="false">org.lineageos.recorder</string>
     <string name="playback_speed_title">Playback speed</string>
     <string name="playback_keep_screen_on">Keep screen on</string>
+    <string name="playback_loop_description">Loop this recording</string>
+    <string name="playback_loop_state_on">Loop on: repeats this recording</string>
+    <string name="playback_loop_state_off">Loop off</string>
+    <string name="asr_transcribe_reduced">Phone is warm: transcription slowed down to protect the device.</string>
+    <string name="transcript_tap_to_play">Tap a segment to play the recording from there.</string>
+    <string name="transcript_back_to_playing">Back to playing position</string>
+    <string name="playback_recording_unavailable">Recording cannot be played. The transcript is still available.</string>
+    <string name="asr_transcribe_wait_recording">Recording in progress: transcription resumes when it stops.</string>
+    <string name="playback_transcript_reduced">Phone is warm: running slower to protect the device.</string>
+    <string name="playback_transcript_waiting_cool">Phone is too hot: waiting to cool down. Saved text is kept.</string>
+    <string name="playback_transcript_waiting_recording">Recording in progress: transcription resumes when it stops.</string>
+    <string name="playback_loading_wait">Recording is still loading. Playback starts when it is ready.</string>
+    <string name="asr_import_action">Import local model</string>
+    <string name="asr_import_info">Import needs the official archive (%1$s %2$s, tar.bz2) and the companion file %3$s, which is not inside the archive. Choose files on this device. Nothing is downloaded.</string>
+    <string name="asr_import_already_installed">This version is already installed. Nothing was copied.</string>
+    <string name="asr_import_busy_wait">A download or import is already running. Wait for it to finish.</string>
+    <string name="asr_import_in_use">A transcription is using this model. Wait for it to finish before replacing the model.</string>
+    <string name="asr_import_missing_title">Companion file missing</string>
+    <string name="asr_import_missing_message">The archive was accepted, but these files are still needed: %1$s. Choose them from this device. Nothing is downloaded.</string>
+    <string name="asr_import_choose_file">Choose file</string>
+    <string name="asr_import_done">Model imported.</string>
+    <string name="asr_state_importing">Copying local file…</string>
+    <string name="asr_reason_source">The picked file cannot be read. Access may have been revoked, or reading was interrupted.</string>
+    <string name="asr_reason_in_use">The model is in use.</string>
+    <string name="asr_consent_import">Import local model</string>
 </resources>
