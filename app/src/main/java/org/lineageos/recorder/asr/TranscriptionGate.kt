@@ -79,6 +79,8 @@ class TranscriptionGate(
     private val onPhaseChanged: (RunPhase) -> Unit,
     private val metrics: RunMetrics,
     private val config: PacingConfig = PacingConfig(),
+    /** True while the user has paused this run. Checked between chunks, like the heat pause. */
+    private val userPaused: () -> Boolean = { false },
 ) {
     private val governor = ThermalGovernor(config.stableMs)
     private var phase = RunPhase.FULL
@@ -87,9 +89,11 @@ class TranscriptionGate(
     fun beforeInference() {
         checkCancelled()
         while (true) {
+            val paused = userPaused()
             val recording = recordingInProgress()
             val action = governor.decide(thermalStatus(), monotonicMs())
             val next = when {
+                paused -> RunPhase.WAITING_USER
                 recording -> RunPhase.WAITING_RECORDING
                 action == ThermalAction.PAUSED -> RunPhase.WAITING_COOL
                 action == ThermalAction.REDUCED -> RunPhase.REDUCED

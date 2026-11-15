@@ -248,4 +248,8 @@ Apache Commons Compress：Apache License 2.0。https://commons.apache.org/proper
     <string name="asr_reason_source">无法读取所选文件：访问权限可能已撤销，或读取中断。</string>
     <string name="asr_reason_in_use">模型正在使用中。</string>
     <string name="asr_consent_import">导入本地模型</string>
+    <string name="asr_transcribe_user_paused">已由你暂停。在转写页点击“继续转写”恢复。</string>
+    <string name="playback_transcript_user_paused">已由你暂停</string>
+    <string name="playback_pause_transcript">暂停转写</string>
+    <string name="playback_resume_transcript">继续转写</string>
 </resources>

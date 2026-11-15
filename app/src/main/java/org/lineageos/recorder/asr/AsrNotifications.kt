@@ -67,6 +67,7 @@ class AsrNotifications(private val context: Context) {
                     when (phase) {
                         RunPhase.WAITING_COOL -> R.string.asr_transcribe_paused
                         RunPhase.WAITING_RECORDING -> R.string.asr_transcribe_wait_recording
+                        RunPhase.WAITING_USER -> R.string.asr_transcribe_user_paused
                         RunPhase.REDUCED -> R.string.asr_transcribe_reduced
                         RunPhase.FULL -> R.string.asr_transcribe_notification_text
                     },

@@ -95,9 +95,11 @@ enum class RunPhase {
 
     /** A recording is in progress: transcription waits until it stops. */
     WAITING_RECORDING,
+    /** The user paused this run. It waits until the user resumes it. */
+    WAITING_USER,
     ;
 
-    val isWaiting: Boolean get() = this == WAITING_COOL || this == WAITING_RECORDING
+    val isWaiting: Boolean get() = this == WAITING_COOL || this == WAITING_RECORDING || this == WAITING_USER
 
     companion object {
         /** Unknown or missing names are treated as FULL. */

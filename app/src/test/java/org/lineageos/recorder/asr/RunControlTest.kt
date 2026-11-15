@@ -66,6 +66,9 @@ class GateHarness(
     /** Runs when a waiting phase starts, as TranscriptionWorker does (it saves the segments here). */
     var onWait: (RunPhase) -> Unit = {}
 
+    /** The user's own pause, as UserPause reports it to the worker. */
+    var userPausedFlag = false
+
     val gate = TranscriptionGate(
         thermalStatus = { statusByCall(++thermalCalls) },
         recordingInProgress = { recordingAt(now) },
@@ -83,10 +86,24 @@ class GateHarness(
         },
         onPhaseChanged = { phases += it },
         metrics = metrics,
+        userPaused = { userPausedFlag },
     )
 }
 
 class TranscriptionGateTest {
+    @Test
+    fun userPauseWaitsForResumeWithoutHeatRulesAndWithoutInference() {
+        val h = GateHarness()
+        h.userPausedFlag = true
+        // The user resumes after three waiting slices
+        h.onSleep = { if (h.log.count { it == "sleep" } == 3) h.userPausedFlag = false }
+        h.gate.beforeInference()
+        assertEquals(listOf(RunPhase.WAITING_USER), h.entered)
+        assertEquals(listOf(RunPhase.WAITING_USER, RunPhase.FULL), h.phases)
+        // Waiting by the user is not a rest and does not count as heat wait beyond its own time
+        assertEquals(0L, h.metrics.restMs)
+    }
+
     @Test
     fun normalHeatNeverWaitsOrRests() {
         val h = GateHarness()

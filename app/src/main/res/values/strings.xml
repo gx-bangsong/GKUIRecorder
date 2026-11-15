@@ -315,4 +315,8 @@ Apache Commons Compress: Apache License 2.0. https://commons.apache.org/proper/c
     <string name="asr_reason_source">The picked file cannot be read. Access may have been revoked, or reading was interrupted.</string>
     <string name="asr_reason_in_use">The model is in use.</string>
     <string name="asr_consent_import">Import local model</string>
+    <string name="asr_transcribe_user_paused">Paused by you. Tap Resume in the transcript view.</string>
+    <string name="playback_transcript_user_paused">Paused by you</string>
+    <string name="playback_pause_transcript">Pause transcription</string>
+    <string name="playback_resume_transcript">Resume transcription</string>
 </resources>

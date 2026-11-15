@@ -169,6 +169,7 @@ class TranscriptionWorker(context: Context, params: WorkerParameters) : Coroutin
             monotonicMs = { SystemClock.elapsedRealtime() },
             sleepMs = { Thread.sleep(it) },
             checkCancelled = { if (isStopped) throw TranscriptionCancelled() },
+            userPaused = { UserPause.isPaused(app, uri) },
             onEnterWait = { next ->
                 // Save what is finished now. Waiting can last a long time.
                 checkpointer.persistBeforeWait()

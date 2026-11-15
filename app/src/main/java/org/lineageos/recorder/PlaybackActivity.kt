@@ -92,6 +92,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val exportTranscriptButton by lazy { findViewById<MaterialButton>(R.id.exportTranscriptButton) }
     private val transcriptActionButton by lazy { findViewById<MaterialButton>(R.id.transcriptActionButton) }
     private val cancelTranscriptButton by lazy { findViewById<MaterialButton>(R.id.cancelTranscriptButton) }
+    private val pauseTranscriptButton by lazy { findViewById<MaterialButton>(R.id.pauseTranscriptButton) }
     private val waveformView by lazy { findViewById<PlaybackWaveformView>(R.id.waveformView) }
     private val addImportantButton by lazy { findViewById<MaterialButton>(R.id.addImportantButton) }
     private val addSegmentButton by lazy { findViewById<MaterialButton>(R.id.addSegmentButton) }
@@ -262,6 +263,12 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         transcriptActionButton.setOnClickListener { onTranscriptActionClicked() }
         cancelTranscriptButton.setOnClickListener {
             TranscriptionScheduler.cancel(this, parsed.toString())
+        }
+        pauseTranscriptButton.setOnClickListener {
+            // The user's own pause: it does not override the heat rules, it only waits between chunks
+            val paused = shownPanel?.phase == RunPhase.WAITING_USER
+            TranscriptionScheduler.setUserPaused(this, parsed.toString(), !paused)
+            loadTranscript()
         }
 
         // Live work changes (progress, completion, cancel) re-read the saved transcript. The saved file
@@ -801,6 +808,14 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             },
         )
         cancelTranscriptButton.isVisible = panel.canCancel
+        pauseTranscriptButton.isVisible = panel.canCancel
+        pauseTranscriptButton.text = getString(
+            if (panel.phase == RunPhase.WAITING_USER) {
+                R.string.playback_resume_transcript
+            } else {
+                R.string.playback_pause_transcript
+            },
+        )
         copyTranscriptButton.isEnabled = panel.hasBody
         exportTranscriptButton.isEnabled = panel.hasBody
     }
@@ -812,6 +827,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             RunPhase.REDUCED -> getString(R.string.playback_transcript_reduced)
             RunPhase.WAITING_COOL -> getString(R.string.playback_transcript_waiting_cool)
             RunPhase.WAITING_RECORDING -> getString(R.string.playback_transcript_waiting_recording)
+            RunPhase.WAITING_USER -> getString(R.string.playback_transcript_user_paused)
         }
         TranscriptPanelState.CANCELLED -> getString(R.string.playback_transcript_cancelled)
         TranscriptPanelState.FAILED -> getString(R.string.playback_transcript_failed)

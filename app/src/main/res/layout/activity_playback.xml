@@ -207,6 +207,13 @@
                         android:text="@string/transcript_export" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pauseTranscriptButton"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/cancelTranscriptButton"
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"

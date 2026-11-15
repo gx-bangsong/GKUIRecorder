@@ -53,6 +53,8 @@ object TranscriptionScheduler {
         downloadFirst: Boolean,
     ): Boolean {
         val language = PreferencesManager(context).asrLanguage
+        // A new run starts unpaused, whatever a previous run left behind
+        UserPause.set(context, uri, false)
         val request: OneTimeWorkRequest = OneTimeWorkRequestBuilder<TranscriptionWorker>()
             .setInputData(
                 workDataOf(
@@ -77,6 +79,11 @@ object TranscriptionScheduler {
     }
 
     /** Cancels a queued or running transcription. Finished segments are kept. */
+    /** The user pauses or resumes a run. The worker checks the flag between chunks. */
+    fun setUserPaused(context: Context, uri: String, paused: Boolean) {
+        UserPause.set(context, uri, paused)
+    }
+
     fun cancel(context: Context, uri: String) {
         WorkManager.getInstance(context).cancelAllWorkByTag(tag(uri))
     }
