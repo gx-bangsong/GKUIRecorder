@@ -49,6 +49,13 @@ jobs:
                 echo "::error title=${log}::${msg}"
               done
         done
+        # The keyword filter above can miss lint's own wording. When lint fails, show the end of its log too.
+        if [ "${{ steps.lint.outcome }}" = "failure" ] && [ -f lint.log ]; then
+          tail -n 40 lint.log | while IFS= read -r line; do
+            msg="${line//'%'/%25}"
+            echo "::error title=lint.log (tail)::${msg}"
+          done
+        fi
 
     - name: Upload test and lint reports
       if: always()
