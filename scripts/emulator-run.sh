@@ -31,21 +31,24 @@ status=$?
 notice stage "gradle exit $status, $(wc -l < gradle-emulator.log) lines"
 # Did the tests run, and what did each one report? Read from the result XML that gradle wrote.
 grep -E 'Tests on|connectedDebugAndroidTest|BUILD|tests completed' gradle-emulator.log | head -n 20 | annotate gradle-summary
+grep -iE 'starting|finished|instrument|no tests|tests' gradle-emulator.log | head -n 30 | annotate gradle-tests
 for xml in $(find app/build/outputs/androidTest-results -name '*.xml' 2>/dev/null); do
-    notice test-results "$xml: $(grep -o '<testcase name="[^"]*"' "$xml" | sed 's/<testcase name=//' | tr '\n' ' ') failures=$(grep -c '<failure' "$xml")"
+    notice test-xml "$xml: $(head -c 700 "$xml" | tr '\n' ' ')"
 done
+notice stage "reading logcat"
 # The failure line can be far from the end of the log, so the key lines are taken from the whole log.
 grep -E 'FAILED|What went wrong|AssertionError|Exception|expected|highlight per position|seek=' -A4 gradle-emulator.log \
     | head -n 120 | annotate gradle
 tail -n 20 gradle-emulator.log | annotate gradle-tail
 
 adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
-"$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
+timeout 120 "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
+notice stage "logcat done"
 
 # The app is uninstalled when connectedDebugAndroidTest finishes, so its files cannot be read here.
 # The test logs every row with the tag GKUI_HL, and logcat keeps them after the run.
 mkdir -p highlight-evidence
-"$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: //p' > highlight-evidence/results.txt
+timeout 120 "$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: //p' > highlight-evidence/results.txt
 if [ ! -s highlight-evidence/results.txt ]; then
     warn evidence "no GKUI_HL rows in logcat: the highlight test did not reach its report"
 else
