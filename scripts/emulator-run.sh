@@ -25,7 +25,8 @@ if [ ! -f gradlew ]; then
     exit 1
 fi
 
-./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
+# Bounded, so the evidence below is still collected when a test hangs. 124 means the timeout hit.
+timeout 1200 ./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
 status=$?
 notice stage "gradle exit $status, $(wc -l < gradle-emulator.log) lines"
 # Did the tests run, and what did each one report? Read from the result XML that gradle wrote.

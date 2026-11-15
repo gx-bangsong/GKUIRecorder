@@ -59,6 +59,7 @@ class PlaybackHighlightDeviceTest {
                 base,
                 segments,
             )
+            mark("transcript saved")
 
             // Internal files: the debug build is debuggable, so the workflow reads them with run-as
             val evidence = File(context.filesDir, "highlight-evidence").apply { mkdirs() }
@@ -70,8 +71,11 @@ class PlaybackHighlightDeviceTest {
                 .putExtra(PlaybackActivity.EXTRA_URI, uri.toString())
                 .putExtra(PlaybackActivity.EXTRA_SHOW_TRANSCRIPT, true)
             ActivityScenario.launch<PlaybackActivity>(intent).use { scenario ->
+                mark("activity launched")
                 waitUntil(scenario) { PlaybackSession.prepared && PlaybackSession.uri == uri }
+                mark("player prepared")
                 waitUntil(scenario) { segmentContainer(it).childCount == 2 }
+                mark("segments shown")
 
                 for (position in positions) {
                     scenario.onActivity { PlaybackSession.seekTo(position, play = false) }
@@ -85,6 +89,7 @@ class PlaybackHighlightDeviceTest {
                     // What the previous rule (no sticky highlight) would show at the reported position
                     val legacy = SegmentLookup.indexAt(segments, reported)
                     observed += shown
+                    mark("position $position shown=$shown")
                     rows += "seek=$position reported=$reported shown=$shown legacy=$legacy"
                     if (position == 2_500L) {
                         saveScreenshot(File(evidence, "gap-2500.png"))
@@ -99,6 +104,11 @@ class PlaybackHighlightDeviceTest {
         } finally {
             resolver.delete(uri, null, null)
         }
+    }
+
+    /** Progress markers in logcat, so a hang shows the last step that ran. */
+    private fun mark(step: String) {
+        android.util.Log.i("GKUI_HL", "step $step")
     }
 
     private fun segmentContainer(activity: PlaybackActivity): LinearLayout =
