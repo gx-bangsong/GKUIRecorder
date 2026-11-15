@@ -62,8 +62,15 @@ jobs:
           set +e
           ./gradlew :app:connectedDebugAndroidTest --stacktrace
           status=$?
+          # Android 11+ blocks shell access to Android/data, so the debuggable app's files are read with run-as.
+          adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
           mkdir -p highlight-evidence
-          "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Android/data/org.lineageos.recorder.dev/files/highlight-evidence/. highlight-evidence/ || echo "::warning::no highlight evidence on the emulator"
+          for f in results.txt gap-2500.png; do
+            "$adb" exec-out run-as org.lineageos.recorder.dev cat "files/highlight-evidence/$f" > "highlight-evidence/$f" \
+              || echo "::warning::could not read $f from the emulator"
+          done
+          # The same rows as annotations, so they can be read without the artifact
+          "$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: /::notice title=highlight::/p'
           exit $status
 
     - name: Upload test reports

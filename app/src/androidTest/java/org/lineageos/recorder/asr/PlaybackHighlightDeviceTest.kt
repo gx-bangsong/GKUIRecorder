@@ -20,6 +20,7 @@ import org.junit.runner.RunWith
 import org.lineageos.recorder.PlaybackActivity
 import org.lineageos.recorder.PlaybackSession
 import org.lineageos.recorder.R
+import org.lineageos.recorder.asr.transcription.SegmentLookup
 import org.lineageos.recorder.asr.transcription.TranscriptSegment
 import java.io.File
 import java.io.FileOutputStream
@@ -52,16 +53,18 @@ class PlaybackHighlightDeviceTest {
             repository.complete(
                 uri.toString(),
                 base,
-                listOf(
-                    TranscriptSegment(1_000L, 2_000L, "first sentence"),
-                    TranscriptSegment(3_000L, 4_500L, "second sentence"),
-                ),
+                segments,
             )
 
-            val evidence = File(context.getExternalFilesDir(null), "highlight-evidence").apply { mkdirs() }
+            // Internal files: the debug build is debuggable, so the workflow reads them with run-as
+            val evidence = File(context.filesDir, "highlight-evidence").apply { mkdirs() }
             val rows = mutableListOf<String>()
             val observed = mutableListOf<Int>()
             val positions = listOf(500L, 1_500L, 2_500L, 3_500L, 5_000L)
+            val segments = listOf(
+                TranscriptSegment(1_000L, 2_000L, "first sentence"),
+                TranscriptSegment(3_000L, 4_500L, "second sentence"),
+            )
 
             val intent = Intent(context, PlaybackActivity::class.java)
                 .putExtra(PlaybackActivity.EXTRA_URI, uri.toString())
@@ -73,23 +76,25 @@ class PlaybackHighlightDeviceTest {
                 for (position in positions) {
                     scenario.onActivity { PlaybackSession.seekTo(position, play = false) }
                     Thread.sleep(1_500L)
-                    var active = -1
+                    var shown = -1
                     var reported = -1L
                     scenario.onActivity { activity ->
                         reported = PlaybackSession.positionMs()
-                        active = activeIndex(activity.findViewById<LinearLayout>(R.id.transcriptSegmentsContainer))
+                        shown = activeIndex(activity.findViewById<LinearLayout>(R.id.transcriptSegmentsContainer))
                     }
-                    observed += active
-                    rows += "seek=$position reported=$reported active=$active"
+                    // What the previous rule (no sticky highlight) would show at the reported position
+                    val legacy = SegmentLookup.indexAt(segments, reported)
+                    observed += shown
+                    rows += "seek=$position reported=$reported shown=$shown legacy=$legacy"
                     if (position == 2_500L) {
                         saveScreenshot(File(evidence, "gap-2500.png"))
                     }
                 }
-                File(evidence, "results.txt").writeText(rows.joinToString("\n") + "\n")
             }
 
             val expected = listOf(-1, 0, 0, 1, 1)
             rows.forEach { android.util.Log.i("GKUI_HL", it) }
+            File(evidence, "results.txt").writeText(rows.joinToString("\n") + "\n")
             assertEquals("highlight per position:\n" + rows.joinToString("\n"), expected, observed)
         } finally {
             resolver.delete(uri, null, null)
