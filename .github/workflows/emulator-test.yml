@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: emulator-test-${{ github.ref }}
@@ -47,6 +47,8 @@ jobs:
 
     - name: Instrumented tests
       id: instrumented
+      env:
+        GH_TOKEN: ${{ github.token }}
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: ${{ matrix.api-level }}
@@ -59,26 +61,35 @@ jobs:
         # The emulator stops when this script ends, so the evidence is copied out here.
         # The exit code of gradle still decides the step result; the copy never hides it.
         script: |
-          # Output goes to files; the lines that matter are printed as annotations, which the API can read.
-          # The emulator stops when this script ends, so the evidence is copied out here.
-          # The gradle exit code decides the step result; the copies and the prints never hide it.
-          annotate() {
-            while IFS= read -r line; do
-              msg="${line//'%'/%25}"
-              echo "::error title=$1::${msg}"
-            done
-          }
+          # Plain POSIX sh: the runner executes this script with /bin/sh, not bash.
+          # Each stage prints a notice, so a failure shows how far the script got.
+          # The gradle exit code decides the step result; nothing below hides it.
           set +e
+          echo "::notice title=stage::start in $(pwd)"
+          ls gradlew > /dev/null 2>&1 || echo "::error title=stage::gradlew not found"
           ./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
           status=$?
-          grep -E 'FAILED|AssertionError|Exception|What went wrong|Caused by|tests completed|expected' -A3 gradle-emulator.log | head -n 80 | annotate gradle
+          echo "::notice title=stage::gradle exit $status, $(wc -l < gradle-emulator.log) lines"
+          annotate() {
+            sed 's/%/%25/g' | while IFS= read -r line; do
+              printf '::error title=%s::%s\n' "$1" "$line"
+            done
+          }
+          tail -n 60 gradle-emulator.log | annotate gradle
           adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
           "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
           # Android 11+ blocks shell access to Android/data, so the debuggable app's files are read with run-as.
           mkdir -p highlight-evidence
           for f in results.txt gap-2500.png; do
-            "$adb" exec-out run-as org.lineageos.recorder.dev cat "files/highlight-evidence/$f" > "highlight-evidence/$f" \
-              || echo "::warning::could not read $f from the emulator"
+            "$adb" exec-out run-as org.lineageos.recorder.dev cat "files/highlight-evidence/$f" > "highlight-evidence/$f" 2>/dev/null
+            if [ -s "highlight-evidence/$f" ]; then
+              # Evidence as a Git blob (the same way the UI workflow reference returns evidence)
+              base64 -w0 "highlight-evidence/$f" > "highlight-evidence/$f.b64"
+              sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" -f encoding=base64 -F "content=@highlight-evidence/$f.b64" --jq .sha 2>/dev/null)
+              echo "::notice title=evidence-blob::$f $sha"
+            else
+              echo "::warning::could not read $f from the emulator"
+            fi
           done
           exit $status
 
