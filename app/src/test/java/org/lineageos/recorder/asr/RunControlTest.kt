@@ -314,7 +314,8 @@ class GatedPipelineTest {
         // Severe on the 4th read: 3 chunks, then the flush
         val h = GateHarness(statusByCall = { call -> if (call == 4) STATUS_SEVERE else STATUS_NONE })
         val s = setup(h, uri)
-        val log = mutableListOf<String>()
+        // The gate logs its sleeps to h.log, so the engine must log there too for the order to mean anything
+        val log = h.log
         TranscriptionPipeline(Engine(log)).run(File("."), RecognitionOptions("auto", true, 1), audio(3), control(h, s))
         val lastAccept = log.lastIndexOf("accept")
         val firstSleep = log.indexOf("sleep")
