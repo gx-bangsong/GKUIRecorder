@@ -655,7 +655,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     /** Highlights the segment at the real playback position. Only while the transcript tab is shown. */
     private fun applyKaraoke(positionMs: Long) {
         if (segments.isEmpty() || !transcriptScroll.isVisible) return
-        val index = SegmentLookup.indexAt(segments, positionMs)
+        // Between two sentences the previous one stays highlighted; before the first one, nothing is
+        val index = SegmentLookup.highlightAt(segments, positionMs)
         if (index == activeSegment) return
         segmentViews.getOrNull(activeSegment)?.let { setSegmentActive(it, false) }
         activeSegment = index

@@ -50,6 +50,29 @@ class SegmentLookupTest {
     }
 
     @Test
+    fun highlightStaysOnThePreviousSegmentInSilentGaps() {
+        assertEquals(0, SegmentLookup.highlightAt(segments, 2_500L))
+        assertEquals(1, SegmentLookup.highlightAt(segments, 5_000L))
+        // The zero-length segment never takes the highlight, and the gap after it keeps segment b
+        assertEquals(1, SegmentLookup.highlightAt(segments, 6_500L))
+        // After the last segment, the last one stays highlighted
+        assertEquals(3, SegmentLookup.highlightAt(segments, 8_500L))
+    }
+
+    @Test
+    fun highlightIsNoneBeforeTheFirstSegmentAndForEmptyList() {
+        assertEquals(-1, SegmentLookup.highlightAt(segments, 0L))
+        assertEquals(-1, SegmentLookup.highlightAt(emptyList(), 1_500L))
+    }
+
+    @Test
+    fun highlightMatchesIndexAtInsideSegments() {
+        assertEquals(0, SegmentLookup.highlightAt(segments, 1_000L))
+        assertEquals(1, SegmentLookup.highlightAt(segments, 3_000L))
+        assertEquals(3, SegmentLookup.highlightAt(segments, 7_500L))
+    }
+
+    @Test
     fun resultIsStableAcrossRepeatedCalls() {
         // Seeking back and forth must give the same answer for the same position
         repeat(3) {

@@ -14,4 +14,15 @@ object SegmentLookup {
      */
     fun indexAt(segments: List<TranscriptSegment>, positionMs: Long): Int =
         segments.indexOfFirst { positionMs >= it.startMs && positionMs < it.endMs }
+
+    /**
+     * The segment to highlight. Inside a segment, the same as [indexAt]. In a silent gap, the last
+     * non-empty segment that has already started stays highlighted, so the highlight does not vanish
+     * between sentences. Before the first segment (and for an empty list) there is none: -1.
+     */
+    fun highlightAt(segments: List<TranscriptSegment>, positionMs: Long): Int {
+        val exact = indexAt(segments, positionMs)
+        if (exact >= 0) return exact
+        return segments.indexOfLast { it.endMs > it.startMs && positionMs >= it.startMs }
+    }
 }
