@@ -6,7 +6,11 @@
 # still up. Called from .github/workflows/emulator-test.yml as a single line, because the
 # emulator runner executes each line of its script input on its own.
 #
-# The exit status is the gradle status. The evidence steps never change it.
+# connectedDebugAndroidTest hung after its first test in earlier runs, so gradle only installs
+# the two APKs here. The tests run through `adb shell am instrument`, one test class at a time,
+# each with its own timeout. Every test result is printed as it finishes.
+#
+# The exit status is 0 only when every test class reports OK. The evidence steps never change it.
 
 # Each stage prints a notice, so a failure shows how far the script got.
 notice() { echo "::notice title=$1::$2"; }
@@ -25,27 +29,46 @@ if [ ! -f gradlew ]; then
     exit 1
 fi
 
-# Bounded, so the evidence below is still collected when a test hangs. 124 means the timeout hit.
-timeout 1200 ./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
-status=$?
-notice stage "gradle exit $status, $(wc -l < gradle-emulator.log) lines"
-# Did the tests run, and what did each one report? Read from the result XML that gradle wrote.
-grep -E 'Tests on|connectedDebugAndroidTest|BUILD|tests completed' gradle-emulator.log | head -n 20 | annotate gradle-summary
-grep -iE 'starting|finished|instrument|no tests|tests' gradle-emulator.log | head -n 30 | annotate gradle-tests
-for xml in $(find app/build/outputs/androidTest-results -name '*.xml' 2>/dev/null); do
-    notice test-xml "$xml: $(head -c 700 "$xml" | tr '\n' ' ')"
-done
-notice stage "reading logcat"
-# The failure line can be far from the end of the log, so the key lines are taken from the whole log.
-grep -E 'FAILED|What went wrong|AssertionError|Exception|expected|highlight per position|seek=' -A4 gradle-emulator.log \
-    | head -n 120 | annotate gradle
-tail -n 20 gradle-emulator.log | annotate gradle-tail
-
 adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
+pkg=org.lineageos.recorder.dev
+runner=androidx.test.runner.AndroidJUnitRunner
+classes="org.lineageos.recorder.asr.ModelSettingsSmokeTest org.lineageos.recorder.asr.PlaybackHighlightDeviceTest"
+
+timeout 900 ./gradlew :app:installDebug :app:installDebugAndroidTest --stacktrace > gradle-install.log 2>&1
+status=$?
+notice stage "install gradle exit $status, $(wc -l < gradle-install.log) lines"
+grep -E 'BUILD|What went wrong|FAILED|error:' gradle-install.log | head -n 20 | annotate gradle-install
+if [ "$status" -ne 0 ]; then
+    tail -n 40 gradle-install.log | annotate gradle-install-tail
+    exit "$status"
+fi
+
+# One class per run. -w waits for the run to finish; the host timeout stops a hang.
+# A class that does not finish in time counts as a failure, and the next class still runs.
+: > instrument.log
+result=0
+for cls in $classes; do
+    notice stage "running $cls"
+    timeout 400 "$adb" shell am instrument -w -r -e class "$cls" "$pkg.test/$runner" > "instrument-$cls.txt" 2>&1
+    rc=$?
+    cat "instrument-$cls.txt" >> instrument.log
+    "$adb" shell am force-stop "$pkg" > /dev/null 2>&1
+    notice stage "class $cls exit $rc"
+    # am instrument prints OK (n tests) on success and FAILURES on failure.
+    grep -E 'OK \(|FAILURES|Failure in|Error in|INSTRUMENTATION_FAILED|INSTRUMENTATION_CODE|Process crashed|Test failed' "instrument-$cls.txt" \
+        | head -n 40 | annotate "instrument"
+    if [ "$rc" -ne 0 ] || ! grep -q '^OK (' "instrument-$cls.txt"; then
+        result=1
+        notice stage "class $cls did not pass (rc $rc)"
+    fi
+done
+notice stage "instrumentation result $result"
+notice stage "instrument log $(wc -l < instrument.log) lines"
+
+notice stage "reading logcat"
 timeout 120 "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
 notice stage "logcat done"
 
-# The app is uninstalled when connectedDebugAndroidTest finishes, so its files cannot be read here.
 # The test logs every row with the tag GKUI_HL, and logcat keeps them after the run.
 mkdir -p highlight-evidence
 timeout 120 "$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: //p' > highlight-evidence/results.txt
@@ -53,10 +76,10 @@ if [ ! -s highlight-evidence/results.txt ]; then
     warn evidence "no GKUI_HL rows in logcat: the highlight test did not reach its report"
 else
     cat highlight-evidence/results.txt | annotate highlight
-    # Same way the UI workflow reference returns evidence: a Git blob, reachable through the API.
+    # Returned as a Git blob, reachable through the API.
     sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" \
         -f encoding=utf-8 -F "content=@highlight-evidence/results.txt" --jq .sha 2>/dev/null)
     notice evidence-blob "results.txt ${sha:-upload-failed}"
 fi
 
-exit "$status"
+exit "$result"

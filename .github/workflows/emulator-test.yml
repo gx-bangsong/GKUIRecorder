@@ -47,7 +47,7 @@ jobs:
 
     - name: Instrumented tests
       id: instrumented
-      # Bounded: an emulator step that hangs after the script still lets the evidence step run
+      # Bounded: a hung instrumentation run still lets the evidence step run
       timeout-minutes: 25
       env:
         GH_TOKEN: ${{ github.token }}
