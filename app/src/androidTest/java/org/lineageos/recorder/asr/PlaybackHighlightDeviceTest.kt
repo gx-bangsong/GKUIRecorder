@@ -98,7 +98,11 @@ class PlaybackHighlightDeviceTest {
             }
 
             val expected = listOf(-1, 0, 0, 1, 1)
+            // Logged twice: logcat, and the instrumentation status stream, which am instrument prints.
             rows.forEach { android.util.Log.i("GKUI_HL", it) }
+            rows.forEach { row ->
+                instrumentation.sendStatus(0, android.os.Bundle().apply { putString("GKUI_HL", row) })
+            }
             File(evidence, "results.txt").writeText(rows.joinToString("\n") + "\n")
             assertEquals("highlight per position:\n" + rows.joinToString("\n"), expected, observed)
         } finally {
@@ -109,6 +113,7 @@ class PlaybackHighlightDeviceTest {
     /** Progress markers in logcat, so a hang shows the last step that ran. */
     private fun mark(step: String) {
         android.util.Log.i("GKUI_HL", "step $step")
+        instrumentation.sendStatus(0, android.os.Bundle().apply { putString("GKUI_HL", "step $step") })
     }
 
     private fun segmentContainer(activity: PlaybackActivity): LinearLayout =

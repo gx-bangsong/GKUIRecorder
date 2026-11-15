@@ -54,9 +54,9 @@ for cls in $classes; do
     cat "instrument-$cls.txt" >> instrument.log
     "$adb" shell am force-stop "$pkg" > /dev/null 2>&1
     notice stage "class $cls exit $rc"
-    # am instrument prints OK (n tests) on success and FAILURES on failure.
-    grep -E 'OK \(|FAILURES|Failure in|Error in|INSTRUMENTATION_FAILED|INSTRUMENTATION_CODE|Process crashed|Test failed' "instrument-$cls.txt" \
-        | head -n 40 | annotate "instrument"
+    # am instrument prints OK (n tests) on success. Otherwise the whole output is shown, which has
+    # the failing test and its stack.
+    head -n 150 "instrument-$cls.txt" | annotate "instrument-$cls"
     if [ "$rc" -ne 0 ] || ! grep -q '^OK (' "instrument-$cls.txt"; then
         result=1
         notice stage "class $cls did not pass (rc $rc)"
@@ -71,7 +71,12 @@ notice stage "logcat done"
 
 # The test logs every row with the tag GKUI_HL, and logcat keeps them after the run.
 mkdir -p highlight-evidence
-timeout 120 "$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: //p' > highlight-evidence/results.txt
+# Rows come from the instrumentation status stream (INSTRUMENTATION_STATUS: GKUI_HL=...), which
+# am instrument prints for each class. Logcat is a fallback.
+cat instrument.log | sed -n 's/^INSTRUMENTATION_STATUS: GKUI_HL=//p' | grep -v '^step ' > highlight-evidence/results.txt
+if [ ! -s highlight-evidence/results.txt ]; then
+    timeout 120 "$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: //p' > highlight-evidence/results.txt
+fi
 if [ ! -s highlight-evidence/results.txt ]; then
     warn evidence "no GKUI_HL rows in logcat: the highlight test did not reach its report"
 else
