@@ -40,6 +40,7 @@ jobs:
       shell: bash
       run: |
         # Full logs are in the uploaded artifact. Annotations give the failing lines in the check run.
+        # No match in a log is not a failure of this step, so the pipeline's grep status is ignored.
         for log in unit-test.log lint.log; do
           [ -f "$log" ] || continue
           grep -E '^e: |Error:|FAILED|AssertionError|Exception|What went wrong|Lint found' -A2 "$log" \
@@ -47,7 +48,7 @@ jobs:
             | while IFS= read -r line; do
                 msg="${line//'%'/%25}"
                 echo "::error title=${log}::${msg}"
-              done
+              done || true
         done
         # The keyword filter above can miss lint's own wording. When lint fails, show the end of its log too.
         if [ "${{ steps.lint.outcome }}" = "failure" ] && [ -f lint.log ]; then
