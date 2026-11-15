@@ -56,8 +56,15 @@ jobs:
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         disable-animations: true
         disable-spellchecker: true
-        # No pipe here: the exit code of gradle decides the step result
-        script: ./gradlew :app:connectedDebugAndroidTest --stacktrace
+        # The emulator stops when this script ends, so the evidence is copied out here.
+        # The exit code of gradle still decides the step result; the copy never hides it.
+        script: |
+          set +e
+          ./gradlew :app:connectedDebugAndroidTest --stacktrace
+          status=$?
+          mkdir -p highlight-evidence
+          "$ANDROID_HOME/platform-tools/adb" pull /sdcard/Android/data/org.lineageos.recorder.dev/files/highlight-evidence/. highlight-evidence/ || echo "::warning::no highlight evidence on the emulator"
+          exit $status
 
     - name: Upload test reports
       if: always()
@@ -68,3 +75,10 @@ jobs:
         path: |
           app/build/reports/androidTests/connected/**
           app/build/outputs/androidTest-results/connected/**
+    - name: Upload highlight evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: highlight-evidence-api${{ matrix.api-level }}
+        if-no-files-found: ignore
+        path: highlight-evidence/**
