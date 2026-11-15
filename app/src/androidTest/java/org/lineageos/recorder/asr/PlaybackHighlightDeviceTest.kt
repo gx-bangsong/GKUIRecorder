@@ -48,6 +48,10 @@ class PlaybackHighlightDeviceTest {
         val resolver = context.contentResolver
         val uri: Uri = insertWav(seconds = 6)
         try {
+            val segments = listOf(
+                TranscriptSegment(1_000L, 2_000L, "first sentence"),
+                TranscriptSegment(3_000L, 4_500L, "second sentence"),
+            )
             val repository = AsrRuntime.transcripts(context)
             val base = repository.start(uri.toString(), "probe-model", "v1", "auto")
             repository.complete(
@@ -61,10 +65,6 @@ class PlaybackHighlightDeviceTest {
             val rows = mutableListOf<String>()
             val observed = mutableListOf<Int>()
             val positions = listOf(500L, 1_500L, 2_500L, 3_500L, 5_000L)
-            val segments = listOf(
-                TranscriptSegment(1_000L, 2_000L, "first sentence"),
-                TranscriptSegment(3_000L, 4_500L, "second sentence"),
-            )
 
             val intent = Intent(context, PlaybackActivity::class.java)
                 .putExtra(PlaybackActivity.EXTRA_URI, uri.toString())
