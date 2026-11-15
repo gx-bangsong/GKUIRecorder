@@ -28,6 +28,11 @@ fi
 ./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
 status=$?
 notice stage "gradle exit $status, $(wc -l < gradle-emulator.log) lines"
+# Did the tests run, and what did each one report? Read from the result XML that gradle wrote.
+grep -E 'Tests on|connectedDebugAndroidTest|BUILD|tests completed' gradle-emulator.log | head -n 20 | annotate gradle-summary
+for xml in $(find app/build/outputs/androidTest-results -name '*.xml' 2>/dev/null); do
+    notice test-results "$xml: $(grep -o '<testcase name="[^"]*"' "$xml" | sed 's/<testcase name=//' | tr '\n' ' ') failures=$(grep -c '<failure' "$xml")"
+done
 # The failure line can be far from the end of the log, so the key lines are taken from the whole log.
 grep -E 'FAILED|What went wrong|AssertionError|Exception|expected|highlight per position|seek=' -A4 gradle-emulator.log \
     | head -n 120 | annotate gradle
