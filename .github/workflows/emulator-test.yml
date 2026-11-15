@@ -59,18 +59,27 @@ jobs:
         # The emulator stops when this script ends, so the evidence is copied out here.
         # The exit code of gradle still decides the step result; the copy never hides it.
         script: |
+          # Output goes to files; the lines that matter are printed as annotations, which the API can read.
+          # The emulator stops when this script ends, so the evidence is copied out here.
+          # The gradle exit code decides the step result; the copies and the prints never hide it.
+          annotate() {
+            while IFS= read -r line; do
+              msg="${line//'%'/%25}"
+              echo "::error title=$1::${msg}"
+            done
+          }
           set +e
-          ./gradlew :app:connectedDebugAndroidTest --stacktrace
+          ./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
           status=$?
-          # Android 11+ blocks shell access to Android/data, so the debuggable app's files are read with run-as.
+          grep -E 'FAILED|AssertionError|Exception|What went wrong|Caused by|tests completed|expected' -A3 gradle-emulator.log | head -n 80 | annotate gradle
           adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
+          "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
+          # Android 11+ blocks shell access to Android/data, so the debuggable app's files are read with run-as.
           mkdir -p highlight-evidence
           for f in results.txt gap-2500.png; do
             "$adb" exec-out run-as org.lineageos.recorder.dev cat "files/highlight-evidence/$f" > "highlight-evidence/$f" \
               || echo "::warning::could not read $f from the emulator"
           done
-          # The same rows as annotations, so they can be read without the artifact
-          "$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: /::notice title=highlight::/p'
           exit $status
 
     - name: Upload test reports
