@@ -28,25 +28,26 @@ fi
 ./gradlew :app:connectedDebugAndroidTest --stacktrace > gradle-emulator.log 2>&1
 status=$?
 notice stage "gradle exit $status, $(wc -l < gradle-emulator.log) lines"
-tail -n 60 gradle-emulator.log | annotate gradle
+# The failure line can be far from the end of the log, so the key lines are taken from the whole log.
+grep -E 'FAILED|What went wrong|AssertionError|Exception|expected|highlight per position|seek=' -A4 gradle-emulator.log \
+    | head -n 120 | annotate gradle
+tail -n 20 gradle-emulator.log | annotate gradle-tail
 
 adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
 "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
 
-# Android 11+ blocks shell access to Android/data; the debuggable app's files are read with run-as.
+# The app is uninstalled when connectedDebugAndroidTest finishes, so its files cannot be read here.
+# The test logs every row with the tag GKUI_HL, and logcat keeps them after the run.
 mkdir -p highlight-evidence
-for f in results.txt gap-2500.png; do
-    "$adb" exec-out run-as org.lineageos.recorder.dev cat "files/highlight-evidence/$f" \
-        > "highlight-evidence/$f" 2>/dev/null
-    if [ ! -s "highlight-evidence/$f" ]; then
-        warn evidence "could not read $f from the emulator"
-        continue
-    fi
+"$adb" logcat -d -s GKUI_HL:I | sed -n 's/.*GKUI_HL: //p' > highlight-evidence/results.txt
+if [ ! -s highlight-evidence/results.txt ]; then
+    warn evidence "no GKUI_HL rows in logcat: the highlight test did not reach its report"
+else
+    cat highlight-evidence/results.txt | annotate highlight
     # Same way the UI workflow reference returns evidence: a Git blob, reachable through the API.
-    base64 -w0 "highlight-evidence/$f" > "highlight-evidence/$f.b64"
     sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" \
-        -f encoding=base64 -F "content=@highlight-evidence/$f.b64" --jq .sha 2>/dev/null)
-    notice evidence-blob "$f ${sha:-upload-failed}"
-done
+        -f encoding=utf-8 -F "content=@highlight-evidence/results.txt" --jq .sha 2>/dev/null)
+    notice evidence-blob "results.txt ${sha:-upload-failed}"
+fi
 
 exit "$status"
