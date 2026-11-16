@@ -32,7 +32,7 @@ fi
 adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
 pkg=org.lineageos.recorder.dev
 runner=androidx.test.runner.AndroidJUnitRunner
-classes="org.lineageos.recorder.asr.ModelSettingsSmokeTest org.lineageos.recorder.asr.PlaybackHighlightDeviceTest"
+classes="org.lineageos.recorder.asr.ModelSettingsSmokeTest org.lineageos.recorder.asr.PlaybackHighlightDeviceTest org.lineageos.recorder.asr.PlaybackLoopDeviceTest"
 
 timeout 900 ./gradlew :app:installDebug :app:installDebugAndroidTest --stacktrace > gradle-install.log 2>&1
 status=$?
