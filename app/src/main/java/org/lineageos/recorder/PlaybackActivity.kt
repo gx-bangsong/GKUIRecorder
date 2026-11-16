@@ -106,6 +106,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val playPauseButton by lazy { findViewById<FloatingActionButton>(R.id.playPauseImageView) }
     private val speedButton by lazy { findViewById<MaterialButton>(R.id.speedButton) }
     private val keepAwakeButton by lazy { findViewById<MaterialButton>(R.id.keepAwakeButton) }
+    private val transcriptKeepAwakeButton by lazy { findViewById<MaterialButton>(R.id.transcriptKeepAwakeButton) }
     private val loopButton by lazy { findViewById<MaterialButton>(R.id.loopButton) }
     private val transcriptHintTextView by lazy { findViewById<TextView>(R.id.transcriptHintTextView) }
     private val transcriptSegmentsContainer by lazy {
@@ -230,10 +231,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             followButton.isVisible = false
             scrollToSegment(activeSegment)
         }
-        keepAwakeButton.setOnClickListener {
-            keepScreenOn = !keepScreenOn
-            renderKeepAwake()
-        }
+        keepAwakeButton.setOnClickListener { toggleKeepAwake() }
+        transcriptKeepAwakeButton.setOnClickListener { toggleKeepAwake() }
         // Stored in PlaybackSession, so it survives tab changes, rotation and background return.
         loopButton.setOnClickListener { PlaybackSession.setLooping(!PlaybackSession.looping) }
 
@@ -561,29 +560,53 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         return "${number}x"
     }
 
-    /** Keeps the screen on while this screen is visible. Off by default. */
+    private fun toggleKeepAwake() {
+        keepScreenOn = !keepScreenOn
+        renderKeepAwake()
+    }
+
+    /**
+     * Keeps the screen on while this screen is visible. Off by default. While it is on, the window
+     * is dimmed to [KEEP_AWAKE_BRIGHTNESS]: a static bar or transcript on an AMOLED panel can burn in
+     * when it stays bright for hours. The user's brightness comes back when the option is off.
+     */
     private fun renderKeepAwake() {
         if (keepScreenOn) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
-        val background = if (keepScreenOn) {
-            MaterialColors.getColor(
-                keepAwakeButton,
-                com.google.android.material.R.attr.colorSecondaryContainer,
-            )
+        val attributes = window.attributes
+        attributes.screenBrightness = if (keepScreenOn) {
+            KEEP_AWAKE_BRIGHTNESS
+        } else {
+            WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+        }
+        window.attributes = attributes
+        styleKeepAwake(keepAwakeButton)
+        styleKeepAwake(transcriptKeepAwakeButton)
+    }
+
+    /** Checked state, colour and spoken state, so the choice is not shown by colour alone. */
+    private fun styleKeepAwake(button: MaterialButton) {
+        val on = keepScreenOn
+        button.isCheckable = true
+        button.isChecked = on
+        button.stateDescription = getString(
+            if (on) R.string.playback_keep_screen_on_state_on else R.string.playback_keep_screen_on_state_off,
+        )
+        val background = if (on) {
+            MaterialColors.getColor(button, com.google.android.material.R.attr.colorSecondaryContainer)
         } else {
             Color.TRANSPARENT
         }
-        val iconColor = if (keepScreenOn) {
+        val iconColor = if (on) {
             com.google.android.material.R.attr.colorOnSecondaryContainer
         } else {
             com.google.android.material.R.attr.colorOnSurfaceVariant
         }
-        keepAwakeButton.backgroundTintList = ColorStateList.valueOf(background)
-        keepAwakeButton.iconTint = ColorStateList.valueOf(MaterialColors.getColor(keepAwakeButton, iconColor))
-        keepAwakeButton.isSelected = keepScreenOn
+        button.backgroundTintList = ColorStateList.valueOf(background)
+        button.iconTint = ColorStateList.valueOf(MaterialColors.getColor(button, iconColor))
     }
 
     /** Called on every manual or automatic progress change. Reads the real player position. */
@@ -988,6 +1011,9 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         private const val WAVEFORM_BINS = 240
         private const val KEY_SPEED = "playback_speed"
         private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
+
+        /** Window brightness while keep-awake is on. Limits burn-in on AMOLED panels. */
+        private const val KEEP_AWAKE_BRIGHTNESS = 0.2f
         private const val SPEED_MIN = 0.5f
         private const val SPEED_MAX = 3f
         private const val SPEED_EPSILON = 0.001f

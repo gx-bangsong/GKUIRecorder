@@ -228,6 +228,20 @@
                         android:layout_height="wrap_content"
                         android:text="@string/transcribe"
                         android:visibility="gone" />
+
+                    <!-- Same option as the bottom bar, so it can be reached while reading the transcript -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/transcriptKeepAwakeButton"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="4dp"
+                        android:contentDescription="@string/playback_keep_screen_on"
+                        android:minWidth="48dp"
+                        android:padding="0dp"
+                        app:icon="@drawable/ic_keep_screen_on"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp" />
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
