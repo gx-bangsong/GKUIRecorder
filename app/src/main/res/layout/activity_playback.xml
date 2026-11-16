@@ -329,17 +329,16 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- Keep the screen on while reading along. Off by default. Balances the speed button on the right -->
+            <!-- Keep the screen on while reading along. Off by default. Icon-only, like the loop button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/keepAwakeButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="4dp"
                 android:contentDescription="@string/playback_keep_screen_on"
-                android:gravity="start|center_vertical"
-                android:minWidth="0dp"
-                android:text=""
+                android:minWidth="48dp"
+                android:padding="0dp"
                 app:icon="@drawable/ic_keep_screen_on"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp" />
@@ -360,7 +359,7 @@
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp">
+                android:layout_marginEnd="8dp">
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/rewindButton"
@@ -400,7 +399,7 @@
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp">
+                android:layout_marginStart="8dp">
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/forwardButton"
@@ -425,13 +424,14 @@
                     android:importantForAccessibility="no" />
             </FrameLayout>
 
+            <!-- Fixed width, never squeezed: the label must stay on one line -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/speedButton"
                 style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end|center_vertical"
+                android:minWidth="48dp"
+                android:singleLine="true"
                 android:text="1x" />
         </LinearLayout>
     </LinearLayout>

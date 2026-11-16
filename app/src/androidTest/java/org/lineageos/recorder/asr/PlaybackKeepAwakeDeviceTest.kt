@@ -72,9 +72,37 @@ class PlaybackKeepAwakeDeviceTest {
                 instrumentation.waitForIdleSync()
 
                 // Layout: the row must not clip or overlap.
-                val problems = layoutProblems(scenario)
+                val problems = layoutProblems(
+                    scenario,
+                    listOf(
+                        R.id.copyTranscriptButton,
+                        R.id.exportTranscriptButton,
+                        R.id.transcriptActionButton,
+                        R.id.transcriptKeepAwakeButton,
+                    ),
+                )
                 report("layout problems=${problems.size} ${problems.joinToString("; ")}")
                 assertTrue("transcript row layout: $problems", problems.isEmpty())
+
+                // Bottom bar: no clipping, nothing off screen, nothing overlapping, speed label on one line.
+                val bottom = layoutProblems(
+                    scenario,
+                    listOf(
+                        R.id.keepAwakeButton,
+                        R.id.loopButton,
+                        R.id.rewindButton,
+                        R.id.playPauseImageView,
+                        R.id.forwardButton,
+                        R.id.speedButton,
+                    ),
+                )
+                var speedLines = -1
+                scenario.onActivity { activity ->
+                    speedLines = activity.findViewById<android.widget.TextView>(R.id.speedButton).lineCount
+                }
+                report("bottom problems=${bottom.size} ${bottom.joinToString("; ")} speedLines=$speedLines")
+                assertTrue("bottom bar layout: $bottom", bottom.isEmpty())
+                assertEquals("speed label must stay on one line", 1, speedLines)
 
                 // Off by default: no window flag, and the window keeps the user's brightness.
                 val offFlag = keepFlagOn(scenario)
@@ -113,16 +141,10 @@ class PlaybackKeepAwakeDeviceTest {
     }
 
     /** Problems in the transcript action row: clipped buttons, buttons outside the screen, overlaps. */
-    private fun layoutProblems(scenario: ActivityScenario<PlaybackActivity>): List<String> {
+    private fun layoutProblems(scenario: ActivityScenario<PlaybackActivity>, ids: List<Int>): List<String> {
         val problems = mutableListOf<String>()
         scenario.onActivity { activity ->
             val decor = activity.window.decorView
-            val ids = listOf(
-                R.id.copyTranscriptButton,
-                R.id.exportTranscriptButton,
-                R.id.transcriptActionButton,
-                R.id.transcriptKeepAwakeButton,
-            )
             val views = ids.map { activity.findViewById<View>(it) }.filter { it.isShown }
             val rects = views.associateWith { view -> Rect().also { view.getGlobalVisibleRect(it) } }
             val names = views.associateWith { view -> activity.resources.getResourceEntryName(view.id) }
