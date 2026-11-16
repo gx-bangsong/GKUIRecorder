@@ -65,27 +65,16 @@ for cls in $classes; do
     fi
 done
 notice stage "instrumentation result $result"
-# The full output is returned as Git blobs, so the failing stack is read without log or artifact
-# downloads. Annotations are not used for it: the API keeps only some lines.
-for f in instrument.log gradle-install.log; do
-    sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" \
-        -f encoding=utf-8 -F "content=@$f" --jq .sha 2>/dev/null)
-    notice blob-$f "${sha:-upload-failed}"
-done
-notice stage "instrument log $(wc -l < instrument.log) lines"
-
 notice stage "reading logcat"
 timeout 120 "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
 notice stage "logcat done"
 
 # Layout screenshots saved by PlaybackKeepAwakeDeviceTest. The app stays installed, so run-as can
-# read them. Each PNG is returned as a Git blob (base64), so it can be read through the API.
+# read them. They are uploaded as Git blobs by emulator-evidence.sh, in a separate step, because
+# the annotations of one step are capped and hide the blob ids.
 for name in layout-transcript-off layout-transcript-on; do
     if "$adb" exec-out run-as "$pkg" cat "files/$name.png" > "$name.png" 2>/dev/null && [ -s "$name.png" ]; then
-        base64 -w0 "$name.png" > "$name.b64"
-        sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" \
-            -f encoding=base64 -F "content=@$name.b64" --jq .sha 2>/dev/null)
-        notice screenshot-blob-$name "${sha:-upload-failed}"
+        notice pulled "$name.png $(wc -c < "$name.png") bytes"
     else
         warn screenshot "$name.png not pulled"
         result=1
@@ -104,10 +93,6 @@ if [ ! -s highlight-evidence/results.txt ]; then
     warn evidence "no GKUI_HL rows in logcat: the highlight test did not reach its report"
 else
     cat highlight-evidence/results.txt | annotate highlight
-    # Returned as a Git blob, reachable through the API.
-    sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" \
-        -f encoding=utf-8 -F "content=@highlight-evidence/results.txt" --jq .sha 2>/dev/null)
-    notice evidence-blob "results.txt ${sha:-upload-failed}"
 fi
 
 exit "$result"
