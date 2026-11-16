@@ -32,7 +32,7 @@ fi
 adb=$(command -v adb || echo "$ANDROID_HOME/platform-tools/adb")
 pkg=org.lineageos.recorder.dev
 runner=androidx.test.runner.AndroidJUnitRunner
-classes="org.lineageos.recorder.asr.ModelSettingsSmokeTest org.lineageos.recorder.asr.PlaybackHighlightDeviceTest org.lineageos.recorder.asr.PlaybackLoopDeviceTest"
+classes="org.lineageos.recorder.asr.ModelSettingsSmokeTest org.lineageos.recorder.asr.PlaybackHighlightDeviceTest org.lineageos.recorder.asr.PlaybackLoopDeviceTest org.lineageos.recorder.asr.PlaybackKeepAwakeDeviceTest"
 
 timeout 900 ./gradlew :app:installDebug :app:installDebugAndroidTest --stacktrace > gradle-install.log 2>&1
 status=$?
@@ -77,6 +77,20 @@ notice stage "instrument log $(wc -l < instrument.log) lines"
 notice stage "reading logcat"
 timeout 120 "$adb" logcat -d | grep -E 'GKUI_HL|AndroidRuntime' | tail -n 80 | annotate logcat
 notice stage "logcat done"
+
+# Layout screenshots saved by PlaybackKeepAwakeDeviceTest. The app stays installed, so run-as can
+# read them. Each PNG is returned as a Git blob (base64), so it can be read through the API.
+for name in layout-transcript-off layout-transcript-on; do
+    if "$adb" exec-out run-as "$pkg" cat "files/$name.png" > "$name.png" 2>/dev/null && [ -s "$name.png" ]; then
+        base64 -w0 "$name.png" > "$name.b64"
+        sha=$(gh api --method POST "repos/$GITHUB_REPOSITORY/git/blobs" \
+            -f encoding=base64 -F "content=@$name.b64" --jq .sha 2>/dev/null)
+        notice screenshot-blob-$name "${sha:-upload-failed}"
+    else
+        warn screenshot "$name.png not pulled"
+        result=1
+    fi
+done
 
 # The test logs every row with the tag GKUI_HL, and logcat keeps them after the run.
 mkdir -p highlight-evidence
