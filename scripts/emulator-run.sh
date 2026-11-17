@@ -44,7 +44,12 @@ if [ "$status" -ne 0 ]; then
 fi
 
 # Remove screenshots left by an earlier run, so a failed test cannot return an old picture.
-"$adb" shell run-as "$pkg" rm -f files/layout-transcript-off.png files/layout-transcript-on.png > /dev/null 2>&1 || true
+if "$adb" shell run-as "$pkg" rm -f files/layout-transcript-off.png files/layout-transcript-on.png; then
+    notice cleanup "old screenshots removed"
+else
+    warn cleanup "could not remove old screenshots"
+fi
+notice cleanup "files before tests: $("$adb" shell run-as "$pkg" ls files 2>&1 | tr '\n' ' ' | cut -c1-300)"
 
 # One class per run. -w waits for the run to finish; the host timeout stops a hang.
 # A class that does not finish in time counts as a failure, and the next class still runs.
