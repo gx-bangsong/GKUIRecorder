@@ -5,6 +5,9 @@ name: unit-test
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: write
+
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -57,6 +60,12 @@ jobs:
             echo "::error title=lint.log (tail)::${msg}"
           done
         fi
+
+    - name: Return lint report as Git blobs
+      if: always()
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: sh scripts/lint-evidence.sh
 
     - name: Upload test and lint reports
       if: always()
