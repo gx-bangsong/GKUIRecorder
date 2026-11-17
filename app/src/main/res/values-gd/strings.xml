@@ -53,5 +53,5 @@
     <string name="delete_selected_title">Sguab às na thagh thu</string>
     <string name="delete_selected_message">A bheil thu cinnteach gu bheil thu airson na clàraidhean a thagh thu a sguabadh às? Cha ghabh seo a neo-dhèanamh</string>
     <string name="asr_moderate_pacing_title">Slaodaich aig teas meadhanach</string>
-    <string name="asr_moderate_pacing_note">Nuair a tha e dheth, ruithidh an sgrìobhadh-a-mach aig làn luaths aig teas meadhanach. Cumaidh teas mòr air a stad gus am fuaraich an inneal, agus faodaidh tu fhèin a thòiseachadh a-rithist.</string>
+    <string name="asr_moderate_pacing_note">Nuair a tha e dheth, ruithidh an tar-sgrìobhadh aig làn luaths aig teas meadhanach. Cumaidh teas mòr air a stad gus am fuaraich an inneal, agus faodaidh tu fhèin a thòiseachadh a-rithist.</string>
 </resources>
