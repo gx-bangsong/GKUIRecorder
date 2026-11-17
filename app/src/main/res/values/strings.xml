@@ -165,7 +165,7 @@
     <string name="transcript_title">Transcript</string>
     <string name="transcript_empty">The transcript is empty</string>
     <string name="transcript_export">Export TXT</string>
-    <string name="transcript_redo">Transcribe again</string>
+    <string name="transcript_redo">Run again</string>
     <string name="transcript_copy">Copy</string>
     <string name="copied">Copied</string>
     <string name="quick_share_none">No WeChat, QQ or DingTalk found. Using system share instead.</string>
