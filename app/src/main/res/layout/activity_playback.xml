@@ -294,7 +294,9 @@
             android:layout_height="wrap_content"
             android:valueFrom="0"
             android:valueTo="1"
-            android:value="0" />
+            android:value="0"
+            app:thumbRadius="8dp"
+            app:trackHeight="6dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -328,20 +330,6 @@
             android:layout_marginTop="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-
-            <!-- Keep the screen on while reading along. Off by default. Icon-only, like the loop button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/keepAwakeButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="4dp"
-                android:contentDescription="@string/playback_keep_screen_on"
-                android:minWidth="48dp"
-                android:padding="0dp"
-                app:icon="@drawable/ic_keep_screen_on"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp" />
 
             <!-- Repeat this recording from the start when it ends. Off by default. Shared by the audio and transcript tabs -->
             <com.google.android.material.button.MaterialButton
@@ -390,6 +378,7 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/play"
                 app:backgroundTint="?attr/colorTertiary"
+                app:shapeAppearanceOverlay="@style/ShapeOverlay.PlayCircle"
                 app:elevation="0dp"
                 app:fabCustomSize="88dp"
                 app:maxImageSize="44dp"
@@ -433,6 +422,20 @@
                 android:minWidth="48dp"
                 android:singleLine="true"
                 android:text="1x" />
+
+            <!-- Keep the screen on while reading along. Off by default. Icon-only, on the right to balance the loop button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/keepAwakeButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="@string/playback_keep_screen_on"
+                android:minWidth="48dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_keep_screen_on"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
         </LinearLayout>
     </LinearLayout>
 

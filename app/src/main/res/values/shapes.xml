@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: The LineageOS Project -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<resources>
+    <!-- Round play button: a 50% corner on every side makes a circle at any size. -->
+    <style name="ShapeOverlay.PlayCircle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>
