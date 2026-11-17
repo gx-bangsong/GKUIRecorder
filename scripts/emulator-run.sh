@@ -43,6 +43,9 @@ if [ "$status" -ne 0 ]; then
     exit "$status"
 fi
 
+# Remove screenshots left by an earlier run, so a failed test cannot return an old picture.
+"$adb" shell run-as "$pkg" rm -f files/layout-transcript-off.png files/layout-transcript-on.png > /dev/null 2>&1 || true
+
 # One class per run. -w waits for the run to finish; the host timeout stops a hang.
 # A class that does not finish in time counts as a failure, and the next class still runs.
 : > instrument.log
