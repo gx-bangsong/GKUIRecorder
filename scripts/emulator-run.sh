@@ -44,7 +44,7 @@ if [ "$status" -ne 0 ]; then
 fi
 
 # Remove screenshots left by an earlier run, so a failed test cannot return an old picture.
-if "$adb" shell run-as "$pkg" rm -f files/layout-transcript-off.png files/layout-transcript-on.png; then
+if "$adb" shell run-as "$pkg" rm -f files/layout-transcript-off.png files/layout-transcript-on.png files/layout-transcript-highlight.png; then
     notice cleanup "old screenshots removed"
 else
     warn cleanup "could not remove old screenshots"
@@ -80,7 +80,7 @@ notice stage "logcat done"
 # Layout screenshots saved by PlaybackKeepAwakeDeviceTest. The app stays installed, so run-as can
 # read them. They are uploaded as Git blobs by emulator-evidence.sh, in a separate step, because
 # the annotations of one step are capped and hide the blob ids.
-for name in layout-transcript-off layout-transcript-on; do
+for name in layout-transcript-off layout-transcript-on layout-transcript-highlight; do
     if "$adb" exec-out run-as "$pkg" cat "files/$name.png" > "$name.png" 2>/dev/null && [ -s "$name.png" ]; then
         notice pulled "$name.png $(wc -c < "$name.png") bytes"
     else

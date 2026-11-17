@@ -124,6 +124,11 @@ class PlaybackKeepAwakeDeviceTest {
                 assertEquals(listOf(true, true), checks)
                 saveScreenshot("layout-transcript-on")
 
+                // Highlight check: seek into the first sentence, so its active block is on screen.
+                scenario.onActivity { PlaybackSession.seekTo(1_500L, play = false) }
+                Thread.sleep(1_000L)
+                saveScreenshot("layout-transcript-highlight")
+
                 // Off from the bottom bar: the transcript button follows, and the dimming is undone.
                 onView(withId(R.id.keepAwakeButton)).perform(click())
                 instrumentation.waitForIdleSync()

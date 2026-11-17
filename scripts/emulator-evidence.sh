@@ -28,7 +28,7 @@ upload_png() {
 for f in instrument.log gradle-install.log highlight-evidence/results.txt; do
     if [ -s "$f" ]; then upload_text "$f"; else warn evidence "$f missing"; fi
 done
-for f in layout-transcript-off.png layout-transcript-on.png; do
+for f in layout-transcript-off.png layout-transcript-on.png layout-transcript-highlight.png; do
     if [ -s "$f" ]; then upload_png "$f"; else warn evidence "$f missing"; fi
 done
 exit 0
