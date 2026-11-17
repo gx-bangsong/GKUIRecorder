@@ -51,6 +51,7 @@ class MemoryTranscriptStore : TranscriptStore {
 class GateHarness(
     private val statusByCall: (Int) -> Int = { STATUS_NONE },
     private val recordingAt: (Long) -> Boolean = { false },
+    private val pacing: Boolean = true,
 ) {
     var now = 0L
     var thermalCalls = 0
@@ -87,6 +88,7 @@ class GateHarness(
         onPhaseChanged = { phases += it },
         metrics = metrics,
         userPaused = { userPausedFlag },
+        moderatePacing = { pacing },
     )
 }
 
@@ -417,5 +419,33 @@ class RunStateAndCheckpointTest {
             "chunks=2 computeMs=200 restMs=250 waitMs=2000",
             metrics.summary(),
         )
+    }
+}
+
+class ModeratePacingSwitchTest {
+    @Test
+    fun switchOffKeepsFullSpeedAtModerateHeat() {
+        val h = GateHarness(statusByCall = { STATUS_MODERATE }, pacing = false)
+        h.gate.beforeInference()
+        assertFalse("no rest without moderate pacing", h.log.contains("sleep"))
+        assertFalse(h.phases.contains(RunPhase.REDUCED))
+    }
+
+    @Test
+    fun switchOnStillRestsAtModerateHeat() {
+        val h = GateHarness(statusByCall = { STATUS_MODERATE }, pacing = true)
+        h.gate.beforeInference()
+        assertTrue("moderate pacing rests", h.log.contains("sleep"))
+        assertTrue(h.phases.contains(RunPhase.REDUCED))
+    }
+
+    @Test
+    fun switchOffStillPausesAtSevereHeat() {
+        val h = GateHarness(
+            statusByCall = { call -> if (call <= 3) STATUS_SEVERE else STATUS_NONE },
+            pacing = false,
+        )
+        h.gate.beforeInference()
+        assertTrue("severe heat still waits", h.entered.contains(RunPhase.WAITING_COOL))
     }
 }

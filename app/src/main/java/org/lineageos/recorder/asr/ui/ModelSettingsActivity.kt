@@ -66,6 +66,9 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
 
     private val languageButton by lazy { findViewById<MaterialButton>(R.id.languageButton) }
     private val threadsButton by lazy { findViewById<MaterialButton>(R.id.threadsButton) }
+    private val moderatePacingSwitch by lazy {
+        findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.moderatePacingSwitch)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +102,10 @@ class ModelSettingsActivity : AppCompatActivity(R.layout.activity_model_settings
         )
         promptedWorkId = savedInstanceState?.getString(STATE_PROMPTED)
         threadsButton.setOnClickListener { pickThreads() }
+        moderatePacingSwitch.isChecked = preferences.asrModerateHeatPacing
+        moderatePacingSwitch.setOnCheckedChangeListener { _, checked ->
+            preferences.asrModerateHeatPacing = checked
+        }
         renderOptions()
 
         repository.downloadWork(model.id).observe(this) { infos ->

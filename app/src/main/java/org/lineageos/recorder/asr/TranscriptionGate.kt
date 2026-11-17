@@ -81,6 +81,8 @@ class TranscriptionGate(
     private val config: PacingConfig = PacingConfig(),
     /** True while the user has paused this run. Checked between chunks, like the heat pause. */
     private val userPaused: () -> Boolean = { false },
+    /** False turns off the moderate-heat rest. Severe-heat pauses are not affected. */
+    private val moderatePacing: () -> Boolean = { true },
 ) {
     private val governor = ThermalGovernor(config.stableMs)
     private var phase = RunPhase.FULL
@@ -96,7 +98,7 @@ class TranscriptionGate(
                 paused -> RunPhase.WAITING_USER
                 recording -> RunPhase.WAITING_RECORDING
                 action == ThermalAction.PAUSED -> RunPhase.WAITING_COOL
-                action == ThermalAction.REDUCED -> RunPhase.REDUCED
+                action == ThermalAction.REDUCED && moderatePacing() -> RunPhase.REDUCED
                 else -> RunPhase.FULL
             }
             if (next != phase) {

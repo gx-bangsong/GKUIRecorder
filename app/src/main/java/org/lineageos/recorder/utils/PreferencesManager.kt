@@ -93,6 +93,14 @@ class PreferencesManager(context: Context) {
         }
 
     /** CPU threads for the offline model (1 to 4). Lower when the phone is warm. */
+    /**
+     * Slow down at moderate heat (a short rest between chunks). Off lets transcription keep full
+     * speed at moderate heat. Severe heat still pauses, whatever this is set to.
+     */
+    var asrModerateHeatPacing: Boolean
+        get() = preferences.getBoolean(PREF_ASR_MODERATE_PACING, true)
+        set(value) = preferences.edit().putBoolean(PREF_ASR_MODERATE_PACING, value).apply()
+
     var asrThreads: Int
         get() = preferences.getInt(PREF_ASR_THREADS, RecognitionOptions.DEFAULT_THREADS)
             .coerceIn(RecognitionOptions.MIN_THREADS, RecognitionOptions.MAX_THREADS)
@@ -147,6 +155,7 @@ class PreferencesManager(context: Context) {
         private const val PREF_FILENAME_TEMPLATE = "filename_template"
         private const val PREF_STORAGE_FOLDER = "storage_folder"
         private const val PREF_ASR_LANGUAGE = "asr_language"
+        private const val PREF_ASR_MODERATE_PACING = "asr_moderate_pacing"
         private const val PREF_ASR_THREADS = "asr_threads"
         private const val PREF_CALL_RECORDING = "call_recording"
         private const val PREF_CALL_RECORDING_AUTO = "call_recording_auto"

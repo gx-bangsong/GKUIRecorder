@@ -101,6 +101,8 @@
     <string name="transcript_empty">转写结果为空</string>
     <string name="transcript_export">导出 TXT</string>
     <string name="transcript_redo">重新转写</string>
+    <string name="asr_moderate_pacing_title">中度过热时降速</string>
+    <string name="asr_moderate_pacing_note">关闭后，中度过热时转写保持全速。严重过热时仍会暂停，待设备降温后可以由你手动继续。</string>
     <string name="transcript_copy">复制</string>
     <string name="copied">已复制</string>
     <string name="quick_share_none">未检测到微信、QQ、钉钉等应用，已改用系统分享</string>
