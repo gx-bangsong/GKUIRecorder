@@ -13,4 +13,6 @@
     <string name="sound_channel_desc">ಧ್ವನಿಮುದ್ರಿಸುವಾಗ ನಿರಂತರ ಸೂಚನೆ ಮತ್ತು ಅಂತ್ಯವಾದಾಗ ಸೂಚನೆ</string>
     <string name="dialog_permissions_ask">ಮತ್ತೆ ಕೇಳು</string>
     <string name="dialog_permissions_dismiss">ವಜಾಮಾಡು</string>
+    <string name="asr_moderate_pacing_title">ಮಧ್ಯಮ ಬಿಸಿಯಲ್ಲಿ ನಿಧಾನಗೊಳಿಸಿ</string>
+    <string name="asr_moderate_pacing_note">ಆಫ್ ಮಾಡಿದಾಗ, ಮಧ್ಯಮ ಬಿಸಿಯಲ್ಲಿಯೂ ಪ್ರತಿಲೇಖನ ಪೂರ್ಣ ವೇಗದಲ್ಲಿ ನಡೆಯುತ್ತದೆ. ತೀವ್ರ ಬಿಸಿಯಲ್ಲಿ ಸಾಧನ ತಣ್ಣಗಾಗುವವರೆಗೆ ಅದು ವಿರಾಮಗೊಳ್ಳುತ್ತದೆ, ಮತ್ತು ನೀವೇ ಅದನ್ನು ಮುಂದುವರಿಸಬಹುದು.</string>
 </resources>

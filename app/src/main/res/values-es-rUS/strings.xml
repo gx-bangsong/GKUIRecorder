@@ -25,4 +25,6 @@
     <string name="dialog_permissions_dismiss">Descartar</string>
     <string name="snack_permissions_no_permission">Permisos necesarios denegados, actívelos desde la aplicación de Ajustes para iniciar la grabación</string>
     <string name="main_sound_action">Grabar sonido</string>
+    <string name="asr_moderate_pacing_title">Ralentizar con calor moderado</string>
+    <string name="asr_moderate_pacing_note">Desactivado, la transcripción mantiene la velocidad completa con calor moderado. El calor intenso sigue pausándola hasta que el dispositivo se enfríe, y puedes reanudarla tú mismo.</string>
 </resources>

@@ -60,4 +60,6 @@
         <item quantity="one">%d të përzgjedhur</item>
         <item quantity="other">%d të përzgjedhur</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Ngadalëso në nxehtësi të moderuar</string>
+    <string name="asr_moderate_pacing_note">Kur është çaktivizuar, transkriptimi vazhdon me shpejtësi të plotë në nxehtësi të moderuar. Nxehtësia e fortë ende e pauzon atë derisa pajisja të ftohet, dhe mund ta rifillosh vetë.</string>
 </resources>

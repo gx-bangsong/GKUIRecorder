@@ -40,4 +40,6 @@
     <string name="list_edit_title">Uredite naziv snimke</string>
     <string name="list_edit_confirm">Promjeni</string>
     <string name="list_item_menu">Više radnji</string>
+    <string name="asr_moderate_pacing_title">Usporavanje pri umjerenom zagrijavanju</string>
+    <string name="asr_moderate_pacing_note">Kad je isključeno, transkripcija radi punom brzinom pri umjerenom zagrijavanju. Jako zagrijavanje i dalje je pauzira dok se uređaj ne ohladi, a možete je sami nastaviti.</string>
 </resources>

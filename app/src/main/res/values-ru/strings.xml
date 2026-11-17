@@ -62,4 +62,6 @@
         <item quantity="many">%d выбрано</item>
         <item quantity="other">%d выбрано</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Замедлять при умеренном нагреве</string>
+    <string name="asr_moderate_pacing_note">Если выключено, транскрибирование работает на полной скорости при умеренном нагреве. Сильный нагрев по-прежнему приостанавливает его, пока устройство не остынет, и вы можете возобновить его вручную.</string>
 </resources>

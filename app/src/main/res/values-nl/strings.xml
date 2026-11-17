@@ -60,4 +60,6 @@
         <item quantity="one">%d geselekteerd</item>
         <item quantity="other">%d geselecteerd</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Vertragen bij matige oververhitting</string>
+    <string name="asr_moderate_pacing_note">Als dit uit staat, draait de transcriptie bij matige oververhitting op volle snelheid. Ernstige oververhitting pauzeert de transcriptie nog steeds tot het apparaat is afgekoeld, en je kunt deze zelf hervatten.</string>
 </resources>

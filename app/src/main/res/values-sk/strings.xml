@@ -40,4 +40,6 @@
     <string name="list_edit_title">Upraviť názov nahrávky</string>
     <string name="list_edit_confirm">Zmeniť</string>
     <string name="list_item_menu">Ďalšie akcie</string>
+    <string name="asr_moderate_pacing_title">Spomaliť pri miernom prehriatí</string>
+    <string name="asr_moderate_pacing_note">Keď je vypnuté, prepis beží plnou rýchlosťou pri miernom prehriatí. Silné prehriatie ho stále pozastaví, kým sa zariadenie neochladí, a môžete ho pokračovať sami.</string>
 </resources>

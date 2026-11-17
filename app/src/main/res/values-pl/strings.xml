@@ -62,4 +62,6 @@
         <item quantity="many">Wybrano: %d</item>
         <item quantity="other">Wybrano: %d</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Zwalniaj przy umiarkowanym przegrzaniu</string>
+    <string name="asr_moderate_pacing_note">Po wyłączeniu transkrypcja działa z pełną szybkością przy umiarkowanym przegrzaniu. Silne przegrzanie nadal ją wstrzymuje, aż urządzenie ostygnie, a wznowisz ją ręcznie.</string>
 </resources>

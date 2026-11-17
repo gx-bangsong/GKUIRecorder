@@ -35,4 +35,6 @@
     <string name="list_item_menu">Ugar n tigawin</string>
     <string name="delete_all_title">Kkes akk</string>
     <string name="delete_selected_title">Kkes afran</string>
+    <string name="asr_moderate_pacing_title">Slow down at moderate heat</string>
+    <string name="asr_moderate_pacing_note">When off, transcription keeps full speed at moderate heat. Severe heat still pauses until the device cools, and you can resume it yourself.</string>
 </resources>

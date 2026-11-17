@@ -21,4 +21,6 @@
     <string name="dialog_permissions_ask">Vra weer</string>
     <string name="dialog_permissions_dismiss">Maak toe</string>
     <string name="snack_permissions_no_permission">Nodige toestemmings geweier, aktiveer hulle vanaf Instellings toep om die opname te begin</string>
+    <string name="asr_moderate_pacing_title">Vertraag by matige hitte</string>
+    <string name="asr_moderate_pacing_note">As dit af is, bly transkripsie by matige hitte op volle spoed. Ernstige hitte pouseer steeds tot die toestel afkoel, en jy kan dit self hervat.</string>
 </resources>

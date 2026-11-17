@@ -54,4 +54,6 @@
         <item quantity="one">%d markerad</item>
         <item quantity="other">%d markerade</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Sakta ned vid måttlig överhettning</string>
+    <string name="asr_moderate_pacing_note">När detta är avstängt körs transkriberingen i full hastighet vid måttlig överhettning. Kraftig överhettning pausar den fortfarande tills enheten har svalnat, och du kan återuppta den själv.</string>
 </resources>

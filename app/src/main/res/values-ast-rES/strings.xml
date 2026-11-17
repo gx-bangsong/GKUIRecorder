@@ -44,4 +44,6 @@
     <string name="delete_all_message">¿De xuru que quies desaniciar toles grabaciones? Esta aición nun se pue desfacer</string>
     <string name="delete_selected_title">Desaniciu de lo seleicionao</string>
     <string name="delete_selected_message">¿De xuru que quies desaniciar les grabaciones seleicionaes? Esta aición nun se pue desfacer</string>
+    <string name="asr_moderate_pacing_title">Ralentizar con calor moderado</string>
+    <string name="asr_moderate_pacing_note">Desactivado, la transcripción mantiene la velocidad completa con calor moderado. El calor intenso sigue pausándola hasta que el dispositivo se enfríe, y puedes reanudarla tú mismo.</string>
 </resources>

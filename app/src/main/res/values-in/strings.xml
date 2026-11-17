@@ -59,4 +59,6 @@
     <plurals name="recording_selection_count">
         <item quantity="other">%d dipilih</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Perlambat saat panas sedang</string>
+    <string name="asr_moderate_pacing_note">Saat dimatikan, transkripsi tetap berjalan penuh saat panas sedang. Panas tinggi tetap menjedanya hingga perangkat dingin, dan Anda dapat melanjutkannya sendiri.</string>
 </resources>

@@ -59,4 +59,6 @@
     <plurals name="recording_selection_count">
         <item quantity="other">%d件を選択中</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">中程度の発熱時は減速</string>
+    <string name="asr_moderate_pacing_note">オフにすると、中程度の発熱時も文字起こしは全速で動作します。強い発熱時は、機器が冷えるまで引き続き一時停止し、手動で再開できます。</string>
 </resources>

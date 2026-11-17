@@ -60,4 +60,6 @@
         <item quantity="one">%d seleccionado</item>
         <item quantity="other">%d seleccionados</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Ralentizar con calor moderado</string>
+    <string name="asr_moderate_pacing_note">Desactivado, la transcripción mantiene la velocidad completa con calor moderado. El calor intenso sigue pausándola hasta que el dispositivo se enfríe, y puedes reanudarla tú mismo.</string>
 </resources>

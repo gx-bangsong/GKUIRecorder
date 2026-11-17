@@ -61,4 +61,6 @@
         <item quantity="two">%d נבחרו</item>
         <item quantity="other">%d נבחרו</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">האטה בחום בינוני</string>
+    <string name="asr_moderate_pacing_note">כאשר האפשרות כבויה, התמלול ממשיך במהירות מלאה בחום בינוני. חום עז עדיין עוצר אותו עד שהמכשיר יתקרר, ואפשר להמשיך אותו ידנית.</string>
 </resources>

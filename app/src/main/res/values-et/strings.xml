@@ -20,4 +20,6 @@
     <string name="list_edit_title">Muuda salvestuse nime</string>
     <string name="list_edit_confirm">Muuda</string>
     <string name="list_item_menu">Veel toiminguid</string>
+    <string name="asr_moderate_pacing_title">Aeglusta mõõduka kuumenemise korral</string>
+    <string name="asr_moderate_pacing_note">Kui see on välja lülitatud, töötab transkribeerimine mõõduka kuumenemise korral täiskiirusel. Tugev kuumenemine peatab selle endiselt seni, kuni seade jahtub, ja selle saab käsitsi jätkata.</string>
 </resources>

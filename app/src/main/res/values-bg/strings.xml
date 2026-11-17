@@ -60,4 +60,6 @@
         <item quantity="one">%d избран</item>
         <item quantity="other">%d избрани</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Забавяне при умерено прегряване</string>
+    <string name="asr_moderate_pacing_note">Когато е изключено, транскрибирането работи на пълна скорост при умерено прегряване. При силно прегряване то пак се спира, докато устройството изстине, и можете да го продължите ръчно.</string>
 </resources>

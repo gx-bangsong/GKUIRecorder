@@ -40,4 +40,6 @@
     <string name="list_edit_title">Muokkaa nauhoituksen nimeä</string>
     <string name="list_edit_confirm">Muuta</string>
     <string name="list_item_menu">Lisää toimintoja</string>
+    <string name="asr_moderate_pacing_title">Hidasta kohtalaisessa kuumenemisessa</string>
+    <string name="asr_moderate_pacing_note">Kun tämä on pois päältä, litterointi jatkuu täydellä nopeudella kohtalaisessa kuumenemisessa. Voimakas kuumeneminen keskeyttää sen edelleen, kunnes laite jäähtyy, ja voit jatkaa sitä itse.</string>
 </resources>

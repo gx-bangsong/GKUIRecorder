@@ -60,4 +60,6 @@
         <item quantity="one">%d sélectionné</item>
         <item quantity="other">%d sélectionnés</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Ralentir en cas de chauffe modérée</string>
+    <string name="asr_moderate_pacing_note">Désactivé, la transcription garde sa pleine vitesse en cas de chauffe modérée. Une chauffe forte la met toujours en pause jusqu\'au refroidissement de l\'appareil, et vous pouvez la reprendre vous-même.</string>
 </resources>

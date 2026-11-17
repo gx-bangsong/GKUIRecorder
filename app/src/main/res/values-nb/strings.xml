@@ -23,4 +23,6 @@
     <string name="dialog_permissions_dismiss">Avvis</string>
     <string name="snack_permissions_no_permission">Nødvendige tillatelser ble nektet, aktiver dem fra telefonens innstillinger for å starte å ta opp lyd</string>
     <string name="main_sound_action">Ta opp lyd</string>
+    <string name="asr_moderate_pacing_title">Senk farten ved moderat overoppheting</string>
+    <string name="asr_moderate_pacing_note">Når dette er av, kjører transkripsjonen i full fart ved moderat overoppheting. Sterk overoppheting setter den fortsatt på pause til enheten har kjølt seg ned, og du kan fortsette selv.</string>
 </resources>

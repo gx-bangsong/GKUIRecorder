@@ -60,4 +60,6 @@
         <item quantity="one">%d هەڵبژێردرا</item>
         <item quantity="other">%d هەڵبژێردرا</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">لە کاتی گەرمی مامناوەندا هێدیکردنەوە</string>
+    <string name="asr_moderate_pacing_note">کاتێک داخراوە، گواستنەوەی دەق بە خێرایی تەواو دەڕوات لە گەرمی مامناوەند. گەرمی زۆر هێشتا دەیوەستێنێت تا ئامێرەکە ساردەبێتەوە، و دەتوانیت خۆت بەردەوامی پێ بدەیت.</string>
 </resources>

@@ -25,4 +25,6 @@
     <string name="dialog_permissions_dismiss">Baztertu</string>
     <string name="snack_permissions_no_permission">Beharrezkoak diren baimenak ukatu dira, gaitu itzazu ezarpenen aplikaziotik grabatzen hasteko</string>
     <string name="main_sound_action">Grabatu soinua</string>
+    <string name="asr_moderate_pacing_title">Moteldu bero moderatuan</string>
+    <string name="asr_moderate_pacing_note">Desaktibatuta dagoenean, transkripzioak abiadura osoan jarraitzen du bero moderatuan. Bero handiak oraindik etenarazten du gailua hoztu arte, eta zuk berak berrabia dezakezu.</string>
 </resources>

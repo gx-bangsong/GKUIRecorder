@@ -8,4 +8,6 @@
     <string name="rename">পুনঃনামকরণ</string>
     <string name="settings_title">নিয়ন্ত্রণ</string>
     <string name="list_edit_confirm">পরিবর্তন করুন</string>
+    <string name="asr_moderate_pacing_title">মাঝারি তাপে ধীর করুন</string>
+    <string name="asr_moderate_pacing_note">বন্ধ থাকলে মাঝারি তাপেও ট্রান্সক্রিপশন পূর্ণ গতিতে চলবে। তীব্র তাপে ডিভাইস ঠান্ডা না হওয়া পর্যন্ত এটি থামবে; আপনি নিজে আবার চালু করতে পারবেন।</string>
 </resources>

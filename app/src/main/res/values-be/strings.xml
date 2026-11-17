@@ -27,4 +27,6 @@
     <string name="list_title">Мае запісы</string>
     <string name="list_edit_confirm">Змяніць</string>
     <string name="delete_all_title">Выдаліць усе</string>
+    <string name="asr_moderate_pacing_title">Запавольваць пры ўмераным нагрэве</string>
+    <string name="asr_moderate_pacing_note">Калі выключана, транскрыпцыя працуе на поўнай хуткасці пры ўмераным нагрэве. Моцны нагрэў усё роўна прыпыняе працу, пакуль прылада не астыне, і вы можаце аднавіць яе самі.</string>
 </resources>

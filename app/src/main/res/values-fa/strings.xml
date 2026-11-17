@@ -60,4 +60,6 @@
         <item quantity="one">%Id انتخاب شده</item>
         <item quantity="other">%Id انتخاب شده</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">کند کردن در گرمای متوسط</string>
+    <string name="asr_moderate_pacing_note">وقتی خاموش باشد، رونویسی در گرمای متوسط با سرعت کامل ادامه می‌یابد. گرمای شدید همچنان آن را متوقف می‌کند تا دستگاه خنک شود و می‌توانید خودتان ادامه دهید.</string>
 </resources>

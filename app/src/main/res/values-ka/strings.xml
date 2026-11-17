@@ -56,4 +56,6 @@
     <string name="delete_all_message">ნამდვილად გსურთ ყველა ჩანაწერის წაშლა? ქმედება შეუქცევადია</string>
     <string name="delete_selected_title">შერჩეულის წაშლა</string>
     <string name="delete_selected_message">ნამდვილად გსურთ შერჩეულის წაშლა? ქმედება შეუქცევადია</string>
+    <string name="asr_moderate_pacing_title">შეანელეთ ზომიერი გათბობისას</string>
+    <string name="asr_moderate_pacing_note">გამორთვისას ტრანსკრიბირება ზომიერი გათბობისას სრული სიჩქარით იმუშავებს. ძლიერი გათბობისას ის მაინც დაპაუზდება, სანამ მოწყობილობა არ გაცივდება, და შეგიძლიათ თავად გააგრძელოთ.</string>
 </resources>

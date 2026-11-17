@@ -60,4 +60,6 @@
         <item quantity="one">%d seçildi</item>
         <item quantity="other">%d seçildi</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Orta düzeyde ısınmada yavaşlat</string>
+    <string name="asr_moderate_pacing_note">Kapalıyken, transkripsiyon orta düzeyde ısınmada tam hızda çalışır. Şiddetli ısınmada ise cihaz soğuyana kadar yine duraklatılır ve siz devam ettirebilirsiniz.</string>
 </resources>

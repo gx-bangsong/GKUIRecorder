@@ -60,4 +60,6 @@
         <item quantity="one">%d selecionada</item>
         <item quantity="other">%d selecionadas</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Abrandar com aquecimento moderado</string>
+    <string name="asr_moderate_pacing_note">Desativado, a transcrição mantém a velocidade total com aquecimento moderado. O aquecimento severo continua a pô-la em pausa até o dispositivo arrefecer, e pode retomá-la manualmente.</string>
 </resources>

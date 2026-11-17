@@ -55,4 +55,6 @@
     <string name="delete_all_message">Ertu viss um að þú viljir eyða öllum upptökum? Aðgerðin er ekki afturkallanleg</string>
     <string name="delete_selected_title">Eyða völdu</string>
     <string name="delete_selected_message">Ertu viss um að þú viljir eyða valinni upptöku? Aðgerðin er ekki afturkallanleg</string>
+    <string name="asr_moderate_pacing_title">Hægja á sér við miðlungshita</string>
+    <string name="asr_moderate_pacing_note">Þegar slökkt er á þessu, heldur umritun áfram á fullum hraða við miðlungshita. Mikill hiti stöðvar hana samt þar til tækið kólnar, og þú getur haldið henni áfram sjálf/ur.</string>
 </resources>

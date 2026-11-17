@@ -60,4 +60,6 @@
         <item quantity="one">%d ausgewählt</item>
         <item quantity="other">%d ausgewählt</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Bei mäßiger Überhitzung verlangsamen</string>
+    <string name="asr_moderate_pacing_note">Wenn ausgeschaltet, läuft die Transkription bei mäßiger Überhitzung mit voller Geschwindigkeit. Starke Überhitzung pausiert sie weiterhin, bis das Gerät abgekühlt ist; du kannst sie dann selbst fortsetzen.</string>
 </resources>

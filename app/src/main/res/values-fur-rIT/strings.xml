@@ -60,4 +60,6 @@
         <item quantity="one">%d selezionât</item>
         <item quantity="other">%d selezionâts</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Slow down at moderate heat</string>
+    <string name="asr_moderate_pacing_note">When off, transcription keeps full speed at moderate heat. Severe heat still pauses until the device cools, and you can resume it yourself.</string>
 </resources>

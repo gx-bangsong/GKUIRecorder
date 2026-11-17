@@ -5,4 +5,6 @@
 -->
 <resources>
     <string name="sound_channel_title">Snimanje zvuka</string>
+    <string name="asr_moderate_pacing_title">Usporavanje pri umjerenom zagrijavanju</string>
+    <string name="asr_moderate_pacing_note">Kada je isključeno, transkripcija radi punom brzinom pri umjerenom zagrijavanju. Jako zagrijavanje i dalje pauzira rad dok se uređaj ne ohladi, a možete ga sami nastaviti.</string>
 </resources>

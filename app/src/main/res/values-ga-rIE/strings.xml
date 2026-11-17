@@ -63,4 +63,6 @@
         <item quantity="many">%d roghnaithe</item>
         <item quantity="other">%d roghnaithe</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Mall ag teas measartha</string>
+    <string name="asr_moderate_pacing_note">Nuair atá sé as, rithfidh an trascríobh ar luas iomlán faoi theas measartha. Cuirfidh teas mhór ar sos é fós go dtí go bhfuarófar an gléas, agus is féidir leat é a atosú féin.</string>
 </resources>

@@ -59,4 +59,6 @@
     <plurals name="recording_selection_count">
         <item quantity="other">Đã chọn %d</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Giảm tốc khi nóng vừa</string>
+    <string name="asr_moderate_pacing_note">Khi tắt, quá trình chuyển ghi vẫn chạy hết tốc độ khi nóng vừa. Khi quá nóng, quá trình vẫn tạm dừng cho đến khi thiết bị nguội, và bạn có thể tự tiếp tục.</string>
 </resources>

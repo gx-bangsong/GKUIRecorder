@@ -56,4 +56,6 @@
     <string name="delete_all_message">Wyt ti\'n siŵr dy fod am ddileu\'r holl recordiadau? Nid oes modd dadwneud hyn</string>
     <string name="delete_selected_title">Dileu hwn</string>
     <string name="delete_selected_message">Wyt ti\'n siŵr dy fod am ddileu\'r holl recordiadau a ddewiswyd? Nid oes modd dadwneud hyn</string>
+    <string name="asr_moderate_pacing_title">Arafu pan fo gwres cymedrol</string>
+    <string name="asr_moderate_pacing_note">Pan fydd i ffwrdd, bydd trawsgrifio\'n rhedeg ar gyflymder llawn pan fo gwres cymedrol. Bydd gwres difrifol yn dal i\'w oedi nes i\'r ddyfais oeri, a gallwch ei ailddechrau eich hun.</string>
 </resources>

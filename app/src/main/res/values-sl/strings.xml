@@ -62,4 +62,6 @@
         <item quantity="few">%d izbrani</item>
         <item quantity="other">%d izbranih</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">Upočasni pri zmerni pregretosti</string>
+    <string name="asr_moderate_pacing_note">Ko je izklopljeno, prepisovanje pri zmerni pregretosti teče s polno hitrostjo. Huda pregretost ga še vedno zaustavi, dokler se naprava ne ohladi, nato pa ga lahko nadaljujete sami.</string>
 </resources>

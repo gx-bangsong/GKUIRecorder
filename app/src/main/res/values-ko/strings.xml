@@ -59,4 +59,6 @@
     <plurals name="recording_selection_count">
         <item quantity="other">%d개 항목 선택함</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">중간 발열 시 속도 낮추기</string>
+    <string name="asr_moderate_pacing_note">끄면 중간 발열 상태에서도 전사가 최고 속도로 실행됩니다. 심한 발열 시에는 기기가 식을 때까지 여전히 일시 정지되며, 직접 재개할 수 있습니다.</string>
 </resources>

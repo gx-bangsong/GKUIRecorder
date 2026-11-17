@@ -38,4 +38,6 @@
     <string name="list_item_menu">ดำเนินการเพิ่มเติม</string>
     <string name="delete_all_title">ลบทั้งหมด</string>
     <string name="delete_selected_title">ลบที่เลือกไว้</string>
+    <string name="asr_moderate_pacing_title">ลดความเร็วเมื่อความร้อนปานกลาง</string>
+    <string name="asr_moderate_pacing_note">เมื่อปิดไว้ การถอดเสียงจะทำงานเต็มความเร็วเมื่อความร้อนปานกลาง ความร้อนสูงมากยังคงหยุดการทำงานจนกว่าเครื่องจะเย็นลง และคุณสามารถกลับมาทำต่อเองได้</string>
 </resources>

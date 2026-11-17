@@ -56,4 +56,6 @@
     <string name="delete_all_message">Er du sikker på, at du ønsker at slette alle optagelser? Dette kan ikke fortrydes.</string>
     <string name="delete_selected_title">Slet valgte</string>
     <string name="delete_selected_message">Er du sikker på, at du ønsker at slette valgte optagelser? Dette kan ikke fortrydes.</string>
+    <string name="asr_moderate_pacing_title">Sænk farten ved moderat overophedning</string>
+    <string name="asr_moderate_pacing_note">Når det er slukket, kører transskriptionen med fuld hastighed ved moderat overophedning. Svær overophedning sætter den stadig på pause, indtil enheden er kølet ned, og du kan selv genoptage den.</string>
 </resources>

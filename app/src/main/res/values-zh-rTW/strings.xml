@@ -59,4 +59,6 @@
     <plurals name="recording_selection_count">
         <item quantity="other">已選擇 %d 個</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">中度過熱時降速</string>
+    <string name="asr_moderate_pacing_note">關閉後，中度過熱時轉寫保持全速。嚴重過熱時仍會暫停，待裝置降溫後可以由您手動繼續。</string>
 </resources>

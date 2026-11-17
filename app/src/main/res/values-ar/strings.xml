@@ -52,4 +52,6 @@
     <string name="delete_all_message">أمتأكد من أنك تريد حذف جميع التسجيلات؟ لا يمكن التراجع عن هذا</string>
     <string name="delete_selected_title">حذف المحدد</string>
     <string name="delete_selected_message">أمتأكد من أنك تريد حذف التسجيلات المحددة؟ لا يمكن التراجع عن هذا</string>
+    <string name="asr_moderate_pacing_title">إبطاء النسخ عند الحرارة المتوسطة</string>
+    <string name="asr_moderate_pacing_note">عند الإيقاف، يستمر النسخ بالسرعة الكاملة عند الحرارة المتوسطة. وتظل الحرارة الشديدة توقفه حتى يبرد الجهاز، ويمكنك استئنافه يدوياً.</string>
 </resources>
