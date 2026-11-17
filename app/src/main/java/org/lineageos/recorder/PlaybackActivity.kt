@@ -689,13 +689,16 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         }
     }
 
-    /** Active segment: a background block and bold text, so it is not only a colour change. */
+    /**
+     * Active segment: a tertiary block and bold text, so it is not only a colour change. Tertiary
+     * is a different hue from the seek bar's primary colour, so the two are easy to tell apart.
+     */
     private fun setSegmentActive(view: TextView, active: Boolean) {
         view.typeface = if (active) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
         view.setTextColor(
             attrColor(
                 if (active) {
-                    com.google.android.material.R.attr.colorOnSecondaryContainer
+                    com.google.android.material.R.attr.colorOnTertiaryContainer
                 } else {
                     com.google.android.material.R.attr.colorOnSurface
                 },
@@ -704,7 +707,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         view.background = if (active) {
             GradientDrawable().apply {
                 cornerRadius = 12 * resources.displayMetrics.density
-                setColor(attrColor(com.google.android.material.R.attr.colorSecondaryContainer))
+                setColor(attrColor(com.google.android.material.R.attr.colorTertiaryContainer))
             }
         } else {
             null
