@@ -378,7 +378,7 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/play"
                 app:backgroundTint="?attr/colorTertiary"
-                app:shapeAppearanceOverlay="@style/ShapeOverlay.PlayCircle"
+                app:shapeAppearanceOverlay="@style/PlayCircleShapeOverlay"
                 app:elevation="0dp"
                 app:fabCustomSize="88dp"
                 app:maxImageSize="44dp"

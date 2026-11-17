@@ -3,7 +3,7 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <resources>
     <!-- Round play button: a 50% corner on every side makes a circle at any size. -->
-    <style name="ShapeOverlay.PlayCircle">
+    <style name="PlayCircleShapeOverlay">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
