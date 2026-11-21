@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Забавяне при умерено прегряване</string>
     <string name="asr_moderate_pacing_note">Когато е изключено, транскрибирането работи на пълна скорост при умерено прегряване. При силно прегряване то пак се спира, докато устройството изстине, и можете да го продължите ръчно.</string>
+    <string name="asr_consent_import">Импортиране на локален модел</string>
+    <string name="asr_import_action">Импортиране на локален модел</string>
+    <string name="asr_import_already_installed">Тази версия вече е инсталирана. Нищо не е копирано.</string>
+    <string name="asr_import_busy_wait">Вече има изтегляне или импортиране. Изчакайте да приключи.</string>
+    <string name="asr_import_choose_file">Избери файл</string>
+    <string name="asr_import_done">Моделът е импортиран.</string>
+    <string name="asr_import_in_use">Транскрибирането използва този модел. Изчакайте да приключи, преди да замените модела.</string>
+    <string name="asr_import_info">Импортирането изисква официалния архив (%1$s %2$s, tar.bz2) и допълнителния файл %3$s, който не е в архива. Изберете файловете от това устройство. Нищо не се изтегля.</string>
+    <string name="asr_import_missing_message">Архивът е приет, но все още са необходими тези файлове: %1$s. Изберете ги от това устройство. Нищо не се изтегля.</string>
+    <string name="asr_import_missing_title">Липсва допълнителен файл</string>
+    <string name="asr_reason_in_use">Моделът се използва.</string>
+    <string name="asr_reason_source">Избраният файл не може да се прочете. Достъпът може да е отнет или четенето е прекъснато.</string>
+    <string name="asr_state_importing">Копиране на локалния файл…</string>
+    <string name="asr_transcribe_reduced">Телефонът е топъл: транскрибирането е забавено, за да се защити устройството.</string>
+    <string name="asr_transcribe_user_paused">Паузирано от вас. Докоснете „Продължи“ в изгледа на транскрипцията.</string>
+    <string name="asr_transcribe_wait_recording">Записът е в ход: транскрибирането ще продължи, когато спре.</string>
+    <string name="playback_keep_screen_on_state_off">Екранът да остане включен: изкл.</string>
+    <string name="playback_keep_screen_on_state_on">Екранът да остане включен: вкл., яркостта се намалява, за да се ограничи изгарянето на пиксели</string>
+    <string name="playback_loading_wait">Записът все още се зарежда. Възпроизвеждането ще започне, когато е готов.</string>
+    <string name="playback_loop_description">Повтаряне на този запис</string>
+    <string name="playback_loop_state_off">Повторение изкл.</string>
+    <string name="playback_loop_state_on">Повторение вкл.: записът се повтаря</string>
+    <string name="playback_pause_transcript">Пауза на транскрипцията</string>
+    <string name="playback_recording_unavailable">Записът не може да се възпроизведе. Транскрипцията все още е налична.</string>
+    <string name="playback_resume_transcript">Продължаване на транскрипцията</string>
+    <string name="playback_transcript_reduced">Телефонът е топъл: работи по-бавно, за да се защити устройството.</string>
+    <string name="playback_transcript_user_paused">Паузирано от вас</string>
+    <string name="playback_transcript_waiting_cool">Телефонът е твърде горещ: изчаква да изстине. Запазеният текст се запазва.</string>
+    <string name="playback_transcript_waiting_recording">Записът е в ход: транскрибирането ще продължи, когато спре.</string>
+    <string name="transcript_back_to_playing">Назад към позицията на възпроизвеждане</string>
+    <string name="transcript_tap_to_play">Докоснете сегмент, за да възпроизведете записа оттам.</string>
 </resources>
