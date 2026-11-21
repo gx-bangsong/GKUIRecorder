@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Alentir amb escalfament moderat</string>
     <string name="asr_moderate_pacing_note">Desactivat, la transcripció manté la velocitat completa amb escalfament moderat. L\'escalfament sever continua pausant-la fins que el dispositiu es refredi, i la pots reprendre tu mateix.</string>
+    <string name="asr_consent_import">Importa un model local</string>
+    <string name="asr_import_action">Importa un model local</string>
+    <string name="asr_import_already_installed">Aquesta versió ja està instal·lada. No s\'ha copiat res.</string>
+    <string name="asr_import_busy_wait">Ja hi ha una descàrrega o importació en curs. Espera que acabi.</string>
+    <string name="asr_import_choose_file">Tria un fitxer</string>
+    <string name="asr_import_done">Model importat.</string>
+    <string name="asr_import_in_use">Una transcripció fa servir aquest model. Espera que acabi abans de substituir-lo.</string>
+    <string name="asr_import_info">La importació necessita l\'arxiu oficial (%1$s %2$s, tar.bz2) i el fitxer complementari %3$s, que no és dins de l\'arxiu. Tria els fitxers d\'aquest dispositiu. No es descarrega res.</string>
+    <string name="asr_import_missing_message">L\'arxiu s\'ha acceptat, però encara calen aquests fitxers: %1$s. Tria\'ls d\'aquest dispositiu. No es descarrega res.</string>
+    <string name="asr_import_missing_title">Falta un fitxer complementari</string>
+    <string name="asr_reason_in_use">El model està en ús.</string>
+    <string name="asr_reason_source">No es pot llegir el fitxer escollit. És possible que l\'accés s\'hagi revocat o que la lectura s\'hagi interromput.</string>
+    <string name="asr_state_importing">Copiant el fitxer local…</string>
+    <string name="asr_transcribe_reduced">El telèfon està calent: la transcripció s\'ha alentit per protegir el dispositiu.</string>
+    <string name="asr_transcribe_user_paused">Pausada per tu. Toca Reprèn a la vista de la transcripció.</string>
+    <string name="asr_transcribe_wait_recording">Gravació en curs: la transcripció es reprendrà quan s\'aturi.</string>
+    <string name="playback_keep_screen_on_state_off">Mantén la pantalla encesa: desactivat</string>
+    <string name="playback_keep_screen_on_state_on">Mantén la pantalla encesa: activat, la pantalla s\'atenua per limitar la cremada</string>
+    <string name="playback_loading_wait">La gravació encara es carrega. La reproducció començarà quan estigui llesta.</string>
+    <string name="playback_loop_description">Repeteix aquesta gravació</string>
+    <string name="playback_loop_state_off">Repetició desactivada</string>
+    <string name="playback_loop_state_on">Repetició activada: repeteix aquesta gravació</string>
+    <string name="playback_pause_transcript">Pausa la transcripció</string>
+    <string name="playback_recording_unavailable">La gravació no es pot reproduir. La transcripció continua disponible.</string>
+    <string name="playback_resume_transcript">Reprèn la transcripció</string>
+    <string name="playback_transcript_reduced">El telèfon està calent: va més lent per protegir el dispositiu.</string>
+    <string name="playback_transcript_user_paused">Pausada per tu</string>
+    <string name="playback_transcript_waiting_cool">El telèfon està massa calent: espera a refredar-se. El text desat es conserva.</string>
+    <string name="playback_transcript_waiting_recording">Gravació en curs: la transcripció es reprendrà quan s\'aturi.</string>
+    <string name="transcript_back_to_playing">Torna a la posició de reproducció</string>
+    <string name="transcript_tap_to_play">Toca un segment per reproduir la gravació des d\'allà.</string>
 </resources>

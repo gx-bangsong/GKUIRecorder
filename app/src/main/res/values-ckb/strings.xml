@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">لە کاتی گەرمی مامناوەندا هێدیکردنەوە</string>
     <string name="asr_moderate_pacing_note">کاتێک داخراوە، گواستنەوەی دەق بە خێرایی تەواو دەڕوات لە گەرمی مامناوەند. گەرمی زۆر هێشتا دەیوەستێنێت تا ئامێرەکە ساردەبێتەوە، و دەتوانیت خۆت بەردەوامی پێ بدەیت.</string>
+    <string name="asr_consent_import">مۆدێلێکی ناوخۆیی هاوردە بکە</string>
+    <string name="asr_import_action">مۆدێلێکی ناوخۆیی هاوردە بکە</string>
+    <string name="asr_import_already_installed">ئەم وەشانە پێشتر دامەزراوە. هیچ شتێک کۆپی نەکرا.</string>
+    <string name="asr_import_busy_wait">داگرتن یان هاوردەکردن پێشتر کاردەکات. چاوەڕێ بکە تا تەواو دەبێت.</string>
+    <string name="asr_import_choose_file">پەڕگە هەڵبژێرە</string>
+    <string name="asr_import_done">مۆدێلەکە هاوردە کرا.</string>
+    <string name="asr_import_in_use">گواستنەوەی دەق ئەم مۆدێلە بەکاردەهێنێت. پێش گۆڕینی مۆدێلەکە چاوەڕێ بکە تا تەواو دەبێت.</string>
+    <string name="asr_import_info">هاوردەکردن پێویستی بە ئەرشیفی فەرمی (%1$s %2$s، tar.bz2) و پەڕگەی یاریدەدەر %3$s هەیە، کە لە ناو ئەرشیفەکەدا نییە. پەڕگەکان لەم ئامێرە هەڵبژێرە. هیچ شتێک داگیرناکرێت.</string>
+    <string name="asr_import_missing_message">ئەرشیفەکە وەرگیرا، بەڵام ئەم پەڕگانە هێشتا پێویستن: %1$s. لەم ئامێرە هەڵیانبژێرە. هیچ شتێک داگیرناکرێت.</string>
+    <string name="asr_import_missing_title">پەڕگەی یاریدەدەر نییە</string>
+    <string name="asr_reason_in_use">مۆدێلەکە بەکاردێت.</string>
+    <string name="asr_reason_source">ناتوانرێت ئەو پەڕگەیەی هەڵبژێردراوە بخوێندرێتەوە. لەوانەیە دەستپێگەیشتن هەڵوەشابێتەوە یان خوێندنەوەکە پچڕابێت.</string>
+    <string name="asr_state_importing">پەڕگەی ناوخۆیی کۆپی دەکرێت…</string>
+    <string name="asr_transcribe_reduced">مۆبایلەکە گەرمە: گواستنەوەی دەق هێدیکراوەتەوە بۆ پاراستنی ئامێرەکە.</string>
+    <string name="asr_transcribe_user_paused">لەلایەن تۆوە وەستێندراوە. لە پیشاندانی گواستنەوەی دەقدا لەسەر «بەردەوامبوون» کلیک بکە.</string>
+    <string name="asr_transcribe_wait_recording">تۆمارکردن لە کاردایە: گواستنەوەی دەق کاتێک دەوەستێت بەردەوام دەبێتەوە.</string>
+    <string name="playback_keep_screen_on_state_off">شاشە کراوە بهێڵەرەوە: کوژاوە</string>
+    <string name="playback_keep_screen_on_state_on">شاشە کراوە بهێڵەرەوە: کراوە، شاشەکە کز دەکرێت بۆ کەمکردنەوەی سووتانی وێنە</string>
+    <string name="playback_loading_wait">تۆمارەکە هێشتا بار دەکرێت. کاتێک ئامادە بێت پەخشکردن دەست پێدەکات.</string>
+    <string name="playback_loop_description">ئەم تۆمارە دووبارە بکەرەوە</string>
+    <string name="playback_loop_state_off">دووبارەکردنەوە کوژاوەیە</string>
+    <string name="playback_loop_state_on">دووبارەکردنەوە کراوەیە: ئەم تۆمارە دووبارە دەکاتەوە</string>
+    <string name="playback_pause_transcript">گواستنەوەی دەق بوەستێنە</string>
+    <string name="playback_recording_unavailable">ناتوانرێت تۆمارەکە بخرێتە کار. گواستنەوەی دەق هێشتا بەردەستە.</string>
+    <string name="playback_resume_transcript">گواستنەوەی دەق بەردەوام بکە</string>
+    <string name="playback_transcript_reduced">مۆبایلەکە گەرمە: بە خێرایی کەمتر کار دەکات بۆ پاراستنی ئامێرەکە.</string>
+    <string name="playback_transcript_user_paused">لەلایەن تۆوە وەستێندراوە</string>
+    <string name="playback_transcript_waiting_cool">مۆبایلەکە زۆر گەرمە: چاوەڕێی ساردبوونەوەیە. دەقی پاشەکەوتکراو دەمێنێتەوە.</string>
+    <string name="playback_transcript_waiting_recording">تۆمارکردن لە کاردایە: گواستنەوەی دەق کاتێک دەوەستێت بەردەوام دەبێتەوە.</string>
+    <string name="transcript_back_to_playing">گەڕانەوە بۆ شوێنی پەخشکردن</string>
+    <string name="transcript_tap_to_play">کلیک لە بەشێک بکە بۆ پەخشکردنی تۆمارەکە لەوێوە.</string>
 </resources>

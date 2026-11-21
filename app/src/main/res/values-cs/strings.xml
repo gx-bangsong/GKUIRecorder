@@ -64,4 +64,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Zpomalit při středním přehřátí</string>
     <string name="asr_moderate_pacing_note">Když je vypnuto, přepis běží plnou rychlostí i při středním přehřátí. Silné přehřátí přepis stále pozastaví, dokud se zařízení neochladí, a můžete jej pokračovat sami.</string>
+    <string name="asr_consent_import">Importovat místní model</string>
+    <string name="asr_import_action">Importovat místní model</string>
+    <string name="asr_import_already_installed">Tato verze je již nainstalována. Nic nebylo zkopírováno.</string>
+    <string name="asr_import_busy_wait">Stahování nebo import už probíhá. Počkejte, až skončí.</string>
+    <string name="asr_import_choose_file">Vybrat soubor</string>
+    <string name="asr_import_done">Model byl importován.</string>
+    <string name="asr_import_in_use">Přepis používá tento model. Počkejte, až skončí, než model nahradíte.</string>
+    <string name="asr_import_info">Import vyžaduje oficiální archiv (%1$s %2$s, tar.bz2) a doplňkový soubor %3$s, který není v archivu. Vyberte soubory z tohoto zařízení. Nic se nestahuje.</string>
+    <string name="asr_import_missing_message">Archiv byl přijat, ale tyto soubory jsou stále potřeba: %1$s. Vyberte je z tohoto zařízení. Nic se nestahuje.</string>
+    <string name="asr_import_missing_title">Chybí doplňkový soubor</string>
+    <string name="asr_reason_in_use">Model se používá.</string>
+    <string name="asr_reason_source">Vybraný soubor nelze přečíst. Přístup mohl být odvolán nebo čtení bylo přerušeno.</string>
+    <string name="asr_state_importing">Kopírování místního souboru…</string>
+    <string name="asr_transcribe_reduced">Telefon je teplý: přepis byl zpomalen, aby se chránilo zařízení.</string>
+    <string name="asr_transcribe_user_paused">Pozastaveno vámi. Klepněte na Pokračovat v zobrazení přepisu.</string>
+    <string name="asr_transcribe_wait_recording">Probíhá nahrávání: přepis pokračuje, až se zastaví.</string>
+    <string name="playback_keep_screen_on_state_off">Nechat obrazovku zapnutou: vypnuto</string>
+    <string name="playback_keep_screen_on_state_on">Nechat obrazovku zapnutou: zapnuto, obrazovka se ztlumí, aby se omezilo vypalování</string>
+    <string name="playback_loading_wait">Nahrávka se stále načítá. Přehrávání začne, až bude připravena.</string>
+    <string name="playback_loop_description">Opakovat tuto nahrávku</string>
+    <string name="playback_loop_state_off">Opakování vypnuto</string>
+    <string name="playback_loop_state_on">Opakování zapnuto: opakuje tuto nahrávku</string>
+    <string name="playback_pause_transcript">Pozastavit přepis</string>
+    <string name="playback_recording_unavailable">Nahrávku nelze přehrát. Přepis je stále k dispozici.</string>
+    <string name="playback_resume_transcript">Pokračovat v přepisu</string>
+    <string name="playback_transcript_reduced">Telefon je teplý: běží pomaleji, aby se chránilo zařízení.</string>
+    <string name="playback_transcript_user_paused">Pozastaveno vámi</string>
+    <string name="playback_transcript_waiting_cool">Telefon je příliš horký: čeká na vychladnutí. Uložený text se zachová.</string>
+    <string name="playback_transcript_waiting_recording">Probíhá nahrávání: přepis pokračuje, až se zastaví.</string>
+    <string name="transcript_back_to_playing">Zpět na pozici přehrávání</string>
+    <string name="transcript_tap_to_play">Klepnutím na segment přehrajete nahrávku od něj.</string>
 </resources>
