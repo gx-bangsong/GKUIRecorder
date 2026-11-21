@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Ngadalëso në nxehtësi të moderuar</string>
     <string name="asr_moderate_pacing_note">Kur është çaktivizuar, transkriptimi vazhdon me shpejtësi të plotë në nxehtësi të moderuar. Nxehtësia e fortë ende e pauzon atë derisa pajisja të ftohet, dhe mund ta rifillosh vetë.</string>
+    <string name="asr_consent_import">Importo model lokal</string>
+    <string name="asr_import_action">Importo model lokal</string>
+    <string name="asr_import_already_installed">Kjo version është instaluar tashmë. Asgjë nuk u kopjua.</string>
+    <string name="asr_import_busy_wait">Një shkarkim ose import është duke ndodhur tashmë. Prit deri sa të përfundojë.</string>
+    <string name="asr_import_choose_file">Zgjidh skedarin</string>
+    <string name="asr_import_done">Modeli u importua.</string>
+    <string name="asr_import_in_use">Një transkriptim po e përdor këtë model. Prit të përfundojë përpara se ta zëvendësosh modelin.</string>
+    <string name="asr_import_info">Importi kërkon arkivin zyrtar (%1$s %2$s, tar.bz2) dhe skedarin shoqërues %3$s, që nuk është brenda arkivit. Zgjidh skedarët nga kjo pajisje. Asgjë nuk shkarkohet.</string>
+    <string name="asr_import_missing_message">Arkivi u pranua, por këta skedarë ende nevojiten: %1$s. Zgjidhi ata nga kjo pajisje. Asgjë nuk shkarkohet.</string>
+    <string name="asr_import_missing_title">Mungon skedari shoqërues</string>
+    <string name="asr_reason_in_use">Modeli është në përdorim.</string>
+    <string name="asr_reason_source">Skedari i zgjedhur nuk mund të lexohet. Qasja mund të jetë revokuar ose leximi u ndërpre.</string>
+    <string name="asr_state_importing">Po kopjohet skedari lokal…</string>
+    <string name="asr_transcribe_reduced">Telefoni është i ngrohtë: transkriptimi u ngadalësua për të mbrojtur pajisjen.</string>
+    <string name="asr_transcribe_user_paused">E ndaluar nga ti. Trokit Vazhdo te pamja e transkriptimit.</string>
+    <string name="asr_transcribe_wait_recording">Regjistrimi po zhvillohet: transkriptimi vazhdon kur ndalet.</string>
+    <string name="playback_keep_screen_on_state_off">Mbaje ekranin aktiv: joaktiv</string>
+    <string name="playback_keep_screen_on_state_on">Mbaje ekranin aktiv: aktiv, ekrani zbehet për të kufizuar djegien e imazhit</string>
+    <string name="playback_loading_wait">Regjistrimi ende po ngarkohet. Riprodhimi fillon kur të jetë gati.</string>
+    <string name="playback_loop_description">Përsërit këtë regjistrim</string>
+    <string name="playback_loop_state_off">Përsëritja joaktive</string>
+    <string name="playback_loop_state_on">Përsëritja aktive: përsërit këtë regjistrim</string>
+    <string name="playback_pause_transcript">Ndalo transkriptimin</string>
+    <string name="playback_recording_unavailable">Regjistrimi nuk mund të riprodhohet. Transkripti është ende i disponueshëm.</string>
+    <string name="playback_resume_transcript">Vazhdo transkriptimin</string>
+    <string name="playback_transcript_reduced">Telefoni është i ngrohtë: punon më ngadalë për të mbrojtur pajisjen.</string>
+    <string name="playback_transcript_user_paused">Ndaluar nga ti</string>
+    <string name="playback_transcript_waiting_cool">Telefoni është shumë i nxehtë: po pret të ftohet. Teksti i ruajtur mbetet.</string>
+    <string name="playback_transcript_waiting_recording">Regjistrimi po zhvillohet: transkriptimi vazhdon kur ndalet.</string>
+    <string name="transcript_back_to_playing">Kthehu te pozicioni i riprodhimit</string>
+    <string name="transcript_tap_to_play">Trokit një segment për ta riprodhuar regjistrimin nga aty.</string>
 </resources>

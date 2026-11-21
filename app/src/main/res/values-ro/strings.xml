@@ -63,4 +63,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Încetinește la încălzire moderată</string>
     <string name="asr_moderate_pacing_note">Când este dezactivat, transcrierea rulează la viteză maximă la încălzire moderată. Încălzirea severă o pune în continuare pe pauză până când dispozitivul se răcește, iar tu o poți relua manual.</string>
+    <string name="asr_consent_import">Importă model local</string>
+    <string name="asr_import_action">Importă model local</string>
+    <string name="asr_import_already_installed">Această versiune este deja instalată. Nu s-a copiat nimic.</string>
+    <string name="asr_import_busy_wait">O descărcare sau un import rulează deja. Așteaptă până se termină.</string>
+    <string name="asr_import_choose_file">Alege fișierul</string>
+    <string name="asr_import_done">Modelul a fost importat.</string>
+    <string name="asr_import_in_use">Transcrierea folosește acest model. Așteaptă să se termine înainte să înlocuiești modelul.</string>
+    <string name="asr_import_info">Importul are nevoie de arhiva oficială (%1$s %2$s, tar.bz2) și de fișierul însoțitor %3$s, care nu se află în arhivă. Alege fișierele de pe acest dispozitiv. Nu se descarcă nimic.</string>
+    <string name="asr_import_missing_message">Arhiva a fost acceptată, dar mai sunt necesare aceste fișiere: %1$s. Alege-le de pe acest dispozitiv. Nu se descarcă nimic.</string>
+    <string name="asr_import_missing_title">Fișier însoțitor lipsă</string>
+    <string name="asr_reason_in_use">Modelul este în uz.</string>
+    <string name="asr_reason_source">Fișierul ales nu poate fi citit. Accesul poate fi revocat sau citirea a fost întreruptă.</string>
+    <string name="asr_state_importing">Se copiază fișierul local…</string>
+    <string name="asr_transcribe_reduced">Telefonul este cald: transcrierea a fost încetinită pentru a proteja dispozitivul.</string>
+    <string name="asr_transcribe_user_paused">Ai pus pe pauză. Atinge Reia în vizualizarea transcrierii.</string>
+    <string name="asr_transcribe_wait_recording">Înregistrare în curs: transcrierea se reia când se oprește.</string>
+    <string name="playback_keep_screen_on_state_off">Ecran activ: dezactivat</string>
+    <string name="playback_keep_screen_on_state_on">Ecran activ: activat, ecranul se estompează pentru a limita arderea imaginii</string>
+    <string name="playback_loading_wait">Înregistrarea se mai încarcă. Redarea începe când este gata.</string>
+    <string name="playback_loop_description">Repetă această înregistrare</string>
+    <string name="playback_loop_state_off">Repetare dezactivată</string>
+    <string name="playback_loop_state_on">Repetare activată: repetă această înregistrare</string>
+    <string name="playback_pause_transcript">Pune transcrierea pe pauză</string>
+    <string name="playback_recording_unavailable">Înregistrarea nu poate fi redată. Transcrierea este încă disponibilă.</string>
+    <string name="playback_resume_transcript">Reia transcrierea</string>
+    <string name="playback_transcript_reduced">Telefonul este cald: rulează mai lent pentru a proteja dispozitivul.</string>
+    <string name="playback_transcript_user_paused">Pus pe pauză de tine</string>
+    <string name="playback_transcript_waiting_cool">Telefonul este prea cald: se așteaptă răcirea. Textul salvat este păstrat.</string>
+    <string name="playback_transcript_waiting_recording">Înregistrare în curs: transcrierea se reia când se oprește.</string>
+    <string name="transcript_back_to_playing">Înapoi la poziția de redare</string>
+    <string name="transcript_tap_to_play">Atinge un segment pentru a reda înregistrarea de acolo.</string>
 </resources>

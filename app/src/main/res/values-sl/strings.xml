@@ -64,4 +64,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Upočasni pri zmerni pregretosti</string>
     <string name="asr_moderate_pacing_note">Ko je izklopljeno, prepisovanje pri zmerni pregretosti teče s polno hitrostjo. Huda pregretost ga še vedno zaustavi, dokler se naprava ne ohladi, nato pa ga lahko nadaljujete sami.</string>
+    <string name="asr_consent_import">Uvozi lokalni model</string>
+    <string name="asr_import_action">Uvozi lokalni model</string>
+    <string name="asr_import_already_installed">Ta različica je že nameščena. Ničesar ni bilo kopiranega.</string>
+    <string name="asr_import_busy_wait">Prenos ali uvoz že poteka. Počakajte, da se konča.</string>
+    <string name="asr_import_choose_file">Izberi datoteko</string>
+    <string name="asr_import_done">Model je uvožen.</string>
+    <string name="asr_import_in_use">Transkripcija uporablja ta model. Pred zamenjavo modela počakajte, da se konča.</string>
+    <string name="asr_import_info">Uvoz potrebuje uradni arhiv (%1$s %2$s, tar.bz2) in spremljevalno datoteko %3$s, ki ni v arhivu. Izberite datoteke v tej napravi. Ničesar se ne prenaša.</string>
+    <string name="asr_import_missing_message">Arhiv je sprejet, vendar so še potrebne te datoteke: %1$s. Izberite jih v tej napravi. Ničesar se ne prenaša.</string>
+    <string name="asr_import_missing_title">Spremljevalna datoteka manjka</string>
+    <string name="asr_reason_in_use">Model je v uporabi.</string>
+    <string name="asr_reason_source">Izbrane datoteke ni mogoče prebrati. Dostop je morda preklican ali branje prekinjeno.</string>
+    <string name="asr_state_importing">Kopiranje lokalne datoteke…</string>
+    <string name="asr_transcribe_reduced">Telefon je topel: transkripcija je upočasnjena, da se zaščiti naprava.</string>
+    <string name="asr_transcribe_user_paused">Ustavili ste. Tapnite Nadaljuj v pogledu transkripcije.</string>
+    <string name="asr_transcribe_wait_recording">Snemanje poteka: transkripcija se nadaljuje, ko se ustavi.</string>
+    <string name="playback_keep_screen_on_state_off">Zaslon vklopljen: izklopljeno</string>
+    <string name="playback_keep_screen_on_state_on">Zaslon vklopljen: vklopljeno, zaslon se zatemni, da se omeji zažiganje</string>
+    <string name="playback_loading_wait">Posnetek se še nalaga. Predvajanje se začne, ko bo pripravljen.</string>
+    <string name="playback_loop_description">Ponovi ta posnetek</string>
+    <string name="playback_loop_state_off">Ponavljanje izklopljeno</string>
+    <string name="playback_loop_state_on">Ponavljanje vklopljeno: ponavlja ta posnetek</string>
+    <string name="playback_pause_transcript">Ustavi transkripcijo</string>
+    <string name="playback_recording_unavailable">Posnetka ni mogoče predvajati. Transkript je še vedno na voljo.</string>
+    <string name="playback_resume_transcript">Nadaljuj transkripcijo</string>
+    <string name="playback_transcript_reduced">Telefon je topel: deluje počasneje, da se zaščiti naprava.</string>
+    <string name="playback_transcript_user_paused">Ustavili ste</string>
+    <string name="playback_transcript_waiting_cool">Telefon je prevroč: čaka se na ohladitev. Shranjeno besedilo se ohrani.</string>
+    <string name="playback_transcript_waiting_recording">Snemanje poteka: transkripcija se nadaljuje, ko se ustavi.</string>
+    <string name="transcript_back_to_playing">Nazaj na položaj predvajanja</string>
+    <string name="transcript_tap_to_play">Tapnite segment, da od tam predvajate posnetek.</string>
 </resources>
