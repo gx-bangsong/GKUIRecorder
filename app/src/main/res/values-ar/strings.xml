@@ -236,4 +236,8 @@
     <string name="dialog_permissions_mic_notifications">يحتاج Recorder إلى إذن الميكروفون لتسجيل الصوت وإذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
     <string name="dialog_permissions_phone_notifications">يحتاج Recorder إلى الوصول إلى حالة الهاتف لمنع التطبيق من التسجيل أثناء المكالمة، وإذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
     <string name="dialog_permissions_mic_phone_notifications">يحتاج Recorder إلى إذن الميكروفون لتسجيل الصوت، والوصول إلى حالة الهاتف لمنع التسجيل أثناء المكالمة، وإذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">تم اختيار %d</item>
+        <item quantity="other">تم اختيار %d</item>
+    </plurals>
 </resources>

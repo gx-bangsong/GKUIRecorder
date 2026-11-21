@@ -236,4 +236,8 @@
     <string name="recording_deleted">This recording was deleted.</string>
     <string name="playback_speed_title">Playback speed</string>
     <string name="playback_keep_screen_on">Keep screen on</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d seleccionaos</item>
+        <item quantity="other">%d seleccionaos</item>
+    </plurals>
 </resources>

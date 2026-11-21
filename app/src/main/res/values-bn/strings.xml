@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">প্লেব্যাকের গতি</string>
     <string name="playback_keep_screen_on">স্ক্রিন চালু রাখুন</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d টি নির্বাচিত</item>
+        <item quantity="other">%d টি নির্বাচিত</item>
+    </plurals>
 </resources>

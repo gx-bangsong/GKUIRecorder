@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Afspeelspoed</string>
     <string name="playback_keep_screen_on">Hou skerm aan</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d gekies</item>
+        <item quantity="other">%d gekies</item>
+    </plurals>
 </resources>

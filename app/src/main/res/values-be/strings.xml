@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Хуткасць прайгравання</string>
     <string name="playback_keep_screen_on">Не гасіць экран</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">Абрана: %d</item>
+        <item quantity="other">Абрана: %d</item>
+    </plurals>
 </resources>
