@@ -61,4 +61,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Giảm tốc khi nóng vừa</string>
     <string name="asr_moderate_pacing_note">Khi tắt, quá trình chuyển giọng nói thành văn bản vẫn chạy hết tốc độ khi nóng vừa. Khi quá nóng, quá trình này vẫn tạm dừng cho đến khi thiết bị nguội, và bạn có thể tự tiếp tục.</string>
+    <string name="asr_consent_import">Nhập mô hình cục bộ</string>
+    <string name="asr_import_action">Nhập mô hình cục bộ</string>
+    <string name="asr_import_already_installed">Phiên bản này đã được cài đặt. Không có gì được sao chép.</string>
+    <string name="asr_import_busy_wait">Đang có tải xuống hoặc nhập khác đang chạy. Vui lòng đợi hoàn tất.</string>
+    <string name="asr_import_choose_file">Chọn tệp</string>
+    <string name="asr_import_done">Đã nhập mô hình.</string>
+    <string name="asr_import_in_use">Có một phiên phiên âm đang dùng mô hình này. Hãy đợi nó xong trước khi thay mô hình.</string>
+    <string name="asr_import_info">Nhập cần kho lưu trữ chính thức (%1$s %2$s, tar.bz2) và tệp đi kèm %3$s, không nằm trong kho lưu trữ. Hãy chọn tệp trên thiết bị này. Không tải xuống gì cả.</string>
+    <string name="asr_import_missing_message">Đã nhận kho lưu trữ, nhưng vẫn cần các tệp này: %1$s. Hãy chọn chúng trên thiết bị này. Không tải xuống gì cả.</string>
+    <string name="asr_import_missing_title">Thiếu tệp đi kèm</string>
+    <string name="asr_reason_in_use">Mô hình đang được sử dụng.</string>
+    <string name="asr_reason_source">Không đọc được tệp đã chọn. Quyền truy cập có thể đã bị thu hồi hoặc việc đọc bị gián đoạn.</string>
+    <string name="asr_state_importing">Đang sao chép tệp cục bộ…</string>
+    <string name="asr_transcribe_reduced">Điện thoại đang ấm: đã giảm tốc độ phiên âm để bảo vệ thiết bị.</string>
+    <string name="asr_transcribe_user_paused">Bạn đã tạm dừng. Chạm Tiếp tục trong màn hình phiên âm.</string>
+    <string name="asr_transcribe_wait_recording">Đang ghi âm: phiên âm sẽ tiếp tục khi dừng ghi.</string>
+    <string name="playback_keep_screen_on_state_off">Giữ màn hình bật: tắt</string>
+    <string name="playback_keep_screen_on_state_on">Giữ màn hình bật: bật, màn hình sẽ mờ đi để giảm hiện tượng cháy hình</string>
+    <string name="playback_loading_wait">Bản ghi vẫn đang tải. Phát sẽ bắt đầu khi sẵn sàng.</string>
+    <string name="playback_loop_description">Lặp lại bản ghi này</string>
+    <string name="playback_loop_state_off">Lặp: tắt</string>
+    <string name="playback_loop_state_on">Lặp: bật, lặp lại bản ghi này</string>
+    <string name="playback_pause_transcript">Tạm dừng phiên âm</string>
+    <string name="playback_recording_unavailable">Không thể phát bản ghi. Bản phiên âm vẫn có sẵn.</string>
+    <string name="playback_resume_transcript">Tiếp tục phiên âm</string>
+    <string name="playback_transcript_reduced">Điện thoại đang ấm: chạy chậm hơn để bảo vệ thiết bị.</string>
+    <string name="playback_transcript_user_paused">Bạn đã tạm dừng</string>
+    <string name="playback_transcript_waiting_cool">Điện thoại quá nóng: đang chờ nguội. Văn bản đã lưu được giữ lại.</string>
+    <string name="playback_transcript_waiting_recording">Đang ghi âm: phiên âm sẽ tiếp tục khi dừng ghi.</string>
+    <string name="transcript_back_to_playing">Quay lại vị trí đang phát</string>
+    <string name="transcript_tap_to_play">Chạm vào một đoạn để phát bản ghi từ đó.</string>
 </resources>

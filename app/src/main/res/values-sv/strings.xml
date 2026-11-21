@@ -56,4 +56,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Sakta ned vid måttlig överhettning</string>
     <string name="asr_moderate_pacing_note">När detta är avstängt körs transkriberingen i full hastighet vid måttlig överhettning. Kraftig överhettning pausar den fortfarande tills enheten har svalnat, och du kan återuppta den själv.</string>
+    <string name="asr_consent_import">Importera lokal modell</string>
+    <string name="asr_import_action">Importera lokal modell</string>
+    <string name="asr_import_already_installed">Den här versionen är redan installerad. Inget kopierades.</string>
+    <string name="asr_import_busy_wait">En nedladdning eller import pågår redan. Vänta tills den är klar.</string>
+    <string name="asr_import_choose_file">Välj fil</string>
+    <string name="asr_import_done">Modellen har importerats.</string>
+    <string name="asr_import_in_use">En transkribering använder den här modellen. Vänta tills den är klar innan du byter modell.</string>
+    <string name="asr_import_info">Importen kräver det officiella arkivet (%1$s %2$s, tar.bz2) och kompletterande filen %3$s, som inte ingår i arkivet. Välj filer på den här enheten. Inget laddas ner.</string>
+    <string name="asr_import_missing_message">Arkivet godkändes, men dessa filer behövs fortfarande: %1$s. Välj dem på den här enheten. Inget laddas ner.</string>
+    <string name="asr_import_missing_title">Kompletterande fil saknas</string>
+    <string name="asr_reason_in_use">Modellen används.</string>
+    <string name="asr_reason_source">Den valda filen kan inte läsas. Åtkomsten kan ha återkallats eller läsningen avbröts.</string>
+    <string name="asr_state_importing">Kopierar lokal fil…</string>
+    <string name="asr_transcribe_reduced">Telefonen är varm: transkriberingen har saktats ner för att skydda enheten.</string>
+    <string name="asr_transcribe_user_paused">Du pausade. Tryck på Fortsätt i transkriptionsvyn.</string>
+    <string name="asr_transcribe_wait_recording">Inspelning pågår: transkriberingen fortsätter när den stoppas.</string>
+    <string name="playback_keep_screen_on_state_off">Håll skärmen på: av</string>
+    <string name="playback_keep_screen_on_state_on">Håll skärmen på: på, skärmen dimmas för att minska inbränning</string>
+    <string name="playback_loading_wait">Inspelningen laddas fortfarande. Uppspelningen startar när den är klar.</string>
+    <string name="playback_loop_description">Upprepa den här inspelningen</string>
+    <string name="playback_loop_state_off">Upprepning av</string>
+    <string name="playback_loop_state_on">Upprepning på: upprepar den här inspelningen</string>
+    <string name="playback_pause_transcript">Pausa transkriberingen</string>
+    <string name="playback_recording_unavailable">Inspelningen kan inte spelas upp. Transkriptionen är fortfarande tillgänglig.</string>
+    <string name="playback_resume_transcript">Fortsätt transkriberingen</string>
+    <string name="playback_transcript_reduced">Telefonen är varm: den körs långsammare för att skydda enheten.</string>
+    <string name="playback_transcript_user_paused">Pausad av dig</string>
+    <string name="playback_transcript_waiting_cool">Telefonen är för varm: väntar på att svalna. Sparad text behålls.</string>
+    <string name="playback_transcript_waiting_recording">Inspelning pågår: transkriberingen fortsätter när den stoppas.</string>
+    <string name="transcript_back_to_playing">Tillbaka till uppspelningspositionen</string>
+    <string name="transcript_tap_to_play">Tryck på ett segment för att spela upp inspelningen därifrån.</string>
 </resources>

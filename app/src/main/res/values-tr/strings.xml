@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Orta düzeyde ısınmada yavaşlat</string>
     <string name="asr_moderate_pacing_note">Kapalıyken, transkripsiyon orta düzeyde ısınmada tam hızda çalışır. Şiddetli ısınmada ise cihaz soğuyana kadar yine duraklatılır ve siz devam ettirebilirsiniz.</string>
+    <string name="asr_consent_import">Yerel modeli içe aktar</string>
+    <string name="asr_import_action">Yerel modeli içe aktar</string>
+    <string name="asr_import_already_installed">Bu sürüm zaten yüklü. Hiçbir şey kopyalanmadı.</string>
+    <string name="asr_import_busy_wait">Bir indirme veya içe aktarma zaten çalışıyor. Bitmesini bekleyin.</string>
+    <string name="asr_import_choose_file">Dosya seç</string>
+    <string name="asr_import_done">Model içe aktarıldı.</string>
+    <string name="asr_import_in_use">Bu modeli bir transkripsiyon kullanıyor. Modeli değiştirmeden önce bitmesini bekleyin.</string>
+    <string name="asr_import_info">İçe aktarma için resmi arşiv (%1$s %2$s, tar.bz2) ve arşivin içinde bulunmayan %3$s yardımcı dosyası gerekir. Dosyaları bu cihazdan seçin. Hiçbir şey indirilmez.</string>
+    <string name="asr_import_missing_message">Arşiv kabul edildi, ancak şu dosyalar hâlâ gerekli: %1$s. Bunları bu cihazdan seçin. Hiçbir şey indirilmez.</string>
+    <string name="asr_import_missing_title">Yardımcı dosya eksik</string>
+    <string name="asr_reason_in_use">Model kullanımda.</string>
+    <string name="asr_reason_source">Seçilen dosya okunamıyor. Erişim iptal edilmiş olabilir ya da okuma kesilmiş olabilir.</string>
+    <string name="asr_state_importing">Yerel dosya kopyalanıyor…</string>
+    <string name="asr_transcribe_reduced">Telefon ısındı: cihazı korumak için transkripsiyon yavaşlatıldı.</string>
+    <string name="asr_transcribe_user_paused">Siz duraklattınız. Transkripsiyon görünümünde Devam et\'e dokunun.</string>
+    <string name="asr_transcribe_wait_recording">Kayıt sürüyor: kayıt durduğunda transkripsiyon devam eder.</string>
+    <string name="playback_keep_screen_on_state_off">Ekranı açık tut: kapalı</string>
+    <string name="playback_keep_screen_on_state_on">Ekranı açık tut: açık, ekran yanma izini azaltmak için karartılır</string>
+    <string name="playback_loading_wait">Kayıt hâlâ yükleniyor. Hazır olduğunda oynatma başlar.</string>
+    <string name="playback_loop_description">Bu kaydı döngüye al</string>
+    <string name="playback_loop_state_off">Döngü kapalı</string>
+    <string name="playback_loop_state_on">Döngü açık: bu kaydı tekrarlar</string>
+    <string name="playback_pause_transcript">Transkripsiyonu duraklat</string>
+    <string name="playback_recording_unavailable">Kayıt oynatılamıyor. Transkripsiyon yine de kullanılabilir.</string>
+    <string name="playback_resume_transcript">Transkripsiyona devam et</string>
+    <string name="playback_transcript_reduced">Telefon ısındı: cihazı korumak için daha yavaş çalışıyor.</string>
+    <string name="playback_transcript_user_paused">Siz duraklattınız</string>
+    <string name="playback_transcript_waiting_cool">Telefon çok sıcak: soğumayı bekliyor. Kayıtlı metin korunur.</string>
+    <string name="playback_transcript_waiting_recording">Kayıt sürüyor: kayıt durduğunda transkripsiyon devam eder.</string>
+    <string name="transcript_back_to_playing">Oynatma konumuna dön</string>
+    <string name="transcript_tap_to_play">Kaydı oradan oynatmak için bir segmente dokunun.</string>
 </resources>

@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">மிதமான வெப்பத்தில் வேகத்தைக் குறைக்கவும்</string>
     <string name="asr_moderate_pacing_note">அணைத்திருக்கும்போது, மிதமான வெப்பத்திலும் உரைமாற்றம் முழு வேகத்தில் இயங்கும். கடுமையான வெப்பத்தில் சாதனம் குளிரும் வரை அது இடைநிறுத்தப்படும்; நீங்களே மீண்டும் தொடங்கலாம்.</string>
+    <string name="asr_consent_import">உள்ளூர் மாதிரியை இறக்குமதி செய்</string>
+    <string name="asr_import_action">உள்ளூர் மாதிரியை இறக்குமதி செய்</string>
+    <string name="asr_import_already_installed">இந்தப் பதிப்பு ஏற்கெனவே நிறுவப்பட்டுள்ளது. எதுவும் நகலெடுக்கப்படவில்லை.</string>
+    <string name="asr_import_busy_wait">பதிவிறக்கம் அல்லது இறக்குமதி ஏற்கெனவே நடைபெற்று வருகிறது. அது முடியும் வரை காத்திருக்கவும்.</string>
+    <string name="asr_import_choose_file">கோப்பைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="asr_import_done">மாதிரி இறக்குமதி செய்யப்பட்டது.</string>
+    <string name="asr_import_in_use">இந்த மாதிரியை ஒரு படியெடுத்தல் பயன்படுத்துகிறது. மாதிரியை மாற்றும் முன் அது முடியும் வரை காத்திருக்கவும்.</string>
+    <string name="asr_import_info">இறக்குமதிக்கு அதிகாரப்பூர்வ காப்பகம் (%1$s %2$s, tar.bz2) மற்றும் காப்பகத்தில் இல்லாத துணைக் கோப்பு %3$s தேவை. இந்தச் சாதனத்திலிருந்து கோப்புகளைத் தேர்ந்தெடுக்கவும். எதுவும் பதிவிறக்கப்படாது.</string>
+    <string name="asr_import_missing_message">காப்பகம் ஏற்கப்பட்டது, ஆனால் இந்தக் கோப்புகள் இன்னும் தேவை: %1$s. இந்தச் சாதனத்திலிருந்து அவற்றைத் தேர்ந்தெடுக்கவும். எதுவும் பதிவிறக்கப்படாது.</string>
+    <string name="asr_import_missing_title">துணைக் கோப்பு இல்லை</string>
+    <string name="asr_reason_in_use">மாதிரி பயன்பாட்டில் உள்ளது.</string>
+    <string name="asr_reason_source">தேர்ந்தெடுத்த கோப்பைப் படிக்க முடியவில்லை. அணுகல் ரத்துசெய்யப்பட்டிருக்கலாம் அல்லது படிப்பது தடைப்பட்டிருக்கலாம்.</string>
+    <string name="asr_state_importing">உள்ளூர் கோப்பு நகலெடுக்கப்படுகிறது…</string>
+    <string name="asr_transcribe_reduced">மொபைல் சூடாக உள்ளது: சாதனத்தைப் பாதுகாக்க படியெடுத்தல் வேகம் குறைக்கப்பட்டது.</string>
+    <string name="asr_transcribe_user_paused">நீங்கள் இடைநிறுத்தியுள்ளீர்கள். படியெடுத்தல் பார்வையில் தொடரவும் என்பதைத் தட்டவும்.</string>
+    <string name="asr_transcribe_wait_recording">பதிவு நடைபெறுகிறது: அது நின்றதும் படியெடுத்தல் தொடரும்.</string>
+    <string name="playback_keep_screen_on_state_off">திரையை இயக்கத்தில் வைத்திரு: அணைக்கப்பட்டது</string>
+    <string name="playback_keep_screen_on_state_on">திரையை இயக்கத்தில் வைத்திரு: இயக்கப்பட்டது, எரிந்த பிம்பத்தைக் குறைக்க திரை மங்கலாக்கப்படும்</string>
+    <string name="playback_loading_wait">பதிவு இன்னும் ஏற்றப்பட்டு வருகிறது. தயாரானதும் இயக்கம் தொடங்கும்.</string>
+    <string name="playback_loop_description">இந்தப் பதிவை மீண்டும் இயக்கு</string>
+    <string name="playback_loop_state_off">மீண்டும் இயக்கம்: அணைக்கப்பட்டது</string>
+    <string name="playback_loop_state_on">மீண்டும் இயக்கம்: இயக்கப்பட்டது, இந்தப் பதிவை மீண்டும் இயக்கும்</string>
+    <string name="playback_pause_transcript">படியெடுத்தலை இடைநிறுத்து</string>
+    <string name="playback_recording_unavailable">பதிவை இயக்க முடியாது. படியெடுத்தல் இன்னும் கிடைக்கிறது.</string>
+    <string name="playback_resume_transcript">படியெடுத்தலைத் தொடர்</string>
+    <string name="playback_transcript_reduced">மொபைல் சூடாக உள்ளது: சாதனத்தைப் பாதுகாக்க மெதுவாக இயங்குகிறது.</string>
+    <string name="playback_transcript_user_paused">நீங்கள் இடைநிறுத்தியுள்ளீர்கள்</string>
+    <string name="playback_transcript_waiting_cool">மொபைல் மிகவும் சூடாக உள்ளது: குளிரும் வரை காத்திருக்கிறது. சேமித்த உரை வைக்கப்படும்.</string>
+    <string name="playback_transcript_waiting_recording">பதிவு நடைபெறுகிறது: அது நின்றதும் படியெடுத்தல் தொடரும்.</string>
+    <string name="transcript_back_to_playing">இயக்க நிலைக்குத் திரும்பு</string>
+    <string name="transcript_tap_to_play">அங்கிருந்து பதிவை இயக்க ஒரு பகுதியைத் தட்டவும்.</string>
 </resources>

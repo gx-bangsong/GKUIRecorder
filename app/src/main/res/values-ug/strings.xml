@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">ئوتتۇرا ئىسسىقتا ئاستىلاش</string>
     <string name="asr_moderate_pacing_note">ئۆچۈرۈلگەندە، ئوتتۇرا ئىسسىقتىمۇ يېزىش تولۇق سۈرئەتتە داۋاملىشىدۇ. كۈچلۈك ئىسسىقتا ئۈسكۈنە سوۇغىچە ئۇ يەنىلا توختىتىلىدۇ، سىز ئۆزىڭىز داۋاملاشتۇرالايسىز.</string>
+    <string name="asr_consent_import">يەرلىك مودېل ئىمپورت قىلىش</string>
+    <string name="asr_import_action">يەرلىك مودېل ئىمپورت قىلىش</string>
+    <string name="asr_import_already_installed">بۇ نەشر ئاللىبۇرۇن ئورنىتىلغان. ھېچنېمە كۆچۈرۈلمىدى.</string>
+    <string name="asr_import_busy_wait">چۈشۈرۈش ياكى ئىمپورت ئاللىبۇرۇن ئىجرا بولۇۋاتىدۇ. ئۇ تاماملانغۇچە ساقلاڭ.</string>
+    <string name="asr_import_choose_file">ھۆججەت تاللاش</string>
+    <string name="asr_import_done">مودېل ئىمپورت قىلىندى.</string>
+    <string name="asr_import_in_use">بۇ مودېلنى تىرانسكرىپسىيە ئىشلىتىۋاتىدۇ. مودېلنى ئالماشتۇرۇشتىن ئىلگىرى ئۇ تاماملانغۇچە ساقلاڭ.</string>
+    <string name="asr_import_info">ئىمپورت قىلىش ئۈچۈن رەسمىي ئارخىپ (%1$s %2$s, tar.bz2) ۋە ئارخىپ ئىچىدە بولمىغان %3$s يېرىم ھۆججىتى كېرەك. ھۆججەتلەرنى بۇ ئۈسكۈنىدىن تاللاڭ. ھېچنېمە چۈشۈرۈلمەيدۇ.</string>
+    <string name="asr_import_missing_message">ئارخىپ قوبۇل قىلىندى، لېكىن بۇ ھۆججەتلەر يەنىلا كېرەك: %1$s. ئۇلارنى بۇ ئۈسكۈنىدىن تاللاڭ. ھېچنېمە چۈشۈرۈلمەيدۇ.</string>
+    <string name="asr_import_missing_title">يېرىم ھۆججەت يوق</string>
+    <string name="asr_reason_in_use">مودېل ئىشلىتىلىۋاتىدۇ.</string>
+    <string name="asr_reason_source">تاللانغان ھۆججەتنى ئوقۇغىلى بولمايدۇ. زىيارەت ئېلىش ھوقۇقى بىكار قىلىنغان ياكى ئوقۇش ئۈزۈلگەن بولۇشى مۇمكىن.</string>
+    <string name="asr_state_importing">يەرلىك ھۆججەت كۆچۈرۈلمەكتە…</string>
+    <string name="asr_transcribe_reduced">تېلېفون ئىسسىق: ئۈسكۈنىنى قوغداش ئۈچۈن تىرانسكرىپسىيە ئاستىلاتتى.</string>
+    <string name="asr_transcribe_user_paused">سىز توختاتتىڭىز. تىرانسكرىپسىيە كۆرۈنۈشىدە داۋاملاشتۇرۇش نى چېكىڭ.</string>
+    <string name="asr_transcribe_wait_recording">خاتىرىلەش داۋام قىلىۋاتىدۇ: توختىغاندا تىرانسكرىپسىيە داۋاملىشىدۇ.</string>
+    <string name="playback_keep_screen_on_state_off">ئېكراننى ئوچۇق تۇتۇش: ئۆچۈرۈلدى</string>
+    <string name="playback_keep_screen_on_state_on">ئېكراننى ئوچۇق تۇتۇش: قوزغىتىلدى، كۆيۈش ئىزىنى ئازايتىش ئۈچۈن ئېكران سۇس بولىدۇ</string>
+    <string name="playback_loading_wait">خاتىرە يەنىلا يۈكلىنىۋاتىدۇ. تەييار بولغاندا ئويناش باشلىنىدۇ.</string>
+    <string name="playback_loop_description">بۇ خاتىرىنى تەكرارلاش</string>
+    <string name="playback_loop_state_off">تەكرارلاش: ئۆچۈرۈلدى</string>
+    <string name="playback_loop_state_on">تەكرارلاش: قوزغىتىلدى، بۇ خاتىرە تەكرارلىنىدۇ</string>
+    <string name="playback_pause_transcript">تىرانسكرىپسىيىنى توختىتىش</string>
+    <string name="playback_recording_unavailable">خاتىرىنى ئوينىغىلى بولمايدۇ. تىرانسكرىپسىيە يەنىلا بار.</string>
+    <string name="playback_resume_transcript">تىرانسكرىپسىيىنى داۋاملاشتۇرۇش</string>
+    <string name="playback_transcript_reduced">تېلېفون ئىسسىق: ئۈسكۈنىنى قوغداش ئۈچۈن ئاستا ئىشلەيدۇ.</string>
+    <string name="playback_transcript_user_paused">سىز توختاتتىڭىز</string>
+    <string name="playback_transcript_waiting_cool">تېلېفون بەك ئىسسىق: سوۇشنى كۈتىۋاتىدۇ. ساقلانغان تېكىست ساقلىنىدۇ.</string>
+    <string name="playback_transcript_waiting_recording">خاتىرىلەش داۋام قىلىۋاتىدۇ: توختىغاندا تىرانسكرىپسىيە داۋاملىشىدۇ.</string>
+    <string name="transcript_back_to_playing">ئويناش ئورنىغا قايتىش</string>
+    <string name="transcript_tap_to_play">خاتىرىنى شۇ يەردىن ئويناش ئۈچۈن بىر بۆلەكنى چېكىڭ.</string>
 </resources>
