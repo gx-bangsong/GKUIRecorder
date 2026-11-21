@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Velocidade de reprodución</string>
     <string name="playback_keep_screen_on">Manter a pantalla acesa</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d seleccionados</item>
+        <item quantity="other">%d seleccionados</item>
+    </plurals>
 </resources>

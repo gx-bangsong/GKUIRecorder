@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Astar a\' chluich</string>
     <string name="playback_keep_screen_on">Cùm an sgrìon air</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d air a thaghadh</item>
+        <item quantity="other">%d air a thaghadh</item>
+    </plurals>
 </resources>
