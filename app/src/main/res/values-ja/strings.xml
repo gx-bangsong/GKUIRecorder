@@ -61,4 +61,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">中程度の発熱時は減速</string>
     <string name="asr_moderate_pacing_note">オフにすると、中程度の発熱時も文字起こしは全速で動作します。強い発熱時は、機器が冷えるまで引き続き一時停止し、手動で再開できます。</string>
+    <string name="asr_consent_import">ローカルモデルを読み込む</string>
+    <string name="asr_import_action">ローカルモデルを読み込む</string>
+    <string name="asr_import_already_installed">このバージョンは既にインストールされています。コピーは行われていません。</string>
+    <string name="asr_import_busy_wait">ダウンロードまたは読み込みが実行中です。完了するまでお待ちください。</string>
+    <string name="asr_import_choose_file">ファイルを選択</string>
+    <string name="asr_import_done">モデルを読み込みました。</string>
+    <string name="asr_import_in_use">文字起こしがこのモデルを使用しています。完了してからモデルを置き換えてください。</string>
+    <string name="asr_import_info">読み込みには公式アーカイブ（%1$s %2$s、tar.bz2）と、アーカイブ内にない付属ファイル %3$s が必要です。この端末からファイルを選択してください。何もダウンロードされません。</string>
+    <string name="asr_import_missing_message">アーカイブは受け付けられましたが、次のファイルがまだ必要です: %1$s。この端末から選択してください。何もダウンロードされません。</string>
+    <string name="asr_import_missing_title">付属ファイルがありません</string>
+    <string name="asr_reason_in_use">モデルは使用中です。</string>
+    <string name="asr_reason_source">選択したファイルを読み取れません。アクセス権が取り消されたか、読み取りが中断された可能性があります。</string>
+    <string name="asr_state_importing">ローカルファイルをコピーしています…</string>
+    <string name="asr_transcribe_reduced">端末が熱くなっているため、端末を保護するために文字起こしの速度を落としています。</string>
+    <string name="asr_transcribe_user_paused">一時停止中です。文字起こし画面で「再開」をタップしてください。</string>
+    <string name="asr_transcribe_wait_recording">録音中です。録音が停止すると文字起こしを再開します。</string>
+    <string name="playback_keep_screen_on_state_off">画面を点けたままにする: オフ</string>
+    <string name="playback_keep_screen_on_state_on">画面を点けたままにする: オン（焼き付きを防ぐため画面を暗くします）</string>
+    <string name="playback_loading_wait">録音を読み込み中です。準備ができたら再生を開始します。</string>
+    <string name="playback_loop_description">この録音を繰り返す</string>
+    <string name="playback_loop_state_off">繰り返し: オフ</string>
+    <string name="playback_loop_state_on">繰り返し: オン（この録音を繰り返します）</string>
+    <string name="playback_pause_transcript">文字起こしを一時停止</string>
+    <string name="playback_recording_unavailable">録音を再生できません。文字起こしは引き続き利用できます。</string>
+    <string name="playback_resume_transcript">文字起こしを再開</string>
+    <string name="playback_transcript_reduced">端末が熱くなっているため、端末を保護するために動作を遅くしています。</string>
+    <string name="playback_transcript_user_paused">一時停止中</string>
+    <string name="playback_transcript_waiting_cool">端末が熱すぎるため、冷えるまで待機しています。保存されたテキストは保持されます。</string>
+    <string name="playback_transcript_waiting_recording">録音中です。録音が停止すると文字起こしを再開します。</string>
+    <string name="transcript_back_to_playing">再生位置に戻る</string>
+    <string name="transcript_tap_to_play">セグメントをタップすると、そこから録音を再生します。</string>
 </resources>

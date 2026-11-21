@@ -61,4 +61,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Perlambat saat panas sedang</string>
     <string name="asr_moderate_pacing_note">Saat dimatikan, transkripsi tetap berjalan penuh saat panas sedang. Panas tinggi tetap menjedanya hingga perangkat dingin, dan Anda dapat melanjutkannya sendiri.</string>
+    <string name="asr_consent_import">Impor model lokal</string>
+    <string name="asr_import_action">Impor model lokal</string>
+    <string name="asr_import_already_installed">Versi ini sudah terpasang. Tidak ada yang disalin.</string>
+    <string name="asr_import_busy_wait">Unduhan atau impor sedang berjalan. Tunggu hingga selesai.</string>
+    <string name="asr_import_choose_file">Pilih file</string>
+    <string name="asr_import_done">Model berhasil diimpor.</string>
+    <string name="asr_import_in_use">Transkripsi sedang memakai model ini. Tunggu hingga selesai sebelum mengganti model.</string>
+    <string name="asr_import_info">Impor memerlukan arsip resmi (%1$s %2$s, tar.bz2) dan file pendamping %3$s, yang tidak ada di dalam arsip. Pilih file dari perangkat ini. Tidak ada yang diunduh.</string>
+    <string name="asr_import_missing_message">Arsip diterima, tetapi file berikut masih diperlukan: %1$s. Pilih dari perangkat ini. Tidak ada yang diunduh.</string>
+    <string name="asr_import_missing_title">File pendamping tidak ada</string>
+    <string name="asr_reason_in_use">Model sedang digunakan.</string>
+    <string name="asr_reason_source">File yang dipilih tidak dapat dibaca. Akses mungkin dicabut atau pembacaan terhenti.</string>
+    <string name="asr_state_importing">Menyalin file lokal…</string>
+    <string name="asr_transcribe_reduced">Ponsel hangat: transkripsi diperlambat untuk melindungi perangkat.</string>
+    <string name="asr_transcribe_user_paused">Dijeda oleh Anda. Ketuk Lanjutkan di tampilan transkripsi.</string>
+    <string name="asr_transcribe_wait_recording">Perekaman sedang berlangsung: transkripsi dilanjutkan saat perekaman berhenti.</string>
+    <string name="playback_keep_screen_on_state_off">Biarkan layar menyala: mati</string>
+    <string name="playback_keep_screen_on_state_on">Biarkan layar menyala: nyala, layar diredupkan untuk membatasi burn-in</string>
+    <string name="playback_loading_wait">Rekaman masih dimuat. Pemutaran dimulai saat siap.</string>
+    <string name="playback_loop_description">Ulangi rekaman ini</string>
+    <string name="playback_loop_state_off">Pengulangan mati</string>
+    <string name="playback_loop_state_on">Pengulangan nyala: mengulang rekaman ini</string>
+    <string name="playback_pause_transcript">Jeda transkripsi</string>
+    <string name="playback_recording_unavailable">Rekaman tidak dapat diputar. Transkripsi tetap tersedia.</string>
+    <string name="playback_resume_transcript">Lanjutkan transkripsi</string>
+    <string name="playback_transcript_reduced">Ponsel hangat: berjalan lebih lambat untuk melindungi perangkat.</string>
+    <string name="playback_transcript_user_paused">Dijeda oleh Anda</string>
+    <string name="playback_transcript_waiting_cool">Ponsel terlalu panas: menunggu hingga dingin. Teks tersimpan tetap dipertahankan.</string>
+    <string name="playback_transcript_waiting_recording">Perekaman sedang berlangsung: transkripsi dilanjutkan saat perekaman berhenti.</string>
+    <string name="transcript_back_to_playing">Kembali ke posisi pemutaran</string>
+    <string name="transcript_tap_to_play">Ketuk segmen untuk memutar rekaman dari sana.</string>
 </resources>

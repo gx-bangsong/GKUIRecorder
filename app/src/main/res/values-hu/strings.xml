@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Lassítás mérsékelt melegedésnél</string>
     <string name="asr_moderate_pacing_note">Kikapcsolva az átírás mérsékelt melegedésnél is teljes sebességgel fut. Az erős melegedés továbbra is szünetelteti, amíg az eszköz le nem hűl, és Ön maga folytathatja.</string>
+    <string name="asr_consent_import">Helyi modell importálása</string>
+    <string name="asr_import_action">Helyi modell importálása</string>
+    <string name="asr_import_already_installed">Ez a verzió már telepítve van. Semmi nem lett másolva.</string>
+    <string name="asr_import_busy_wait">Letöltés vagy importálás már folyamatban van. Várja meg, amíg befejeződik.</string>
+    <string name="asr_import_choose_file">Fájl kiválasztása</string>
+    <string name="asr_import_done">A modell importálva.</string>
+    <string name="asr_import_in_use">Egy átírás használja ezt a modellt. Várja meg, amíg befejeződik, mielőtt lecseréli a modellt.</string>
+    <string name="asr_import_info">Az importáláshoz a hivatalos archívum (%1$s %2$s, tar.bz2) és a kísérőfájl (%3$s) szükséges, amely nincs az archívumban. Válassza ki a fájlokat ezen az eszközön. Semmi nem töltődik le.</string>
+    <string name="asr_import_missing_message">Az archívum elfogadva, de ezekre a fájlokra még szükség van: %1$s. Válassza ki őket ezen az eszközön. Semmi nem töltődik le.</string>
+    <string name="asr_import_missing_title">Hiányzik a kísérőfájl</string>
+    <string name="asr_reason_in_use">A modell használatban van.</string>
+    <string name="asr_reason_source">A kiválasztott fájl nem olvasható. Lehet, hogy a hozzáférést visszavonták, vagy az olvasás megszakadt.</string>
+    <string name="asr_state_importing">Helyi fájl másolása…</string>
+    <string name="asr_transcribe_reduced">A telefon meleg: az átírás lassabb lett, hogy védje az eszközt.</string>
+    <string name="asr_transcribe_user_paused">Ön szüneteltette. Koppintson a Folytatás gombra az átírás nézetben.</string>
+    <string name="asr_transcribe_wait_recording">Felvétel folyamatban: az átírás a felvétel leállása után folytatódik.</string>
+    <string name="playback_keep_screen_on_state_off">Képernyő bekapcsolva tartása: ki</string>
+    <string name="playback_keep_screen_on_state_on">Képernyő bekapcsolva tartása: be, a képernyő halványabb lesz, hogy korlátozza a beégést</string>
+    <string name="playback_loading_wait">A felvétel még töltődik. A lejátszás a betöltés után indul.</string>
+    <string name="playback_loop_description">Felvétel ismétlése</string>
+    <string name="playback_loop_state_off">Ismétlés ki</string>
+    <string name="playback_loop_state_on">Ismétlés be: ezt a felvételt ismétli</string>
+    <string name="playback_pause_transcript">Átírás szüneteltetése</string>
+    <string name="playback_recording_unavailable">A felvétel nem játszható le. Az átirat továbbra is elérhető.</string>
+    <string name="playback_resume_transcript">Átírás folytatása</string>
+    <string name="playback_transcript_reduced">A telefon meleg: lassabban fut, hogy védje az eszközt.</string>
+    <string name="playback_transcript_user_paused">Ön szüneteltette</string>
+    <string name="playback_transcript_waiting_cool">A telefon túl meleg: lehűlésre vár. A mentett szöveg megmarad.</string>
+    <string name="playback_transcript_waiting_recording">Felvétel folyamatban: az átírás a felvétel leállása után folytatódik.</string>
+    <string name="transcript_back_to_playing">Vissza a lejátszási pozícióhoz</string>
+    <string name="transcript_tap_to_play">Koppintson egy szakaszra, hogy onnan játssza le a felvételt.</string>
 </resources>
