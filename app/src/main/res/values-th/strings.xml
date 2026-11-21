@@ -236,4 +236,8 @@
     <string name="list_edit_confirm">เปลี่ยน</string>
     <string name="delete_all_message">ต้องการลบการบันทึกทั้งหมดหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
     <string name="delete_selected_message">ต้องการลบการบันทึกที่เลือกหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">เลือกแล้ว %d</item>
+        <item quantity="other">เลือกแล้ว %d</item>
+    </plurals>
 </resources>

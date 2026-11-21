@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Rýchlosť prehrávania</string>
     <string name="playback_keep_screen_on">Ponechať obrazovku zapnutú</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">Vybraté: %d</item>
+        <item quantity="other">Vybraté: %d</item>
+    </plurals>
 </resources>

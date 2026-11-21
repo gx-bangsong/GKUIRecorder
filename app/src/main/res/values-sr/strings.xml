@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Брзина репродукције</string>
     <string name="playback_keep_screen_on">Држи екран укљученим</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">Изабрано: %d</item>
+        <item quantity="other">Изабрано: %d</item>
+    </plurals>
 </resources>
