@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">ಪ್ಲೇಬ್ಯಾಕ್ ವೇಗ</string>
     <string name="playback_keep_screen_on">ಪರದೆಯನ್ನು ಆನ್ ಆಗಿರಿಸಿ</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</item>
+        <item quantity="other">%d ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</item>
+    </plurals>
 </resources>

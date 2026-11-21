@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">დაკვრის სიჩქარე</string>
     <string name="playback_keep_screen_on">ეკრანი ჩართული დარჩეს</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">არჩეულია %d</item>
+        <item quantity="other">არჩეულია %d</item>
+    </plurals>
 </resources>

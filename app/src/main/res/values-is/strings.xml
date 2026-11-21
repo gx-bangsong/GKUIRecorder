@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Spilunarhraði</string>
     <string name="playback_keep_screen_on">Halda skjánum vakandi</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d valin</item>
+        <item quantity="other">%d valin</item>
+    </plurals>
 </resources>
