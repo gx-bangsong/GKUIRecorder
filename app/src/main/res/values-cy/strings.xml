@@ -238,7 +238,7 @@
     <string name="playback_speed_title">Cyflymder chwarae</string>
     <string name="playback_keep_screen_on">Cadw\'r sgrin ymlaen</string>
     <plurals name="recording_selection_count">
-        <item quantity="one">%d wedi'u dewis</item>
-        <item quantity="other">%d wedi'u dewis</item>
+        <item quantity="one">%d wedi\'u dewis</item>
+        <item quantity="other">%d wedi\'u dewis</item>
     </plurals>
 </resources>
