@@ -65,4 +65,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Mall ag teas measartha</string>
     <string name="asr_moderate_pacing_note">Nuair atá sé as, rithfidh an trascríobh ar luas iomlán faoi theas measartha. Cuirfidh teas mhór ar sos é fós go dtí go bhfuarófar an gléas, agus is féidir leat é a atosú féin.</string>
+    <string name="asr_consent_import">Iompórtáil samhail áitiúil</string>
+    <string name="asr_import_action">Iompórtáil samhail áitiúil</string>
+    <string name="asr_import_already_installed">Tá an leagan seo suiteáilte cheana. Níor cóipeáladh aon rud.</string>
+    <string name="asr_import_busy_wait">Tá íoslódáil nó iompórtáil ar siúl cheana. Fan go gcríochnófar í.</string>
+    <string name="asr_import_choose_file">Roghnaigh comhad</string>
+    <string name="asr_import_done">Iompórtáladh an tsamhail.</string>
+    <string name="asr_import_in_use">Tá trascríobh ag úsáid na samhla seo. Fan go gcríochnaítear é sula gcuirfidh tú samhail nua ina háit.</string>
+    <string name="asr_import_info">Teastaíonn an cartlann oifigiúil (%1$s %2$s, tar.bz2) agus an comhad tacaíochta %3$s, nach bhfuil istigh sa chartlann, chun iompórtáil. Roghnaigh na comhaid ón bhfeiste seo. Ní íoslódáiltear aon rud.</string>
+    <string name="asr_import_missing_message">Glacadh leis an gcartlann, ach tá na comhaid seo fós ag teastáil: %1$s. Roghnaigh iad ón bhfeiste seo. Ní íoslódáiltear aon rud.</string>
+    <string name="asr_import_missing_title">Comhad tacaíochta ar iarraidh</string>
+    <string name="asr_reason_in_use">Tá an tsamhail in úsáid.</string>
+    <string name="asr_reason_source">Ní féidir an comhad roghnaithe a léamh. Is féidir go ndearnadh an rochtain a aisghairm nó go stad an léamh.</string>
+    <string name="asr_state_importing">Comhad áitiúil á chóipeáil…</string>
+    <string name="asr_transcribe_reduced">Tá an fón te: tá an trascríobh mall chun an fheiste a chosaint.</string>
+    <string name="asr_transcribe_user_paused">Curtha ar sos agat. Tapáil Atosaigh san amharc trascríobh.</string>
+    <string name="asr_transcribe_wait_recording">Taifeadadh ar siúl: leanfaidh an trascríobh nuair a stopfaidh sé.</string>
+    <string name="playback_keep_screen_on_state_off">Coinnigh an scáileán ar siúl: as</string>
+    <string name="playback_keep_screen_on_state_on">Coinnigh an scáileán ar siúl: ar siúl, déantar an scáileán a dhorchú chun dónna scáileáin a theorannú</string>
+    <string name="playback_loading_wait">Tá an taifead fós ag lódáil. Tosóidh an seinm nuair a bheidh sé réidh.</string>
+    <string name="playback_loop_description">Athdhéan an taifead seo</string>
+    <string name="playback_loop_state_off">Athdhéanamh as</string>
+    <string name="playback_loop_state_on">Athdhéanamh ar siúl: déanann an taifead seo arís agus arís eile</string>
+    <string name="playback_pause_transcript">Cuir an trascríobh ar sos</string>
+    <string name="playback_recording_unavailable">Ní féidir an taifead a sheinm. Tá an trascríobh fós ar fáil.</string>
+    <string name="playback_resume_transcript">Atosaigh an trascríobh</string>
+    <string name="playback_transcript_reduced">Tá an fón te: ag rith níos moille chun an fheiste a chosaint.</string>
+    <string name="playback_transcript_user_paused">Curtha ar sos agat</string>
+    <string name="playback_transcript_waiting_cool">Tá an fón rótheo: ag fanacht le fuarú. Coinnítear an téacs sábháilte.</string>
+    <string name="playback_transcript_waiting_recording">Taifeadadh ar siúl: leanfaidh an trascríobh nuair a stopfaidh sé.</string>
+    <string name="transcript_back_to_playing">Ar ais go suíomh an seinnteora</string>
+    <string name="transcript_tap_to_play">Tapáil earrach chun an taifead a sheinm ón bpointe sin.</string>
 </resources>

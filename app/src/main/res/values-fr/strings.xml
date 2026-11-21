@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Ralentir en cas de chauffe modérée</string>
     <string name="asr_moderate_pacing_note">Désactivé, la transcription garde sa pleine vitesse en cas de chauffe modérée. Une chauffe forte la met toujours en pause jusqu\'au refroidissement de l\'appareil, et vous pouvez la reprendre vous-même.</string>
+    <string name="asr_consent_import">Importer un modèle local</string>
+    <string name="asr_import_action">Importer un modèle local</string>
+    <string name="asr_import_already_installed">Cette version est déjà installée. Aucune copie n\'a été faite.</string>
+    <string name="asr_import_busy_wait">Un téléchargement ou un import est déjà en cours. Attendez qu\'il se termine.</string>
+    <string name="asr_import_choose_file">Choisir un fichier</string>
+    <string name="asr_import_done">Modèle importé.</string>
+    <string name="asr_import_in_use">Une transcription utilise ce modèle. Attendez qu\'elle se termine avant de remplacer le modèle.</string>
+    <string name="asr_import_info">L\'import nécessite l\'archive officielle (%1$s %2$s, tar.bz2) et le fichier d\'accompagnement %3$s, qui ne se trouve pas dans l\'archive. Choisissez les fichiers sur cet appareil. Rien n\'est téléchargé.</string>
+    <string name="asr_import_missing_message">L\'archive a été acceptée, mais ces fichiers sont encore nécessaires : %1$s. Choisissez-les sur cet appareil. Rien n\'est téléchargé.</string>
+    <string name="asr_import_missing_title">Fichier d\'accompagnement manquant</string>
+    <string name="asr_reason_in_use">Le modèle est utilisé.</string>
+    <string name="asr_reason_source">Le fichier choisi ne peut pas être lu. L\'accès a peut-être été révoqué ou la lecture a été interrompue.</string>
+    <string name="asr_state_importing">Copie du fichier local…</string>
+    <string name="asr_transcribe_reduced">Le téléphone est chaud : la transcription a ralenti pour protéger l\'appareil.</string>
+    <string name="asr_transcribe_user_paused">Mise en pause par vous. Appuyez sur Reprendre dans la vue de transcription.</string>
+    <string name="asr_transcribe_wait_recording">Enregistrement en cours : la transcription reprendra à son arrêt.</string>
+    <string name="playback_keep_screen_on_state_off">Garder l\'écran allumé : désactivé</string>
+    <string name="playback_keep_screen_on_state_on">Garder l\'écran allumé : activé, l\'écran est assombri pour limiter la rémanence</string>
+    <string name="playback_loading_wait">L\'enregistrement est encore en cours de chargement. La lecture démarrera dès qu\'il sera prêt.</string>
+    <string name="playback_loop_description">Répéter cet enregistrement</string>
+    <string name="playback_loop_state_off">Répétition désactivée</string>
+    <string name="playback_loop_state_on">Répétition activée : répète cet enregistrement</string>
+    <string name="playback_pause_transcript">Mettre la transcription en pause</string>
+    <string name="playback_recording_unavailable">L\'enregistrement ne peut pas être lu. La transcription reste disponible.</string>
+    <string name="playback_resume_transcript">Reprendre la transcription</string>
+    <string name="playback_transcript_reduced">Le téléphone est chaud : fonctionnement ralenti pour protéger l\'appareil.</string>
+    <string name="playback_transcript_user_paused">Mise en pause par vous</string>
+    <string name="playback_transcript_waiting_cool">Le téléphone est trop chaud : il attend de refroidir. Le texte enregistré est conservé.</string>
+    <string name="playback_transcript_waiting_recording">Enregistrement en cours : la transcription reprendra à son arrêt.</string>
+    <string name="transcript_back_to_playing">Retour à la position de lecture</string>
+    <string name="transcript_tap_to_play">Touchez un segment pour lire l\'enregistrement à partir de ce point.</string>
 </resources>
