@@ -218,4 +218,22 @@
     <string name="recording_deleted">การบันทึกนี้ถูกลบแล้ว</string>
     <string name="playback_speed_title">ความเร็วในการเล่น</string>
     <string name="playback_keep_screen_on">เปิดหน้าจอค้างไว้</string>
+    <string name="delete_recording_message">ต้องการลบการบันทึกนี้จริงหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
+    <string name="confirm_result_title">ใช้การบันทึกนี้หรือไม่?</string>
+    <string name="confirm_result_message">ต้องการใช้การบันทึกล่าสุดหรือไม่?</string>
+    <string name="settings_location_message">ติดแท็กการบันทึกด้วยตำแหน่งปัจจุบันของคุณ</string>
+    <string name="settings_quality_high">บันทึกในคุณภาพสูง</string>
+    <string name="dialog_permissions_phone">Recorder ต้องการสิทธิ์เข้าถึงสถานะโทรศัพท์เพื่อป้องกันไม่ให้แอปนี้บันทึกขณะที่คุณกำลังโทรอยู่</string>
+    <string name="dialog_permissions_notifications">Recorder ต้องการสิทธิ์การแจ้งเตือนเพื่อแสดงตัวควบคุมการบันทึก</string>
+    <string name="dialog_permissions_mic_phone">Recorder ต้องการสิทธิ์ไมโครโฟนเพื่อบันทึกเสียง และสิทธิ์เข้าถึงสถานะโทรศัพท์เพื่อป้องกันไม่ให้แอปนี้บันทึกขณะที่คุณกำลังโทรอยู่</string>
+    <string name="dialog_permissions_mic_notifications">Recorder ต้องการสิทธิ์ไมโครโฟนเพื่อบันทึกเสียง และสิทธิ์การแจ้งเตือนเพื่อแสดงตัวควบคุมการบันทึก</string>
+    <string name="dialog_permissions_phone_notifications">Recorder ต้องการสิทธิ์เข้าถึงสถานะโทรศัพท์เพื่อป้องกันไม่ให้แอปนี้บันทึกขณะที่คุณกำลังโทรอยู่ และสิทธิ์การแจ้งเตือนเพื่อแสดงตัวควบคุมการบันทึก</string>
+    <string name="dialog_permissions_mic_phone_notifications">Recorder ต้องการสิทธิ์ไมโครโฟนเพื่อบันทึกเสียง สิทธิ์เข้าถึงสถานะโทรศัพท์เพื่อป้องกันไม่ให้แอปนี้บันทึกขณะที่คุณกำลังโทรอยู่ และสิทธิ์การแจ้งเตือนเพื่อแสดงตัวควบคุมการบันทึก</string>
+    <string name="dialog_permissions_location">Recorder ต้องการสิทธิ์ตำแหน่งเพื่อติดแท็กการบันทึกโดยอัตโนมัติ ช่วยให้จัดระเบียบได้ง่ายขึ้น</string>
+    <string name="snack_permissions_no_permission">สิทธิ์ที่จำเป็นถูกปฏิเสธ เปิดใช้งานได้จากแอปการตั้งค่าเพื่อเริ่มการบันทึก</string>
+    <string name="snack_permissions_no_permission_location">สิทธิ์ตำแหน่งถูกปฏิเสธ เปิดใช้งานได้จากแอปการตั้งค่าเพื่อติดแท็กการบันทึก</string>
+    <string name="list_error_empty">การบันทึกทั้งหมดของคุณจะแสดงที่นี่</string>
+    <string name="list_edit_confirm">เปลี่ยน</string>
+    <string name="delete_all_message">ต้องการลบการบันทึกทั้งหมดหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
+    <string name="delete_selected_message">ต้องการลบการบันทึกที่เลือกหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้</string>
 </resources>

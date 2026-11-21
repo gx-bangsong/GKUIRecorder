@@ -234,4 +234,10 @@
     <string name="recording_deleted">Den här inspelningen har tagits bort.</string>
     <string name="playback_speed_title">Uppspelningshastighet</string>
     <string name="playback_keep_screen_on">Håll skärmen på</string>
+    <string name="discard">Kassera</string>
+    <string name="confirm_result_title">Använda inspelningen?</string>
+    <string name="confirm_result_message">Vill du använda den senaste inspelningen?</string>
+    <string name="settings_location_message">Tagga dina inspelningar med din aktuella plats</string>
+    <string name="settings_quality_high">Spela in i hög kvalitet</string>
+    <string name="snack_permissions_no_permission_location">Platsbehörigheten nekades. Aktivera den i appen Inställningar för att tagga dina inspelningar</string>
 </resources>
