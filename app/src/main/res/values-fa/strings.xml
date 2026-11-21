@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">کند کردن در گرمای متوسط</string>
     <string name="asr_moderate_pacing_note">وقتی خاموش باشد، رونویسی در گرمای متوسط با سرعت کامل ادامه می‌یابد. گرمای شدید همچنان آن را متوقف می‌کند تا دستگاه خنک شود و می‌توانید خودتان ادامه دهید.</string>
+    <string name="asr_consent_import">وارد کردن مدل محلی</string>
+    <string name="asr_import_action">وارد کردن مدل محلی</string>
+    <string name="asr_import_already_installed">این نسخه از قبل نصب شده است. چیزی کپی نشد.</string>
+    <string name="asr_import_busy_wait">یک دانلود یا وارد کردن از قبل در حال انجام است. صبر کنید تا تمام شود.</string>
+    <string name="asr_import_choose_file">انتخاب فایل</string>
+    <string name="asr_import_done">مدل وارد شد.</string>
+    <string name="asr_import_in_use">یک رونویسی از این مدل استفاده می‌کند. پیش از جایگزینی مدل صبر کنید تا تمام شود.</string>
+    <string name="asr_import_info">وارد کردن به بایگانی رسمی (%1$s %2$s، tar.bz2) و فایل همراه %3$s نیاز دارد که داخل بایگانی نیست. فایل‌ها را از این دستگاه انتخاب کنید. چیزی دانلود نمی‌شود.</string>
+    <string name="asr_import_missing_message">بایگانی پذیرفته شد، اما هنوز این فایل‌ها لازم است: %1$s. آن‌ها را از این دستگاه انتخاب کنید. چیزی دانلود نمی‌شود.</string>
+    <string name="asr_import_missing_title">فایل همراه موجود نیست</string>
+    <string name="asr_reason_in_use">مدل در حال استفاده است.</string>
+    <string name="asr_reason_source">فایل انتخاب‌شده خوانده نمی‌شود. ممکن است دسترسی لغو شده باشد یا خواندن قطع شده باشد.</string>
+    <string name="asr_state_importing">در حال کپی فایل محلی…</string>
+    <string name="asr_transcribe_reduced">گوشی گرم است: رونویسی برای محافظت از دستگاه کندتر شده است.</string>
+    <string name="asr_transcribe_user_paused">توسط شما متوقف شد. در نمای رونویسی روی ادامه ضربه بزنید.</string>
+    <string name="asr_transcribe_wait_recording">ضبط در حال انجام است: رونویسی وقتی ضبط متوقف شود ادامه می‌یابد.</string>
+    <string name="playback_keep_screen_on_state_off">روشن نگه داشتن صفحه: خاموش</string>
+    <string name="playback_keep_screen_on_state_on">روشن نگه داشتن صفحه: روشن، صفحه کم‌نور می‌شود تا ماندگاری تصویر محدود شود</string>
+    <string name="playback_loading_wait">ضبط هنوز در حال بارگذاری است. پخش وقتی آماده شد شروع می‌شود.</string>
+    <string name="playback_loop_description">تکرار این ضبط</string>
+    <string name="playback_loop_state_off">تکرار خاموش</string>
+    <string name="playback_loop_state_on">تکرار روشن: این ضبط را تکرار می‌کند</string>
+    <string name="playback_pause_transcript">توقف رونویسی</string>
+    <string name="playback_recording_unavailable">ضبط قابل پخش نیست. رونویسی همچنان در دسترس است.</string>
+    <string name="playback_resume_transcript">ادامه رونویسی</string>
+    <string name="playback_transcript_reduced">گوشی گرم است: برای محافظت از دستگاه کندتر کار می‌کند.</string>
+    <string name="playback_transcript_user_paused">توسط شما متوقف شد</string>
+    <string name="playback_transcript_waiting_cool">گوشی خیلی داغ است: منتظر خنک شدن است. متن ذخیره‌شده حفظ می‌شود.</string>
+    <string name="playback_transcript_waiting_recording">ضبط در حال انجام است: رونویسی وقتی ضبط متوقف شود ادامه می‌یابد.</string>
+    <string name="transcript_back_to_playing">بازگشت به موقعیت پخش</string>
+    <string name="transcript_tap_to_play">روی یک بخش ضربه بزنید تا ضبط از آنجا پخش شود.</string>
 </resources>

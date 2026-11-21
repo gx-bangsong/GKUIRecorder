@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Επιβράδυνση σε μέτρια θερμότητα</string>
     <string name="asr_moderate_pacing_note">Όταν είναι απενεργοποιημένο, η μεταγραφή συνεχίζει με πλήρη ταχύτητα σε μέτρια θερμότητα. Η έντονη θερμότητα εξακολουθεί να τη θέτει σε παύση έως ότου κρυώσει η συσκευή, και μπορείτε να τη συνεχίσετε χειροκίνητα.</string>
+    <string name="asr_consent_import">Εισαγωγή τοπικού μοντέλου</string>
+    <string name="asr_import_action">Εισαγωγή τοπικού μοντέλου</string>
+    <string name="asr_import_already_installed">Αυτή η έκδοση είναι ήδη εγκατεστημένη. Δεν αντιγράφηκε τίποτα.</string>
+    <string name="asr_import_busy_wait">Μια λήψη ή εισαγωγή εκτελείται ήδη. Περιμένετε να ολοκληρωθεί.</string>
+    <string name="asr_import_choose_file">Επιλογή αρχείου</string>
+    <string name="asr_import_done">Το μοντέλο εισήχθη.</string>
+    <string name="asr_import_in_use">Μια μεταγραφή χρησιμοποιεί αυτό το μοντέλο. Περιμένετε να ολοκληρωθεί πριν αντικαταστήσετε το μοντέλο.</string>
+    <string name="asr_import_info">Η εισαγωγή απαιτεί το επίσημο αρχείο (%1$s %2$s, tar.bz2) και το συνοδευτικό αρχείο %3$s, το οποίο δεν περιλαμβάνεται στο αρχείο. Επιλέξτε αρχεία από αυτή τη συσκευή. Δεν γίνεται καμία λήψη.</string>
+    <string name="asr_import_missing_message">Το αρχείο έγινε δεκτό, αλλά εξακολουθούν να λείπουν αυτά τα αρχεία: %1$s. Επιλέξτε τα από αυτή τη συσκευή. Δεν γίνεται καμία λήψη.</string>
+    <string name="asr_import_missing_title">Λείπει συνοδευτικό αρχείο</string>
+    <string name="asr_reason_in_use">Το μοντέλο χρησιμοποιείται.</string>
+    <string name="asr_reason_source">Δεν είναι δυνατή η ανάγνωση του επιλεγμένου αρχείου. Η πρόσβαση ενδέχεται να ανακλήθηκε ή η ανάγνωση διακόπηκε.</string>
+    <string name="asr_state_importing">Αντιγραφή τοπικού αρχείου…</string>
+    <string name="asr_transcribe_reduced">Το τηλέφωνο είναι ζεστό: η μεταγραφή επιβραδύνθηκε για την προστασία της συσκευής.</string>
+    <string name="asr_transcribe_user_paused">Σε παύση από εσάς. Πατήστε Συνέχιση στην προβολή μεταγραφής.</string>
+    <string name="asr_transcribe_wait_recording">Εγγραφή σε εξέλιξη: η μεταγραφή θα συνεχιστεί όταν σταματήσει.</string>
+    <string name="playback_keep_screen_on_state_off">Διατήρηση ενεργής οθόνης: ανενεργή</string>
+    <string name="playback_keep_screen_on_state_on">Διατήρηση ενεργής οθόνης: ενεργή, η οθόνη μειώνεται για να περιοριστεί το εγκαύμα</string>
+    <string name="playback_loading_wait">Η εγγραφή φορτώνει ακόμη. Η αναπαραγωγή θα ξεκινήσει όταν είναι έτοιμη.</string>
+    <string name="playback_loop_description">Επανάληψη αυτής της εγγραφής</string>
+    <string name="playback_loop_state_off">Επανάληψη ανενεργή</string>
+    <string name="playback_loop_state_on">Επανάληψη ενεργή: επαναλαμβάνει αυτή την εγγραφή</string>
+    <string name="playback_pause_transcript">Παύση μεταγραφής</string>
+    <string name="playback_recording_unavailable">Η εγγραφή δεν μπορεί να αναπαραχθεί. Η μεταγραφή εξακολουθεί να είναι διαθέσιμη.</string>
+    <string name="playback_resume_transcript">Συνέχιση μεταγραφής</string>
+    <string name="playback_transcript_reduced">Το τηλέφωνο είναι ζεστό: λειτουργεί πιο αργά για την προστασία της συσκευής.</string>
+    <string name="playback_transcript_user_paused">Σε παύση από εσάς</string>
+    <string name="playback_transcript_waiting_cool">Το τηλέφωνο είναι πολύ ζεστό: περιμένει να κρυώσει. Το αποθηκευμένο κείμενο διατηρείται.</string>
+    <string name="playback_transcript_waiting_recording">Εγγραφή σε εξέλιξη: η μεταγραφή θα συνεχιστεί όταν σταματήσει.</string>
+    <string name="transcript_back_to_playing">Επιστροφή στη θέση αναπαραγωγής</string>
+    <string name="transcript_tap_to_play">Πατήστε ένα τμήμα για να αναπαραγάγετε την εγγραφή από εκεί.</string>
 </resources>
