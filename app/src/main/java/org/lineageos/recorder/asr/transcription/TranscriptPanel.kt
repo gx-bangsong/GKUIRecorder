@@ -5,6 +5,8 @@
 
 package org.lineageos.recorder.asr.transcription
 
+import org.lineageos.recorder.asr.RunPhase
+
 /** What the transcript view shows as its status line. The body text is separate. */
 enum class TranscriptPanelState {
     /** No transcript exists for the recording. */
@@ -44,6 +46,8 @@ data class TranscriptPanel(
     val canStart: Boolean,
     /** The user may cancel a run that is still active. */
     val canCancel: Boolean,
+    /** What an active run is doing: reduced speed, waiting for cooling, or waiting for a recording. */
+    val phase: RunPhase = RunPhase.FULL,
 ) {
     val hasBody: Boolean get() = body.isNotBlank()
 }
@@ -53,7 +57,7 @@ object TranscriptPanels {
      * Maps the stored record and whether a run is active right now to the panel. [active] comes
      * from the work scheduler. A RUNNING record without an active run is an interrupted run.
      */
-    fun of(record: TranscriptRecord?, active: Boolean): TranscriptPanel {
+    fun of(record: TranscriptRecord?, active: Boolean, phase: RunPhase = RunPhase.FULL): TranscriptPanel {
         if (record == null) {
             return TranscriptPanel(TranscriptPanelState.NONE, 0, "", canStart = true, canCancel = false)
         }
@@ -64,7 +68,14 @@ object TranscriptPanels {
         val body = record.text
         return when (record.status) {
             TranscriptStatus.QUEUED, TranscriptStatus.RUNNING -> if (active) {
-                TranscriptPanel(TranscriptPanelState.RUNNING, percent, body, canStart = false, canCancel = true)
+                TranscriptPanel(
+                    TranscriptPanelState.RUNNING,
+                    percent,
+                    body,
+                    canStart = false,
+                    canCancel = true,
+                    phase = phase,
+                )
             } else {
                 TranscriptPanel(TranscriptPanelState.INTERRUPTED, percent, body, canStart = true, canCancel = false)
             }

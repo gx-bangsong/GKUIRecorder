@@ -28,6 +28,15 @@ object TranscriptionScheduler {
         WorkManager.getInstance(context).getWorkInfosByTag(tag(uri)).get()
             .any { !it.state.isFinished }
 
+    /**
+     * Phase of the active run for [uri], or null when no run is active. Read from the work progress
+     * that the worker publishes. Blocking: call off the main thread.
+     */
+    fun activePhase(context: Context, uri: String): RunPhase? =
+        WorkManager.getInstance(context).getWorkInfosByTag(tag(uri)).get()
+            .firstOrNull { !it.state.isFinished }
+            ?.let { RunPhase.fromName(it.progress.getString(TranscriptionWorker.KEY_PHASE)) }
+
     /** Live state of the transcription work for [uri]. */
     fun liveWork(context: Context, uri: String): LiveData<List<WorkInfo>> =
         WorkManager.getInstance(context).getWorkInfosByTagLiveData(tag(uri))
@@ -44,6 +53,8 @@ object TranscriptionScheduler {
         downloadFirst: Boolean,
     ): Boolean {
         val language = PreferencesManager(context).asrLanguage
+        // A new run starts unpaused, whatever a previous run left behind
+        UserPause.set(context, uri, false)
         val request: OneTimeWorkRequest = OneTimeWorkRequestBuilder<TranscriptionWorker>()
             .setInputData(
                 workDataOf(
@@ -68,6 +79,11 @@ object TranscriptionScheduler {
     }
 
     /** Cancels a queued or running transcription. Finished segments are kept. */
+    /** The user pauses or resumes a run. The worker checks the flag between chunks. */
+    fun setUserPaused(context: Context, uri: String, paused: Boolean) {
+        UserPause.set(context, uri, paused)
+    }
+
     fun cancel(context: Context, uri: String) {
         WorkManager.getInstance(context).cancelAllWorkByTag(tag(uri))
     }

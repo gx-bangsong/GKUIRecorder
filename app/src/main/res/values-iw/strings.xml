@@ -61,4 +61,37 @@
         <item quantity="two">%d נבחרו</item>
         <item quantity="other">%d נבחרו</item>
     </plurals>
+    <string name="asr_moderate_pacing_title">האטה בחום בינוני</string>
+    <string name="asr_moderate_pacing_note">כאשר האפשרות כבויה, התמלול ממשיך במהירות מלאה בחום בינוני. חום עז עדיין עוצר אותו עד שהמכשיר יתקרר, ואפשר להמשיך אותו ידנית.</string>
+    <string name="asr_consent_import">ייבוא מודל מקומי</string>
+    <string name="asr_import_action">ייבוא מודל מקומי</string>
+    <string name="asr_import_already_installed">הגרסה הזו כבר מותקנת. לא הועתק דבר.</string>
+    <string name="asr_import_busy_wait">הורדה או ייבוא כבר פועלים. המתן לסיומם.</string>
+    <string name="asr_import_choose_file">בחירת קובץ</string>
+    <string name="asr_import_done">המודל יובא.</string>
+    <string name="asr_import_in_use">תמלול משתמש במודל הזה. המתן לסיומו לפני החלפת המודל.</string>
+    <string name="asr_import_info">ייבוא דורש את הארכיון הרשמי (%1$s %2$s, tar.bz2) ואת קובץ העזר %3$s, שאינו נמצא בתוך הארכיון. בחר את הקבצים מהמכשיר הזה. לא מורד דבר.</string>
+    <string name="asr_import_missing_message">הארכיון התקבל, אך עדיין נדרשים הקבצים הבאים: %1$s. בחר אותם מהמכשיר הזה. לא מורד דבר.</string>
+    <string name="asr_import_missing_title">קובץ עזר חסר</string>
+    <string name="asr_reason_in_use">המודל נמצא בשימוש.</string>
+    <string name="asr_reason_source">לא ניתן לקרוא את הקובץ שנבחר. ייתכן שההרשאה בוטלה או שהקריאה הופסקה.</string>
+    <string name="asr_state_importing">מעתיק קובץ מקומי…</string>
+    <string name="asr_transcribe_reduced">הטלפון חם: התמלול הואט כדי להגן על המכשיר.</string>
+    <string name="asr_transcribe_user_paused">הושהה על ידך. הקש על המשך בתצוגת התמלול.</string>
+    <string name="asr_transcribe_wait_recording">הקלטה מתבצעת: התמלול ימשיך כשההקלטה תיעצר.</string>
+    <string name="playback_keep_screen_on_state_off">השאר את המסך פועל: כבוי</string>
+    <string name="playback_keep_screen_on_state_on">השאר את המסך פועל: פועל, המסך מעומעם כדי להגביל שריפת תמונה</string>
+    <string name="playback_loading_wait">ההקלטה עדיין נטענת. ההשמעה תתחיל כשהיא תהיה מוכנה.</string>
+    <string name="playback_loop_description">הפעל הקלטה זו בלולאה</string>
+    <string name="playback_loop_state_off">לולאה כבויה</string>
+    <string name="playback_loop_state_on">לולאה פועלת: מחזיר את ההקלטה הזו</string>
+    <string name="playback_pause_transcript">השהה תמלול</string>
+    <string name="playback_recording_unavailable">לא ניתן להשמיע את ההקלטה. התמלול עדיין זמין.</string>
+    <string name="playback_resume_transcript">המשך תמלול</string>
+    <string name="playback_transcript_reduced">הטלפון חם: פועל לאט יותר כדי להגן על המכשיר.</string>
+    <string name="playback_transcript_user_paused">הושהה על ידך</string>
+    <string name="playback_transcript_waiting_cool">הטלפון חם מדי: ממתין להתקררות. הטקסט השמור נשמר.</string>
+    <string name="playback_transcript_waiting_recording">הקלטה מתבצעת: התמלול ימשיך כשההקלטה תיעצר.</string>
+    <string name="transcript_back_to_playing">חזרה למיקום ההשמעה</string>
+    <string name="transcript_tap_to_play">הקש על קטע כדי להשמיע את ההקלטה משם.</string>
 </resources>

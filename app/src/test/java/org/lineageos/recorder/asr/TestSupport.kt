@@ -5,15 +5,20 @@
 
 package org.lineageos.recorder.asr
 
-import com.sun.net.httpserver.HttpExchange
-import com.sun.net.httpserver.HttpServer
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream
 import org.apache.commons.compress.archivers.tar.TarConstants
+import java.io.BufferedInputStream
 import java.io.File
-import java.net.InetSocketAddress
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.InetAddress
+import java.net.ServerSocket
+import java.net.Socket
 import java.nio.file.Files
+import java.util.Collections
 import kotlin.math.min
 
 /** Creates a fresh temporary directory; the caller removes it. */
@@ -66,34 +71,69 @@ class FakeResource(
 )
 
 /**
- * A local HTTP server used in place of the upstream host. Serves [resources] by path and records
- * every Range header it receives.
+ * A local HTTP/1.1 server used in place of the upstream host. Serves [resources] by path and
+ * records every Range and If-Range header it receives.
+ *
+ * Built on java.net.ServerSocket, not com.sun.net.httpserver: the Android unit-test classpath
+ * does not contain the com.sun packages, so that class cannot be compiled here.
+ * Each connection is answered once and closed (Connection: close).
  */
 class FakeRemote : AutoCloseable {
     val resources = mutableMapOf<String, FakeResource>()
-    val seenRanges = mutableListOf<String?>()
-    val seenIfRanges = mutableListOf<String?>()
-    private val server: HttpServer = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
-        createContext("/") { exchange -> handle(exchange) }
+    val seenRanges: MutableList<String?> = Collections.synchronizedList(mutableListOf<String?>())
+    val seenIfRanges: MutableList<String?> = Collections.synchronizedList(mutableListOf<String?>())
+    private val socket = ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"))
+
+    /** Base URL of the local server, for example http://127.0.0.1:12345. */
+    val baseUrl: String = "http://127.0.0.1:${socket.localPort}"
+
+    @Volatile
+    private var running = true
+
+    private val acceptThread = Thread {
+        while (running) {
+            val client = try {
+                socket.accept()
+            } catch (e: IOException) {
+                // Closed by close(), or a broken listener: stop serving
+                break
+            }
+            runCatching { client.use { serve(it) } }
+        }
+    }.apply {
+        isDaemon = true
         start()
     }
 
-    /** Base URL of the local server, for example http://127.0.0.1:12345. */
-    val baseUrl: String = "http://127.0.0.1:${server.address.port}"
-
-    private fun handle(exchange: HttpExchange) {
-        val resource = resources[exchange.requestURI.path]
-        val range = exchange.requestHeaders.getFirst("Range")
+    private fun serve(client: Socket) {
+        client.soTimeout = 10_000
+        val input = BufferedInputStream(client.getInputStream())
+        val requestLine = readLine(input) ?: return
+        val headers = HashMap<String, String>()
+        while (true) {
+            val line = readLine(input) ?: break
+            if (line.isEmpty()) {
+                break
+            }
+            val colon = line.indexOf(':')
+            if (colon > 0) {
+                headers[line.substring(0, colon).trim().lowercase()] = line.substring(colon + 1).trim()
+            }
+        }
+        val path = requestLine.split(' ').getOrNull(1)?.substringBefore('?') ?: "/"
+        val resource = resources[path]
+        val range = headers["range"]
+        val ifRange = headers["if-range"]
         seenRanges += range
-        seenIfRanges += exchange.requestHeaders.getFirst("If-Range")
+        seenIfRanges += ifRange
+
+        val out = client.getOutputStream()
         if (resource == null) {
-            exchange.sendResponseHeaders(404, -1)
-            exchange.close()
+            respond(out, 404, emptyList(), null, 0, 0)
             return
         }
         if (resource.status != 200) {
-            exchange.sendResponseHeaders(resource.status, -1)
-            exchange.close()
+            respond(out, resource.status, emptyList(), null, 0, 0)
             return
         }
         val total = resource.body.size
@@ -102,11 +142,9 @@ class FakeRemote : AutoCloseable {
         if (range != null && resource.honorRange) {
             val from = Regex("bytes=(\\d+)-").find(range)!!.groupValues[1].toInt()
             if (from >= total) {
-                exchange.sendResponseHeaders(416, -1)
-                exchange.close()
+                respond(out, 416, emptyList(), null, 0, 0)
                 return
             }
-            val ifRange = exchange.requestHeaders.getFirst("If-Range")
             val etagChanged = ifRange != null && resource.etag != null && ifRange != resource.etag
             if (!(etagChanged && resource.honorIfRange)) {
                 start = from
@@ -114,21 +152,72 @@ class FakeRemote : AutoCloseable {
             }
         }
         val payload = resource.body.copyOfRange(start, total)
-        resource.etag?.let { exchange.responseHeaders.add("ETag", it) }
+        val headerList = mutableListOf<Pair<String, String>>()
+        resource.etag?.let { headerList += "ETag" to it }
         if (code == 206) {
-            exchange.responseHeaders.add("Content-Range", "bytes $start-${total - 1}/$total")
+            headerList += "Content-Range" to "bytes $start-${total - 1}/$total"
         }
-        exchange.sendResponseHeaders(code, resource.declaredLength ?: payload.size.toLong())
+        val declared = resource.declaredLength ?: payload.size.toLong()
         val sendCount = resource.truncateAt?.let { min(it, payload.size) } ?: payload.size
-        // Flush before a short write: otherwise the JDK server drops buffered headers on close
-        val out = exchange.responseBody
-        out.write(payload, 0, sendCount)
+        respond(out, code, headerList, payload, declared, sendCount)
+    }
+
+    /**
+     * Writes one response. [declaredLength] goes into Content-Length; only [sendCount] bytes of
+     * [payload] are written, so a short body can be simulated. A null payload means no body.
+     */
+    private fun respond(
+        out: OutputStream,
+        code: Int,
+        headers: List<Pair<String, String>>,
+        payload: ByteArray?,
+        declaredLength: Long,
+        sendCount: Int,
+    ) {
+        val head = StringBuilder()
+        head.append("HTTP/1.1 ").append(code).append(' ').append(reason(code)).append("\r\n")
+        head.append("Connection: close\r\n")
+        head.append("Content-Length: ").append(declaredLength).append("\r\n")
+        for ((name, value) in headers) {
+            head.append(name).append(": ").append(value).append("\r\n")
+        }
+        head.append("\r\n")
+        out.write(head.toString().toByteArray(Charsets.ISO_8859_1))
+        if (payload != null && sendCount > 0) {
+            out.write(payload, 0, sendCount)
+        }
         out.flush()
-        runCatching { out.close() }
+    }
+
+    private fun reason(code: Int): String = when (code) {
+        200 -> "OK"
+        206 -> "Partial Content"
+        404 -> "Not Found"
+        416 -> "Range Not Satisfiable"
+        else -> "Status"
+    }
+
+    /** Reads one CRLF-terminated line. Returns null at end of stream. */
+    private fun readLine(input: InputStream): String? {
+        val line = StringBuilder()
+        while (true) {
+            val b = input.read()
+            if (b < 0) {
+                return if (line.isEmpty()) null else line.toString()
+            }
+            if (b == '\n'.code) {
+                return line.toString()
+            }
+            if (b != '\r'.code) {
+                line.append(b.toChar())
+            }
+        }
     }
 
     override fun close() {
-        server.stop(0)
+        running = false
+        runCatching { socket.close() }
+        runCatching { acceptThread.join(2_000) }
     }
 }
 
