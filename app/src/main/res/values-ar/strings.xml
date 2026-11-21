@@ -232,4 +232,8 @@
     <string name="recording_deleted">تم حذف هذا التسجيل.</string>
     <string name="playback_speed_title">سرعة التشغيل</string>
     <string name="playback_keep_screen_on">إبقاء الشاشة مضاءة</string>
+    <string name="dialog_permissions_notifications">يحتاج Recorder إلى إذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
+    <string name="dialog_permissions_mic_notifications">يحتاج Recorder إلى إذن الميكروفون لتسجيل الصوت وإذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
+    <string name="dialog_permissions_phone_notifications">يحتاج Recorder إلى الوصول إلى حالة الهاتف لمنع التطبيق من التسجيل أثناء المكالمة، وإذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
+    <string name="dialog_permissions_mic_phone_notifications">يحتاج Recorder إلى إذن الميكروفون لتسجيل الصوت، والوصول إلى حالة الهاتف لمنع التسجيل أثناء المكالمة، وإذن الإشعارات لعرض عناصر التحكم في التسجيل</string>
 </resources>
