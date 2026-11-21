@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Sakk farten ved moderat overoppheting</string>
     <string name="asr_moderate_pacing_note">Når dette er av, køyrer transkripsjonen i full fart ved moderat overoppheting. Sterk overoppheting set den framleis på pause til eininga har kjølt seg ned, og du kan halde fram sjølv.</string>
+    <string name="asr_consent_import">Importer lokal modell</string>
+    <string name="asr_import_action">Importer lokal modell</string>
+    <string name="asr_import_already_installed">Denne versjonen er allereie installert. Ingenting vart kopiert.</string>
+    <string name="asr_import_busy_wait">Ei nedlasting eller import køyrer allereie. Vent til ho er ferdig.</string>
+    <string name="asr_import_choose_file">Vel fil</string>
+    <string name="asr_import_done">Modellen er importert.</string>
+    <string name="asr_import_in_use">Ei transkribering bruker denne modellen. Vent til ho er ferdig før du erstattar modellen.</string>
+    <string name="asr_import_info">Import krev det offisielle arkivet (%1$s %2$s, tar.bz2) og tilleggsfila %3$s, som ikkje er i arkivet. Vel filene frå denne eininga. Ingenting blir lasta ned.</string>
+    <string name="asr_import_missing_message">Arkivet vart godteke, men desse filene manglar framleis: %1$s. Vel dei frå denne eininga. Ingenting blir lasta ned.</string>
+    <string name="asr_import_missing_title">Tilleggsfil manglar</string>
+    <string name="asr_reason_in_use">Modellen er i bruk.</string>
+    <string name="asr_reason_source">Den valde fila kan ikkje lesast. Tilgangen kan vere trekt tilbake, eller lesinga vart avbroten.</string>
+    <string name="asr_state_importing">Kopierer lokal fil…</string>
+    <string name="asr_transcribe_reduced">Telefonen er varm: transkriberinga er bremsa for å verne eininga.</string>
+    <string name="asr_transcribe_user_paused">Sett på pause av deg. Trykk på Hald fram i transkriberingsvisninga.</string>
+    <string name="asr_transcribe_wait_recording">Opptak går: transkriberinga held fram når opptaket stoppar.</string>
+    <string name="playback_keep_screen_on_state_off">Hald skjermen på: av</string>
+    <string name="playback_keep_screen_on_state_on">Hald skjermen på: på, skjermen blir dimma for å avgrense innbrenning</string>
+    <string name="playback_loading_wait">Opptaket blir framleis lasta. Avspelinga startar når det er klart.</string>
+    <string name="playback_loop_description">Gjenta dette opptaket</string>
+    <string name="playback_loop_state_off">Gjentaking av</string>
+    <string name="playback_loop_state_on">Gjentaking på: gjentek dette opptaket</string>
+    <string name="playback_pause_transcript">Set transkriberinga på pause</string>
+    <string name="playback_recording_unavailable">Opptaket kan ikkje spelast av. Transkriberinga er framleis tilgjengeleg.</string>
+    <string name="playback_resume_transcript">Hald fram transkriberinga</string>
+    <string name="playback_transcript_reduced">Telefonen er varm: han køyrer saktare for å verne eininga.</string>
+    <string name="playback_transcript_user_paused">Sett på pause av deg</string>
+    <string name="playback_transcript_waiting_cool">Telefonen er for varm: ventar på å kjøle seg ned. Den lagra teksten blir halden att.</string>
+    <string name="playback_transcript_waiting_recording">Opptak går: transkriberinga held fram når opptaket stoppar.</string>
+    <string name="transcript_back_to_playing">Tilbake til avspelingsposisjonen</string>
+    <string name="transcript_tap_to_play">Trykk på eit segment for å spele av opptaket derifrå.</string>
 </resources>

@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Desacelerar com aquecimento moderado</string>
     <string name="asr_moderate_pacing_note">Desativado, a transcrição mantém a velocidade total com aquecimento moderado. O aquecimento severo ainda a pausa até o dispositivo esfriar, e você pode retomá-la manualmente.</string>
+    <string name="asr_consent_import">Importar modelo local</string>
+    <string name="asr_import_action">Importar modelo local</string>
+    <string name="asr_import_already_installed">Esta versão já está instalada. Nada foi copiado.</string>
+    <string name="asr_import_busy_wait">Um download ou importação já está em andamento. Aguarde a conclusão.</string>
+    <string name="asr_import_choose_file">Escolher arquivo</string>
+    <string name="asr_import_done">Modelo importado.</string>
+    <string name="asr_import_in_use">Uma transcrição está usando este modelo. Aguarde a conclusão antes de substituir o modelo.</string>
+    <string name="asr_import_info">A importação precisa do arquivo oficial (%1$s %2$s, tar.bz2) e do arquivo complementar %3$s, que não está dentro do arquivo. Escolha os arquivos deste dispositivo. Nada é baixado.</string>
+    <string name="asr_import_missing_message">O arquivo foi aceito, mas ainda faltam estes arquivos: %1$s. Escolha-os deste dispositivo. Nada é baixado.</string>
+    <string name="asr_import_missing_title">Arquivo complementar ausente</string>
+    <string name="asr_reason_in_use">O modelo está em uso.</string>
+    <string name="asr_reason_source">Não é possível ler o arquivo escolhido. O acesso pode ter sido revogado ou a leitura foi interrompida.</string>
+    <string name="asr_state_importing">Copiando arquivo local…</string>
+    <string name="asr_transcribe_reduced">O telefone está quente: a transcrição foi desacelerada para proteger o dispositivo.</string>
+    <string name="asr_transcribe_user_paused">Pausado por você. Toque em Retomar na visualização da transcrição.</string>
+    <string name="asr_transcribe_wait_recording">Gravação em andamento: a transcrição será retomada quando ela parar.</string>
+    <string name="playback_keep_screen_on_state_off">Manter a tela ligada: desativado</string>
+    <string name="playback_keep_screen_on_state_on">Manter a tela ligada: ativado, a tela é escurecida para limitar a marca de queimadura</string>
+    <string name="playback_loading_wait">A gravação ainda está carregando. A reprodução começará quando estiver pronta.</string>
+    <string name="playback_loop_description">Repetir esta gravação</string>
+    <string name="playback_loop_state_off">Repetição desativada</string>
+    <string name="playback_loop_state_on">Repetição ativada: repete esta gravação</string>
+    <string name="playback_pause_transcript">Pausar transcrição</string>
+    <string name="playback_recording_unavailable">A gravação não pode ser reproduzida. A transcrição continua disponível.</string>
+    <string name="playback_resume_transcript">Retomar transcrição</string>
+    <string name="playback_transcript_reduced">O telefone está quente: funcionando mais devagar para proteger o dispositivo.</string>
+    <string name="playback_transcript_user_paused">Pausado por você</string>
+    <string name="playback_transcript_waiting_cool">O telefone está quente demais: aguardando esfriar. O texto salvo é mantido.</string>
+    <string name="playback_transcript_waiting_recording">Gravação em andamento: a transcrição será retomada quando ela parar.</string>
+    <string name="transcript_back_to_playing">Voltar à posição de reprodução</string>
+    <string name="transcript_tap_to_play">Toque em um trecho para reproduzir a gravação a partir dele.</string>
 </resources>

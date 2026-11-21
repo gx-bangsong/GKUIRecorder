@@ -64,4 +64,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Zwalniaj przy umiarkowanym przegrzaniu</string>
     <string name="asr_moderate_pacing_note">Po wyłączeniu transkrypcja działa z pełną szybkością przy umiarkowanym przegrzaniu. Silne przegrzanie nadal ją wstrzymuje, aż urządzenie ostygnie, a wznowisz ją ręcznie.</string>
+    <string name="asr_consent_import">Importuj lokalny model</string>
+    <string name="asr_import_action">Importuj lokalny model</string>
+    <string name="asr_import_already_installed">Ta wersja jest już zainstalowana. Nic nie zostało skopiowane.</string>
+    <string name="asr_import_busy_wait">Pobieranie lub import jest już w toku. Poczekaj, aż się zakończy.</string>
+    <string name="asr_import_choose_file">Wybierz plik</string>
+    <string name="asr_import_done">Model został zaimportowany.</string>
+    <string name="asr_import_in_use">Transkrypcja używa tego modelu. Poczekaj, aż się zakończy, zanim zastąpisz model.</string>
+    <string name="asr_import_info">Import wymaga oficjalnego archiwum (%1$s %2$s, tar.bz2) oraz pliku towarzyszącego %3$s, którego nie ma w archiwum. Wybierz pliki z tego urządzenia. Nic nie jest pobierane.</string>
+    <string name="asr_import_missing_message">Archiwum zostało zaakceptowane, ale nadal brakuje tych plików: %1$s. Wybierz je z tego urządzenia. Nic nie jest pobierane.</string>
+    <string name="asr_import_missing_title">Brak pliku towarzyszącego</string>
+    <string name="asr_reason_in_use">Model jest używany.</string>
+    <string name="asr_reason_source">Nie można odczytać wybranego pliku. Dostęp mógł zostać cofnięty lub odczyt został przerwany.</string>
+    <string name="asr_state_importing">Kopiowanie pliku lokalnego…</string>
+    <string name="asr_transcribe_reduced">Telefon jest ciepły: transkrypcja została spowolniona, aby chronić urządzenie.</string>
+    <string name="asr_transcribe_user_paused">Wstrzymane przez Ciebie. Stuknij Wznów w widoku transkrypcji.</string>
+    <string name="asr_transcribe_wait_recording">Trwa nagrywanie: transkrypcja wznowi się po jego zakończeniu.</string>
+    <string name="playback_keep_screen_on_state_off">Utrzymuj ekran włączony: wyłączone</string>
+    <string name="playback_keep_screen_on_state_on">Utrzymuj ekran włączony: włączone, ekran jest przyciemniany, aby ograniczyć wypalanie obrazu</string>
+    <string name="playback_loading_wait">Nagranie nadal się wczytuje. Odtwarzanie rozpocznie się, gdy będzie gotowe.</string>
+    <string name="playback_loop_description">Powtarzaj to nagranie</string>
+    <string name="playback_loop_state_off">Powtarzanie wyłączone</string>
+    <string name="playback_loop_state_on">Powtarzanie włączone: powtarza to nagranie</string>
+    <string name="playback_pause_transcript">Wstrzymaj transkrypcję</string>
+    <string name="playback_recording_unavailable">Nagrania nie można odtworzyć. Transkrypcja jest nadal dostępna.</string>
+    <string name="playback_resume_transcript">Wznów transkrypcję</string>
+    <string name="playback_transcript_reduced">Telefon jest ciepły: działa wolniej, aby chronić urządzenie.</string>
+    <string name="playback_transcript_user_paused">Wstrzymane przez Ciebie</string>
+    <string name="playback_transcript_waiting_cool">Telefon jest zbyt gorący: czeka na ostygnięcie. Zapisany tekst zostaje zachowany.</string>
+    <string name="playback_transcript_waiting_recording">Trwa nagrywanie: transkrypcja wznowi się po jego zakończeniu.</string>
+    <string name="transcript_back_to_playing">Wróć do pozycji odtwarzania</string>
+    <string name="transcript_tap_to_play">Stuknij fragment, aby odtworzyć nagranie od tego miejsca.</string>
 </resources>

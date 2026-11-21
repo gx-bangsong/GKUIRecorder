@@ -61,4 +61,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">중간 발열 시 속도 낮추기</string>
     <string name="asr_moderate_pacing_note">끄면 중간 발열 상태에서도 전사가 최고 속도로 실행됩니다. 심한 발열 시에는 기기가 식을 때까지 여전히 일시 정지되며, 직접 재개할 수 있습니다.</string>
+    <string name="asr_consent_import">로컬 모델 가져오기</string>
+    <string name="asr_import_action">로컬 모델 가져오기</string>
+    <string name="asr_import_already_installed">이 버전은 이미 설치되어 있습니다. 복사된 항목이 없습니다.</string>
+    <string name="asr_import_busy_wait">다운로드 또는 가져오기가 이미 진행 중입니다. 완료될 때까지 기다리세요.</string>
+    <string name="asr_import_choose_file">파일 선택</string>
+    <string name="asr_import_done">모델을 가져왔습니다.</string>
+    <string name="asr_import_in_use">전사 작업이 이 모델을 사용 중입니다. 모델을 바꾸기 전에 완료될 때까지 기다리세요.</string>
+    <string name="asr_import_info">가져오기에는 공식 아카이브(%1$s %2$s, tar.bz2)와 아카이브에 포함되지 않은 보조 파일 %3$s이(가) 필요합니다. 이 기기에서 파일을 선택하세요. 다운로드는 하지 않습니다.</string>
+    <string name="asr_import_missing_message">아카이브는 허용되었지만 다음 파일이 아직 필요합니다: %1$s. 이 기기에서 선택하세요. 다운로드는 하지 않습니다.</string>
+    <string name="asr_import_missing_title">보조 파일이 없습니다</string>
+    <string name="asr_reason_in_use">모델이 사용 중입니다.</string>
+    <string name="asr_reason_source">선택한 파일을 읽을 수 없습니다. 접근 권한이 취소되었거나 읽기가 중단되었을 수 있습니다.</string>
+    <string name="asr_state_importing">로컬 파일을 복사하는 중…</string>
+    <string name="asr_transcribe_reduced">휴대폰이 뜨거워서 기기 보호를 위해 전사 속도를 낮췄습니다.</string>
+    <string name="asr_transcribe_user_paused">직접 일시 중지했습니다. 전사 보기에서 재개를 누르세요.</string>
+    <string name="asr_transcribe_wait_recording">녹음 중입니다. 녹음이 멈추면 전사를 재개합니다.</string>
+    <string name="playback_keep_screen_on_state_off">화면 켜짐 유지: 끔</string>
+    <string name="playback_keep_screen_on_state_on">화면 켜짐 유지: 켬, 번인을 줄이기 위해 화면이 어두워집니다</string>
+    <string name="playback_loading_wait">녹음을 아직 불러오는 중입니다. 준비되면 재생이 시작됩니다.</string>
+    <string name="playback_loop_description">이 녹음 반복</string>
+    <string name="playback_loop_state_off">반복 끔</string>
+    <string name="playback_loop_state_on">반복 켬: 이 녹음을 반복합니다</string>
+    <string name="playback_pause_transcript">전사 일시 중지</string>
+    <string name="playback_recording_unavailable">녹음을 재생할 수 없습니다. 전사는 계속 볼 수 있습니다.</string>
+    <string name="playback_resume_transcript">전사 재개</string>
+    <string name="playback_transcript_reduced">휴대폰이 뜨거워서 기기 보호를 위해 천천히 실행 중입니다.</string>
+    <string name="playback_transcript_user_paused">직접 일시 중지함</string>
+    <string name="playback_transcript_waiting_cool">휴대폰이 너무 뜨겁습니다. 식을 때까지 기다리는 중입니다. 저장된 텍스트는 유지됩니다.</string>
+    <string name="playback_transcript_waiting_recording">녹음 중입니다. 녹음이 멈추면 전사를 재개합니다.</string>
+    <string name="transcript_back_to_playing">재생 위치로 돌아가기</string>
+    <string name="transcript_tap_to_play">구간을 탭하면 그 지점부터 녹음을 재생합니다.</string>
 </resources>

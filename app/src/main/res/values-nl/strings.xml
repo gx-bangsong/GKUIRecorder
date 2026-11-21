@@ -62,4 +62,35 @@
     </plurals>
     <string name="asr_moderate_pacing_title">Vertragen bij matige oververhitting</string>
     <string name="asr_moderate_pacing_note">Als dit uit staat, draait de transcriptie bij matige oververhitting op volle snelheid. Ernstige oververhitting pauzeert de transcriptie nog steeds tot het apparaat is afgekoeld, en je kunt deze zelf hervatten.</string>
+    <string name="asr_consent_import">Lokaal model importeren</string>
+    <string name="asr_import_action">Lokaal model importeren</string>
+    <string name="asr_import_already_installed">Deze versie is al geïnstalleerd. Er is niets gekopieerd.</string>
+    <string name="asr_import_busy_wait">Er is al een download of import bezig. Wacht tot die klaar is.</string>
+    <string name="asr_import_choose_file">Bestand kiezen</string>
+    <string name="asr_import_done">Model geïmporteerd.</string>
+    <string name="asr_import_in_use">Een transcriptie gebruikt dit model. Wacht tot die klaar is voordat je het model vervangt.</string>
+    <string name="asr_import_info">Importeren vereist het officiële archief (%1$s %2$s, tar.bz2) en het begeleidende bestand %3$s, dat niet in het archief zit. Kies de bestanden op dit apparaat. Er wordt niets gedownload.</string>
+    <string name="asr_import_missing_message">Het archief is geaccepteerd, maar deze bestanden ontbreken nog: %1$s. Kies ze op dit apparaat. Er wordt niets gedownload.</string>
+    <string name="asr_import_missing_title">Begeleidend bestand ontbreekt</string>
+    <string name="asr_reason_in_use">Het model is in gebruik.</string>
+    <string name="asr_reason_source">Het gekozen bestand kan niet worden gelezen. De toegang is mogelijk ingetrokken of het lezen is onderbroken.</string>
+    <string name="asr_state_importing">Lokaal bestand kopiëren…</string>
+    <string name="asr_transcribe_reduced">De telefoon is warm: de transcriptie is vertraagd om het apparaat te beschermen.</string>
+    <string name="asr_transcribe_user_paused">Door jou gepauzeerd. Tik in de transcriptieweergave op Hervatten.</string>
+    <string name="asr_transcribe_wait_recording">Opname bezig: de transcriptie wordt hervat zodra de opname stopt.</string>
+    <string name="playback_keep_screen_on_state_off">Scherm aanhouden: uit</string>
+    <string name="playback_keep_screen_on_state_on">Scherm aanhouden: aan, het scherm wordt gedimd om inbranden te beperken</string>
+    <string name="playback_loading_wait">De opname wordt nog geladen. Het afspelen start zodra die klaar is.</string>
+    <string name="playback_loop_description">Deze opname herhalen</string>
+    <string name="playback_loop_state_off">Herhalen uit</string>
+    <string name="playback_loop_state_on">Herhalen aan: herhaalt deze opname</string>
+    <string name="playback_pause_transcript">Transcriptie pauzeren</string>
+    <string name="playback_recording_unavailable">De opname kan niet worden afgespeeld. De transcriptie is nog wel beschikbaar.</string>
+    <string name="playback_resume_transcript">Transcriptie hervatten</string>
+    <string name="playback_transcript_reduced">De telefoon is warm: hij draait langzamer om het apparaat te beschermen.</string>
+    <string name="playback_transcript_user_paused">Door jou gepauzeerd</string>
+    <string name="playback_transcript_waiting_cool">De telefoon is te warm: hij wacht tot hij is afgekoeld. De opgeslagen tekst blijft bewaard.</string>
+    <string name="playback_transcript_waiting_recording">Opname bezig: de transcriptie wordt hervat zodra de opname stopt.</string>
+    <string name="transcript_back_to_playing">Terug naar de afspeelpositie</string>
+    <string name="transcript_tap_to_play">Tik op een segment om de opname vanaf daar af te spelen.</string>
 </resources>
