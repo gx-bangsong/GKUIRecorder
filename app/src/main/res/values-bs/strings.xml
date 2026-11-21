@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Brzina reprodukcije</string>
     <string name="playback_keep_screen_on">Ekran ostaje uključen</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d odabrano</item>
+        <item quantity="other">%d odabrano</item>
+    </plurals>
 </resources>

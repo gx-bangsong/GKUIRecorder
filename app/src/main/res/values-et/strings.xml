@@ -237,4 +237,8 @@
     <string name="shortcut_target_package">org.lineageos.recorder</string>
     <string name="playback_speed_title">Taasesituskiirus</string>
     <string name="playback_keep_screen_on">Hoia ekraan sees</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d valitud</item>
+        <item quantity="other">%d valitud</item>
+    </plurals>
 </resources>

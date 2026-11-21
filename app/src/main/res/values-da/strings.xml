@@ -236,4 +236,8 @@
     <string name="recording_deleted">Denne optagelse er slettet.</string>
     <string name="playback_speed_title">Afspilningshastighed</string>
     <string name="playback_keep_screen_on">Hold skærmen tændt</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d valgt</item>
+        <item quantity="other">%d valgt</item>
+    </plurals>
 </resources>

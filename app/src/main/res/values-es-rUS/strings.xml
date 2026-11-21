@@ -236,4 +236,8 @@
     <string name="recording_deleted">Esta grabación se eliminó.</string>
     <string name="playback_speed_title">Velocidad de reproducción</string>
     <string name="playback_keep_screen_on">Mantener la pantalla encendida</string>
+    <plurals name="recording_selection_count">
+        <item quantity="one">%d seleccionados</item>
+        <item quantity="other">%d seleccionados</item>
+    </plurals>
 </resources>
