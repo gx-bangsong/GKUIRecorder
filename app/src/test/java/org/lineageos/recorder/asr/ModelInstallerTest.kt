@@ -9,7 +9,6 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -284,6 +283,7 @@ class ModelInstallerTest {
         assertThrows(IllegalArgumentException::class.java) {
             descriptor().copy(archiveSha256 = "XYZ")
         }
-        assertNull(descriptor().expectedFiles.first().sha256)
+        // The test descriptor carries a digest for every expected file, so nothing is left unverified
+        assertNotNull(descriptor().expectedFiles.first().sha256)
     }
 }

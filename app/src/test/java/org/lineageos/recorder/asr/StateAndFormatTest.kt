@@ -13,7 +13,6 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.lineageos.recorder.asr.engine.RecognitionOptions
-import org.lineageos.recorder.asr.engine.Utterance
 import org.lineageos.recorder.asr.model.MiniJson
 import org.lineageos.recorder.asr.model.ModelState
 import org.lineageos.recorder.asr.model.ModelStateTransitions
@@ -148,9 +147,17 @@ class StateAndFormatTest {
     @Test
     fun transcriptTextJoinsWithoutSplittingChinese() {
         val text = TranscriptText.join(
-            listOf(Utterance(0, 1, "你好"), Utterance(1, 2, " world"), Utterance(2, 3, "again"), Utterance(3, 4, "  ")),
+            listOf(
+                TranscriptSegment(0, 1, "你好"),
+                TranscriptSegment(1, 2, " world"),
+                TranscriptSegment(2, 3, "again"),
+                TranscriptSegment(3, 4, "  "),
+            ),
         )
         assertEquals("你好 world again", text)
-        assertEquals("中文测试", TranscriptText.join(listOf(Utterance(0, 1, "中文"), Utterance(1, 2, "测试"))))
+        assertEquals(
+            "中文测试",
+            TranscriptText.join(listOf(TranscriptSegment(0, 1, "中文"), TranscriptSegment(1, 2, "测试"))),
+        )
     }
 }

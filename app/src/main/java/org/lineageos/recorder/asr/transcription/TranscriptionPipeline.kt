@@ -29,11 +29,18 @@ class TranscriptionPipeline(
         /** Throws to abort the run (for example when the user cancels). */
         fun checkCancelled()
 
-        /** Called before each chunk. May block to pause on thermal pressure. */
+        /**
+         * Called before every inference: each audio chunk and the final flush. May block to wait for
+         * a recording to stop or for the device to cool down. The model load is not gated here, only
+         * checked for cancellation, because native model creation cannot be interrupted.
+         */
         fun beforeChunk()
 
         /** Progress in 0..1 and every utterance recognized so far. */
         fun onProgress(fraction: Float, utterances: List<Utterance>)
+
+        /** Time spent in one inference call, for run metrics only. */
+        fun onChunkComputed(computeMs: Long) {}
     }
 
     fun run(
@@ -43,12 +50,16 @@ class TranscriptionPipeline(
         control: Control,
     ): List<Utterance> {
         // The session owns native memory: closed on every path, including failures
+        // Cancel before the native model is created. Creation itself is not interruptible.
+        control.checkCancelled()
         return engine.openSession(modelDir, options).use { session ->
             val results = ArrayList<Utterance>()
             audio.decode { samples, endMs ->
                 control.checkCancelled()
                 control.beforeChunk()
+                val started = System.nanoTime()
                 results += session.acceptAudio(samples)
+                control.onChunkComputed((System.nanoTime() - started) / 1_000_000L)
                 val fraction = if (audio.durationMs > 0) {
                     (endMs.toFloat() / audio.durationMs).coerceIn(0f, MAX_PROGRESS_BEFORE_FINISH)
                 } else {
@@ -56,8 +67,13 @@ class TranscriptionPipeline(
                 }
                 control.onProgress(fraction, results)
             }
+            // The final flush recognizes the remaining segments in one call. It is gated like a chunk.
+            // Segments inside that one call cannot be interrupted.
             control.checkCancelled()
+            control.beforeChunk()
+            val started = System.nanoTime()
             results += session.finish()
+            control.onChunkComputed((System.nanoTime() - started) / 1_000_000L)
             control.onProgress(1f, results)
             SegmentMerger.merge(results)
         }

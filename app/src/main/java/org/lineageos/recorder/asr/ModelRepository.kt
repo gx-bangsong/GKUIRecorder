@@ -6,6 +6,7 @@
 package org.lineageos.recorder.asr
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.work.Constraints
 import androidx.work.Data
@@ -23,6 +24,7 @@ import org.lineageos.recorder.asr.model.ManifestValidationResult
 import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.model.ModelDescriptor
 import org.lineageos.recorder.asr.model.ModelState
+import org.lineageos.recorder.asr.model.ImportTarget
 import org.lineageos.recorder.asr.model.ModelStorage
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -79,6 +81,10 @@ class ModelRepository private constructor(context: Context) {
     }
 
     private fun runningState(progress: Data): ModelState = when (progress.getString(KEY_PHASE)) {
+        PHASE_COPYING -> ModelState.Importing(
+            copiedBytes = progress.getLong(KEY_DOWNLOADED, 0L),
+            totalBytes = progress.getLong(KEY_TOTAL, -1L),
+        )
         PHASE_VERIFYING -> ModelState.Verifying
         PHASE_INSTALLING -> ModelState.Installing
         PHASE_DOWNLOADING -> ModelState.Downloading(
@@ -94,6 +100,9 @@ class ModelRepository private constructor(context: Context) {
         val infos = workManager.getWorkInfosForUniqueWork(downloadWorkName(modelId)).get()
         return infos.any { !it.state.isFinished }
     }
+
+    /** True while a transcription holds the model (see [useModel]). */
+    fun isInUse(modelId: String): Boolean = (inUse[modelId] ?: 0) > 0
 
     /** True when the model is being downloaded or a transcription uses it. */
     fun isBusy(modelId: String): Boolean = (inUse[modelId] ?: 0) > 0 || isDownloadActive(modelId)
@@ -129,6 +138,36 @@ class ModelRepository private constructor(context: Context) {
         // then() returns a new continuation; the chain must be built from its result
         val full = if (afterwards != null) chain.then(afterwards) else chain
         full.enqueue()
+        return true
+    }
+
+    /**
+     * Queues a local import of [uri] as [target]. It joins the same unique chain as downloads, so an
+     * import and a download of one model never run together. Returns false, queuing nothing, when a
+     * download or import is already running for the model. Nothing starts on the recognizer.
+     */
+    fun enqueueImport(descriptor: ModelDescriptor, target: ImportTarget, uri: Uri): Boolean {
+        if (descriptor.validateManifest() is ManifestValidationResult.Incomplete) {
+            return false
+        }
+        if (isDownloadActive(descriptor.id)) {
+            return false
+        }
+        val (role, name) = when (target) {
+            is ImportTarget.Archive -> ROLE_ARCHIVE to ""
+            is ImportTarget.Companion -> ROLE_COMPANION to target.localName
+        }
+        val request = OneTimeWorkRequestBuilder<ModelImportWorker>()
+            .setInputData(
+                workDataOf(
+                    KEY_MODEL_ID to descriptor.id,
+                    KEY_IMPORT_ROLE to role,
+                    KEY_IMPORT_NAME to name,
+                    KEY_IMPORT_URI to uri.toString(),
+                ),
+            )
+            .build()
+        workManager.beginUniqueWork(downloadWorkName(descriptor.id), ExistingWorkPolicy.KEEP, request).enqueue()
         return true
     }
 
@@ -203,6 +242,14 @@ class ModelRepository private constructor(context: Context) {
 
         const val PHASE_DOWNLOADING = "downloading"
         const val PHASE_VERIFYING = "verifying"
+        const val PHASE_COPYING = "copying"
+        const val KEY_MISSING = "missing"
+        const val KEY_ALREADY_INSTALLED = "already_installed"
+        const val KEY_IMPORT_ROLE = "import_role"
+        const val KEY_IMPORT_NAME = "import_name"
+        const val KEY_IMPORT_URI = "import_uri"
+        const val ROLE_ARCHIVE = "archive"
+        const val ROLE_COMPANION = "companion"
         const val PHASE_INSTALLING = "installing"
 
         private const val BACKOFF_SECONDS = 30L

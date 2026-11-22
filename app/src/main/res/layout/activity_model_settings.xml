@@ -83,6 +83,21 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/importInfoText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/importButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/asr_import_action" />
+
+            <TextView
                 android:id="@+id/privacyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,6 +119,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start|center_vertical" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/moderatePacingSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/asr_moderate_pacing_title" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/asr_moderate_pacing_note"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
 
             <TextView
                 android:id="@+id/licenseTitle"

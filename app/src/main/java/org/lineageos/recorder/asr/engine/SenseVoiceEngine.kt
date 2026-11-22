@@ -5,6 +5,7 @@
 
 package org.lineageos.recorder.asr.engine
 
+import android.util.Log
 import com.k2fsa.sherpa.onnx.FeatureConfig
 import com.k2fsa.sherpa.onnx.OfflineModelConfig
 import com.k2fsa.sherpa.onnx.OfflineRecognizer
@@ -26,6 +27,7 @@ import java.io.File
  * Expected files in the model directory: model.int8.onnx, tokens.txt, silero_vad.onnx.
  */
 object SenseVoiceEngine : SpeechEngine {
+    private const val TAG = "SenseVoiceEngine"
     override val kind: EngineKind = EngineKind.SENSEVOICE_SHERPA
 
     const val MODEL_FILE = "model.int8.onnx"
@@ -44,6 +46,7 @@ object SenseVoiceEngine : SpeechEngine {
         val vadModel = File(modelDir, VAD_FILE)
         require(model.isFile && tokens.isFile && vadModel.isFile) { "Model files are missing" }
 
+        Log.i(TAG, "session: loading VAD")
         val vad = Vad(
             assetManager = null,
             config = VadModelConfig(
@@ -61,6 +64,7 @@ object SenseVoiceEngine : SpeechEngine {
                 debug = false,
             ),
         )
+        Log.i(TAG, "session: VAD loaded, creating recognizer threads=${options.numThreads}")
         val recognizer = try {
             OfflineRecognizer(
                 assetManager = null,
@@ -81,9 +85,11 @@ object SenseVoiceEngine : SpeechEngine {
                 ),
             )
         } catch (e: Throwable) {
+            Log.e(TAG, "session: recognizer creation failed: ${e.javaClass.name}", e)
             vad.release()
             throw e
         }
+        Log.i(TAG, "session: recognizer ready")
         return SenseVoiceSession(vad, recognizer)
     }
 }
