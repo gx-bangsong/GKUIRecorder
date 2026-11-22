@@ -133,6 +133,16 @@ class PlaybackControlTest {
     private var changes = 0
     private val control = PlaybackControl(port, durationMs = { 10_000L }, onChanged = { changes++ })
 
+    /** Regression: a seek to the current position must start playback without a completion. */
+    @Test
+    fun seekToCurrentPositionWithPlayStartsWithoutSeekCompletion() {
+        control.seekTo(0L, play = true)
+        assertEquals(1, port.starts)
+        assertTrue(port.isPlaying)
+        assertTrue(port.seeks.isEmpty())
+        assertEquals(0L, control.displayPositionMs())
+    }
+
     @Test
     fun tapSeeksAndPlaysAfterCompletion() {
         control.seekTo(4_200L, play = true)

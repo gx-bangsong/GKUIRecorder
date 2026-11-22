@@ -80,6 +80,15 @@ class PlaybackControl(
 
     fun seekTo(positionMs: Long, play: Boolean) {
         val target = positionMs.coerceIn(0L, max(durationMs(), 0L))
+        if (abs(port.positionMs - target) <= SEEK_TOLERANCE_MS) {
+            // Already at the target: some players never report a completed seek to the current
+            // position, so waiting for one would leave a tap-to-play that never starts.
+            pendingMs = null
+            autoplayAfterSeek = false
+            if (play) port.start()
+            onChanged()
+            return
+        }
         pendingMs = target
         autoplayAfterSeek = play
         port.seekTo(target)
