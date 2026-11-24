@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<!--
+     Transport and secondary controls for narrow portrait screens. Six controls do not fit one row
+     there (about 380 dp against 328 dp of content on a 360 dp phone), so the transport keys sit on
+     their own row and the secondary keys on a second one. layout-w600dp has the single-row version.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Rewind, play/pause, forward: centred, so the play button keeps its size -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/rewindButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/playback_skip_back"
+                app:backgroundTint="?attr/colorSecondaryContainer"
+                app:elevation="0dp"
+                app:fabCustomSize="64dp"
+                app:maxImageSize="32dp"
+                app:srcCompat="@drawable/ic_replay"
+                app:tint="?attr/colorOnSecondaryContainer" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="10"
+                android:textColor="?attr/colorOnSecondaryContainer"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/playPauseImageView"
+            android:tag="controls-two-row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/play"
+            app:backgroundTint="?attr/colorTertiary"
+            app:shapeAppearanceOverlay="@style/PlayCircleShapeOverlay"
+            app:elevation="0dp"
+            app:fabCustomSize="88dp"
+            app:maxImageSize="44dp"
+            app:srcCompat="@drawable/ic_play_arrow"
+            app:tint="?attr/colorOnTertiary" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/forwardButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/playback_skip_forward"
+                app:backgroundTint="?attr/colorSecondaryContainer"
+                app:elevation="0dp"
+                app:fabCustomSize="64dp"
+                app:maxImageSize="32dp"
+                app:srcCompat="@drawable/ic_forward"
+                app:tint="?attr/colorOnSecondaryContainer" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="10"
+                android:textColor="?attr/colorOnSecondaryContainer"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Loop on the left; speed and keep-awake on the right. Sized by their content, never squeezed. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Repeat this recording from the start when it ends. Off by default. Shared by the audio and transcript tabs -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/loopButton"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_repeat"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/speedButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingHorizontal="8dp"
+            android:singleLine="true"
+            android:text="1x" />
+
+        <!-- Keep the screen on while reading along. Off by default. Icon-only -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/keepAwakeButton"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="@string/playback_keep_screen_on"
+            android:minWidth="48dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_keep_screen_on"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp" />
+    </LinearLayout>
+</merge>

@@ -184,27 +184,12 @@
                     android:text="@string/transcript_back_to_playing"
                     android:visibility="gone" />
 
+                <!-- Pause, cancel, and redo/transcribe. At most two of them show at once -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/copyTranscriptButton"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:enabled="false"
-                        android:text="@string/transcript_copy" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/exportTranscriptButton"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:enabled="false"
-                        android:text="@string/transcript_export" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/pauseTranscriptButton"
@@ -228,6 +213,36 @@
                         android:layout_height="wrap_content"
                         android:text="@string/transcribe"
                         android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- Copy and export, with keep-awake on the right. Its own row, so nothing is squeezed -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/copyTranscriptButton"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:text="@string/transcript_copy" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/exportTranscriptButton"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:text="@string/transcript_export" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
 
                     <!-- Same option as the bottom bar, so it can be reached while reading the transcript -->
                     <com.google.android.material.button.MaterialButton
@@ -235,7 +250,6 @@
                         style="@style/Widget.Material3.Button.IconButton"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:layout_marginStart="4dp"
                         android:contentDescription="@string/playback_keep_screen_on"
                         android:minWidth="48dp"
                         android:padding="0dp"
@@ -288,15 +302,28 @@
                 app:iconGravity="textStart" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <com.google.android.material.slider.Slider
-            android:id="@+id/progressSlider"
+        <!-- The speech bands are drawn over the track by SpeechRangeView, which takes no touches,
+             so the slider keeps every seek and accessibility behaviour -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:valueFrom="0"
-            android:valueTo="1"
-            android:value="0"
-            app:thumbRadius="8dp"
-            app:trackHeight="6dp" />
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/progressSlider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:value="0"
+                app:thumbRadius="@dimen/playback_slider_thumb_radius"
+                app:trackHeight="@dimen/playback_slider_track_height" />
+
+            <org.lineageos.recorder.ui.SpeechRangeView
+                android:id="@+id/speechRangeView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -324,119 +351,8 @@
                 tools:text="-00:11" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <!-- Repeat this recording from the start when it ends. Off by default. Shared by the audio and transcript tabs -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/loopButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="4dp"
-                android:minWidth="48dp"
-                android:padding="0dp"
-                app:icon="@drawable/ic_repeat"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp" />
-
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp">
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/rewindButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:contentDescription="@string/playback_skip_back"
-                    app:backgroundTint="?attr/colorSecondaryContainer"
-                    app:elevation="0dp"
-                    app:fabCustomSize="64dp"
-                    app:maxImageSize="32dp"
-                    app:srcCompat="@drawable/ic_replay"
-                    app:tint="?attr/colorOnSecondaryContainer" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="10"
-                    android:textColor="?attr/colorOnSecondaryContainer"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:importantForAccessibility="no" />
-            </FrameLayout>
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/playPauseImageView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/play"
-                app:backgroundTint="?attr/colorTertiary"
-                app:shapeAppearanceOverlay="@style/PlayCircleShapeOverlay"
-                app:elevation="0dp"
-                app:fabCustomSize="88dp"
-                app:maxImageSize="44dp"
-                app:srcCompat="@drawable/ic_play_arrow"
-                app:tint="?attr/colorOnTertiary" />
-
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp">
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/forwardButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:contentDescription="@string/playback_skip_forward"
-                    app:backgroundTint="?attr/colorSecondaryContainer"
-                    app:elevation="0dp"
-                    app:fabCustomSize="64dp"
-                    app:maxImageSize="32dp"
-                    app:srcCompat="@drawable/ic_forward"
-                    app:tint="?attr/colorOnSecondaryContainer" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="10"
-                    android:textColor="?attr/colorOnSecondaryContainer"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:importantForAccessibility="no" />
-            </FrameLayout>
-
-            <!-- Sized by its label, never squeezed: the label must stay on one line -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/speedButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:singleLine="true"
-                android:text="1x" />
-
-            <!-- Keep the screen on while reading along. Off by default. Icon-only, on the right to balance the loop button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/keepAwakeButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/playback_keep_screen_on"
-                android:minWidth="48dp"
-                android:padding="0dp"
-                app:icon="@drawable/ic_keep_screen_on"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp" />
-        </LinearLayout>
+        <!-- Transport and secondary controls. The layout depends on the screen width, see playback_controls.xml -->
+        <include layout="@layout/playback_controls" />
     </LinearLayout>
 
 </LinearLayout>

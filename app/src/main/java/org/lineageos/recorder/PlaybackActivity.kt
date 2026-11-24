@@ -56,6 +56,7 @@ import org.lineageos.recorder.asr.model.ModelCatalog
 import org.lineageos.recorder.asr.transcription.TranscriptPanel
 import org.lineageos.recorder.asr.transcription.TranscriptPanelState
 import org.lineageos.recorder.asr.transcription.SegmentLookup
+import org.lineageos.recorder.asr.transcription.SpeechRanges
 import org.lineageos.recorder.asr.transcription.TranscriptPanels
 import org.lineageos.recorder.asr.transcription.TranscriptSegment
 import org.lineageos.recorder.asr.ui.TranscriptionStarter
@@ -65,6 +66,7 @@ import org.lineageos.recorder.playback.PlaybackAdapter
 import org.lineageos.recorder.playback.PlaybackRow
 import org.lineageos.recorder.playback.PlaybackRows
 import org.lineageos.recorder.ui.PlaybackWaveformView
+import org.lineageos.recorder.ui.SpeechRangeView
 import org.lineageos.recorder.utils.ExportHelper
 import org.lineageos.recorder.utils.PreferencesManager
 import org.lineageos.recorder.utils.WaveformLoader
@@ -99,6 +101,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
     private val emptyTextView by lazy { findViewById<TextView>(R.id.emptyTextView) }
     private val rowsRecyclerView by lazy { findViewById<RecyclerView>(R.id.rowsRecyclerView) }
     private val progressSlider by lazy { findViewById<Slider>(R.id.progressSlider) }
+    private val speechRangeView by lazy { findViewById<SpeechRangeView>(R.id.speechRangeView) }
     private val currentTimeTextView by lazy { findViewById<TextView>(R.id.currentTimeTextView) }
     private val remainingTimeTextView by lazy { findViewById<TextView>(R.id.remainingTimeTextView) }
     private val rewindButton by lazy { findViewById<FloatingActionButton>(R.id.rewindButton) }
@@ -236,6 +239,8 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         // Stored in PlaybackSession, so it survives tab changes, rotation and background return.
         loopButton.setOnClickListener { PlaybackSession.setLooping(!PlaybackSession.looping) }
 
+        // The speech bands follow the slider track, see SpeechRangeView
+        speechRangeView.attachTo(progressSlider)
         progressSlider.addOnChangeListener(Slider.OnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 seekTo(value.toLong())
@@ -422,6 +427,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             progressSlider.valueFrom = 0f
             progressSlider.valueTo = max(durationMs.toFloat(), 1f)
             progressSlider.isEnabled = durationMs > 0L
+            refreshSpeechRanges()
             updateProgress()
             refreshRows()
             loadWaveform()
@@ -639,6 +645,7 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
         transcriptTextView.isVisible = usable.isEmpty() && shownPanel?.hasBody == true
         if (usable == segments && segmentViews.size == usable.size) {
             // Same segments as before (a reload with no change): keep the views and the highlight
+            refreshSpeechRanges()
             applyKaraoke(currentPosition())
             return
         }
@@ -672,7 +679,16 @@ class PlaybackActivity : AppCompatActivity(R.layout.activity_playback) {
             )
             segmentViews += view
         }
+        refreshSpeechRanges()
         applyKaraoke(currentPosition())
+    }
+
+    /**
+     * Draws the timed speech on the seek bar. Called only when the segments or the duration change,
+     * never on a progress tick. With no usable segments or no duration, the bands are cleared.
+     */
+    private fun refreshSpeechRanges() {
+        speechRangeView.bind(SpeechRanges.of(segments, durationMs), durationMs)
     }
 
     /** Highlights the segment at the real playback position. Only while the transcript tab is shown. */
